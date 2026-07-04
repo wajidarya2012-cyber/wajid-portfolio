@@ -91,7 +91,7 @@ export default function GalleryManager({ initialItems }: { initialItems: Gallery
       {/* Grid */}
       <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(180px,1fr))", gap:"0.875rem" }}>
         {filtered.map(item=>(
-          <div key={item.id} style={{ position:"relative", borderRadius:"10px", overflow:"hidden", aspectRatio:"4/3", background:"var(--bg-secondary)", group:"true" }}>
+          <div key={item.id} style={{ position:"relative", borderRadius:"10px", overflow:"hidden", aspectRatio:"4/3", background:"var(--bg-secondary)" }}>
             <img src={item.url} alt={item.caption_en??""} style={{ width:"100%", height:"100%", objectFit:"cover", display:"block" }} />
             <div style={{ position:"absolute", inset:0, background:"rgba(0,0,0,0.65)", opacity:0, transition:"opacity 0.2s", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:"0.5rem" }}
               onMouseEnter={e=>(e.currentTarget.style.opacity="1")}
