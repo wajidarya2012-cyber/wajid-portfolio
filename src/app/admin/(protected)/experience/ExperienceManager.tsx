@@ -81,7 +81,8 @@ export default function ExperienceManager({ initialData }: { initialData: Experi
     fontSize:"0.85rem", padding:"0.6rem 0.75rem", outline:"none",
   };
 
-  const TABS = [{key:"en",label:"English"},{key:"ps",label:"پښتو",dir:"rtl"},{key:"fa",label:"دری",dir:"rtl"}] as const;
+  // FIXED: Added dir:"ltr" to English tab
+  const TABS = [{key:"en",label:"English",dir:"ltr"},{key:"ps",label:"پښتو",dir:"rtl"},{key:"fa",label:"دری",dir:"rtl"}] as const;
 
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:"1rem" }}>
