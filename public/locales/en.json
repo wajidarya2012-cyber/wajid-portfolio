@@ -1,0 +1,142 @@
+{
+  "nav": {
+    "home": "Home",
+    "about": "About",
+    "skills": "Skills",
+    "experience": "Experience",
+    "projects": "Projects",
+    "certifications": "Certifications",
+    "blog": "Blog",
+    "gallery": "Gallery",
+    "contact": "Contact"
+  },
+  "hero": {
+    "available": "Available for Opportunities",
+    "greeting": "Hello, I'm",
+    "roles": ["IT & Network Manager", "Software Developer", "Database Administrator", "Technology Consultant"],
+    "bio": "Transforming Ideas into Digital Solutions through Software Development, IT Management, and Innovation.",
+    "contactBtn": "Contact Me",
+    "cvBtn": "Download CV",
+    "badge": { "title": "CS Graduate", "sub": "IT & Networks" }
+  },
+  "about": {
+    "eyebrow": "Get to Know Me",
+    "title": "About Me",
+    "values": {
+      "innovation": "Innovation",
+      "innovationDesc": "Solving complex problems with creative digital solutions",
+      "reliability": "Reliability",
+      "reliabilityDesc": "Building systems organizations can depend on",
+      "collaboration": "Collaboration",
+      "collaborationDesc": "Working effectively with teams and stakeholders",
+      "growth": "Growth",
+      "growthDesc": "Continuously learning and evolving with technology"
+    },
+    "info": {
+      "name": "Full Name",
+      "role": "Primary Role",
+      "education": "Education",
+      "location": "Location",
+      "specialization": "Specialization",
+      "languages": "Languages"
+    }
+  },
+  "skills": {
+    "eyebrow": "Technical Expertise",
+    "title": "Skills & Technologies",
+    "desc": "A broad technical skillset built through years of real-world deployments and project delivery."
+  },
+  "experience": {
+    "eyebrow": "Work History",
+    "title": "Work Experience",
+    "present": "Present"
+  },
+  "education": {
+    "eyebrow": "Academic Background",
+    "title": "Education & Training"
+  },
+  "certifications": {
+    "eyebrow": "Credentials",
+    "title": "Certifications & Trainings"
+  },
+  "projects": {
+    "eyebrow": "Portfolio",
+    "title": "Software Projects",
+    "desc": "Real-world systems built to solve critical challenges.",
+    "filters": {
+      "all": "All",
+      "healthcare": "Healthcare",
+      "government": "Government",
+      "transport": "Transport",
+      "security": "Security"
+    },
+    "viewDetails": "View Details",
+    "features": "Key Features",
+    "technologies": "Technologies Used",
+    "challenge": "Challenge Solved",
+    "gallery": "Project Gallery"
+  },
+  "stats": {
+    "years": "Years of Experience",
+    "projects": "Projects Delivered",
+    "certifications": "Certifications",
+    "organizations": "Organizations Served"
+  },
+  "contact": {
+    "eyebrow": "Get In Touch",
+    "title": "Contact Me",
+    "subtitle": "Let's Work Together",
+    "desc": "Whether you have a project, job opportunity, or just want to connect — my inbox is open.",
+    "email": "Email",
+    "phone": "Phone",
+    "location": "Location",
+    "form": {
+      "name": "Full Name",
+      "email": "Email Address",
+      "phone": "Phone (Optional)",
+      "subject": "Subject",
+      "message": "Message",
+      "send": "Send Message",
+      "sending": "Sending...",
+      "success": "Message sent! I'll get back to you soon.",
+      "error": "Something went wrong. Please try again."
+    }
+  },
+  "blog": {
+    "eyebrow": "Insights",
+    "title": "Blog & Articles",
+    "readMore": "Read More",
+    "publishedOn": "Published on",
+    "backToBlog": "Back to Blog"
+  },
+  "gallery": {
+    "eyebrow": "Photo Gallery",
+    "title": "Gallery",
+    "categories": {
+      "all": "All",
+      "professional": "Professional",
+      "events": "Events",
+      "training": "Training",
+      "achievements": "Achievements"
+    }
+  },
+  "footer": {
+    "rights": "All rights reserved.",
+    "builtWith": "Built with Next.js & Tailwind CSS"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "notFound": "Page not found",
+    "backHome": "Back to Home",
+    "learnMore": "Learn More",
+    "close": "Close",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add New",
+    "search": "Search",
+    "noResults": "No results found"
+  }
+}

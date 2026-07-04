@@ -1,0 +1,644 @@
+// =============================================================================
+// Wajid Ali Arya — Portfolio Platform
+// Prisma Schema v2.0
+// PostgreSQL 16 | Prisma 5
+// =============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// =============================================================================
+// ENUMS
+// =============================================================================
+
+enum Role {
+  ADMIN
+  EDITOR
+}
+
+enum ProjectStatus {
+  ACTIVE
+  ARCHIVED
+  DRAFT
+}
+
+enum BlogStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum MessageStatus {
+  NEW
+  READ
+  REPLIED
+  ARCHIVED
+}
+
+enum AnalyticsEvent {
+  PAGE_VIEW
+  PROJECT_VIEW
+  CV_DOWNLOAD
+  CONTACT_SUBMIT
+  BLOG_VIEW
+}
+
+enum LogAction {
+  CREATE
+  UPDATE
+  DELETE
+  LOGIN
+  LOGOUT
+  UPLOAD
+}
+
+// =============================================================================
+// AUTH & USER
+// =============================================================================
+
+/// Admin user — only one or a small number of accounts should exist.
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String   // bcrypt hash
+  name      String?
+  role      Role     @default(ADMIN)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  activityLogs ActivityLog[]
+
+  @@map("users")
+}
+
+// =============================================================================
+// PROFILE
+// =============================================================================
+
+/// Single-row table (enforce at application layer).
+/// All multilingual text fields use _en / _ps / _fa suffixes.
+model Profile {
+  id       String @id @default(uuid())
+
+  // Personal info — trilingual
+  fullName_en String
+  fullName_ps String
+  fullName_fa String
+
+  // Primary title / tagline
+  title_en String
+  title_ps String
+  title_fa String
+
+  // Hero biography paragraph
+  bio_en String @db.Text
+  bio_ps String @db.Text
+  bio_fa String @db.Text
+
+  // About section — extended biography
+  aboutText_en String @db.Text
+  aboutText_ps String @db.Text
+  aboutText_fa String @db.Text
+
+  // Contact details
+  email    String
+  phone    String?
+  location String?
+
+  // Profile photo (Cloudinary)
+  photoUrl      String?
+  photoPublicId String?
+
+  // CV document (Cloudinary)
+  cvUrl      String?
+  cvPublicId String?
+
+  // Social links
+  linkedinUrl String?
+  githubUrl   String?
+  twitterUrl  String?
+  websiteUrl  String?
+
+  updatedAt DateTime @updatedAt
+
+  @@map("profile")
+}
+
+// =============================================================================
+// PROJECT CATEGORY
+// =============================================================================
+
+model ProjectCategory {
+  id        String   @id @default(uuid())
+  name_en   String
+  name_ps   String
+  name_fa   String
+
+  /// URL-safe identifier, e.g. "healthcare"
+  slug      String   @unique
+
+  /// Tailwind or hex color string for UI badge
+  color     String   @default("#4F46E5")
+
+  /// Icon identifier (emoji or icon name)
+  icon      String   @default("folder")
+
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  projects  Project[]
+
+  @@map("project_categories")
+}
+
+// =============================================================================
+// PROJECT
+// =============================================================================
+
+model Project {
+  id   String @id @default(uuid())
+
+  /// URL slug, e.g. "dental-clinic-management-system"
+  slug String @unique
+
+  // Trilingual content
+  title_en       String
+  title_ps       String
+  title_fa       String
+
+  description_en String @db.Text
+  description_ps String @db.Text
+  description_fa String @db.Text
+
+  /// Challenge/problem solved narrative
+  challenge_en   String? @db.Text
+  challenge_ps   String? @db.Text
+  challenge_fa   String? @db.Text
+
+  /// Technology names stored as a Postgres text array
+  technologies   String[]
+
+  /// Relationship to category
+  categoryId     String?
+  category       ProjectCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  status    ProjectStatus @default(ACTIVE)
+  featured  Boolean       @default(false)
+  sortOrder Int           @default(0)
+
+  /// Denormalised view count — incremented on each project view event
+  viewCount Int @default(0)
+
+  /// Project timeline dates (optional display fields)
+  startDate DateTime?
+  endDate   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  images       ProjectImage[]
+  features     ProjectFeature[]
+  links        ProjectLink[]
+  analyticsEvents VisitorAnalytics[] @relation("ProjectAnalytics")
+
+  @@index([categoryId])
+  @@index([status])
+  @@index([featured])
+  @@map("projects")
+}
+
+// ---------------------------------------------------------------------------
+
+/// Screenshots and gallery images belonging to a project.
+model ProjectImage {
+  id          String  @id @default(uuid())
+
+  projectId   String
+  project     Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  /// Cloudinary secure URL
+  url         String
+
+  /// Cloudinary public_id for deletion/transformation
+  publicId    String
+
+  caption     String?
+  isThumbnail Boolean @default(false)
+  sortOrder   Int     @default(0)
+
+  createdAt   DateTime @default(now())
+
+  @@index([projectId])
+  @@map("project_images")
+}
+
+// ---------------------------------------------------------------------------
+
+/// Bullet-point features list for a project (trilingual).
+model ProjectFeature {
+  id        String  @id @default(uuid())
+
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  text_en   String
+  text_ps   String
+  text_fa   String
+
+  sortOrder Int    @default(0)
+
+  @@index([projectId])
+  @@map("project_features")
+}
+
+// ---------------------------------------------------------------------------
+
+/// External links for a project (demo, GitHub, download, etc.).
+model ProjectLink {
+  id        String  @id @default(uuid())
+
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  label_en  String
+  label_ps  String
+  label_fa  String
+
+  url       String
+
+  /// e.g. "demo" | "github" | "download" | "video"
+  type      String  @default("demo")
+
+  @@index([projectId])
+  @@map("project_links")
+}
+
+// =============================================================================
+// SKILLS
+// =============================================================================
+
+model SkillCategory {
+  id        String   @id @default(uuid())
+  name_en   String
+  name_ps   String
+  name_fa   String
+
+  /// Font Awesome or Heroicons icon name
+  icon      String   @default("code")
+  sortOrder Int      @default(0)
+
+  // Relations
+  skills    Skill[]
+
+  @@map("skill_categories")
+}
+
+// ---------------------------------------------------------------------------
+
+model Skill {
+  id         String @id @default(uuid())
+  name_en    String
+  name_ps    String
+  name_fa    String
+
+  /// 0–100
+  percentage Int    @default(0)
+
+  categoryId String
+  category   SkillCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  sortOrder  Int    @default(0)
+
+  @@index([categoryId])
+  @@map("skills")
+}
+
+// =============================================================================
+// WORK EXPERIENCE
+// =============================================================================
+
+model Experience {
+  id   String @id @default(uuid())
+
+  role_en         String
+  role_ps         String
+  role_fa         String
+
+  organization_en String
+  organization_ps String
+  organization_fa String
+
+  description_en  String @db.Text
+  description_ps  String @db.Text
+  description_fa  String @db.Text
+
+  /// Technology/tool tags for this role
+  technologies    String[]
+
+  startDate       DateTime
+  endDate         DateTime?
+
+  /// If true, endDate is ignored and "Present" is shown
+  isCurrent       Boolean  @default(false)
+
+  sortOrder       Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("experience")
+}
+
+// =============================================================================
+// EDUCATION
+// =============================================================================
+
+model Education {
+  id   String @id @default(uuid())
+
+  degree_en      String
+  degree_ps      String
+  degree_fa      String
+
+  institution_en String
+  institution_ps String
+  institution_fa String
+
+  fieldOfStudy_en String?
+  fieldOfStudy_ps String?
+  fieldOfStudy_fa String?
+
+  description_en  String? @db.Text
+  description_ps  String? @db.Text
+  description_fa  String? @db.Text
+
+  location   String?
+  startYear  Int
+  endYear    Int?
+
+  /// Grade point average (optional)
+  gpa        String?
+
+  /// Emoji or Cloudinary URL for institution logo
+  icon       String @default("🎓")
+
+  sortOrder  Int    @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("education")
+}
+
+// =============================================================================
+// CERTIFICATIONS
+// =============================================================================
+
+model Certification {
+  id   String @id @default(uuid())
+
+  name_en   String
+  name_ps   String
+  name_fa   String
+
+  issuer_en String
+  issuer_ps String
+  issuer_fa String
+
+  description_en String? @db.Text
+  description_ps String? @db.Text
+  description_fa String? @db.Text
+
+  /// Emoji or Cloudinary URL
+  icon      String @default("🏅")
+
+  /// Year awarded
+  year      Int?
+
+  /// Optional credential URL
+  credentialUrl String?
+
+  sortOrder Int    @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("certifications")
+}
+
+// =============================================================================
+// BLOG
+// =============================================================================
+
+model BlogPost {
+  id   String @id @default(uuid())
+
+  /// URL slug
+  slug String @unique
+
+  // Trilingual content
+  title_en   String
+  title_ps   String
+  title_fa   String
+
+  /// TipTap JSON or HTML
+  content_en String @db.Text
+  content_ps String @db.Text
+  content_fa String @db.Text
+
+  excerpt_en String? @db.Text
+  excerpt_ps String? @db.Text
+  excerpt_fa String? @db.Text
+
+  /// SEO fields
+  metaTitle_en String?
+  metaTitle_ps String?
+  metaTitle_fa String?
+
+  metaDesc_en  String?
+  metaDesc_ps  String?
+  metaDesc_fa  String?
+
+  /// Cover image (Cloudinary)
+  coverImage   String?
+  coverPublicId String?
+
+  status      BlogStatus @default(DRAFT)
+
+  /// Denormalised view count
+  viewCount   Int        @default(0)
+
+  publishedAt DateTime?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([status])
+  @@index([publishedAt])
+  @@map("blog_posts")
+}
+
+// =============================================================================
+// GALLERY
+// =============================================================================
+
+model GalleryItem {
+  id        String @id @default(uuid())
+
+  /// Cloudinary secure URL
+  url       String
+
+  /// Cloudinary public_id
+  publicId  String
+
+  caption_en String?
+  caption_ps String?
+  caption_fa String?
+
+  /// e.g. "professional" | "events" | "training" | "achievements"
+  category  String @default("general")
+
+  sortOrder Int    @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([category])
+  @@map("gallery_items")
+}
+
+// =============================================================================
+// CONTACT MESSAGES
+// =============================================================================
+
+model ContactMessage {
+  id      String @id @default(uuid())
+
+  name    String
+  email   String
+  phone   String?
+  subject String
+  message String @db.Text
+
+  status  MessageStatus @default(NEW)
+
+  /// Optional admin note / reply draft
+  adminNote String? @db.Text
+
+  /// Captured for spam/audit purposes
+  ipAddress String?
+  userAgent String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("contact_messages")
+}
+
+// =============================================================================
+// VISITOR ANALYTICS
+// =============================================================================
+
+/// One row per tracked event (page view, CV download, etc.).
+/// Kept lean — aggregate queries are run at read time.
+model VisitorAnalytics {
+  id        String @id @default(uuid())
+
+  /// Browser-generated anonymous session UUID (stored in sessionStorage)
+  sessionId String
+
+  /// Normalised path, e.g. "/en", "/en/projects/dental-clinic"
+  page      String
+
+  event     AnalyticsEvent @default(PAGE_VIEW)
+
+  /// Populated for PROJECT_VIEW events — links to Project
+  projectId String?
+  project   Project? @relation("ProjectAnalytics", fields: [projectId], references: [id], onDelete: SetNull)
+
+  /// ISO 3166-1 alpha-2 country code derived from IP, e.g. "AF"
+  country   String?
+
+  /// City name (best-effort from IP geolocation)
+  city      String?
+
+  referrer  String?
+  userAgent String?
+
+  createdAt DateTime @default(now())
+
+  @@index([event])
+  @@index([page])
+  @@index([country])
+  @@index([projectId])
+  @@index([createdAt])
+  @@index([sessionId])
+  @@map("visitor_analytics")
+}
+
+// =============================================================================
+// ADMIN ACTIVITY LOG
+// =============================================================================
+
+/// Immutable append-only audit trail of admin actions.
+/// No updatedAt — rows are never modified after insert.
+model ActivityLog {
+  id     String @id @default(uuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  action     LogAction
+
+  /// The model/resource affected, e.g. "Project", "BlogPost", "Profile"
+  entity     String
+
+  /// UUID of the affected record (nullable for non-record actions like LOGIN)
+  entityId   String?
+
+  /// Human-readable summary, e.g. "Updated project: Dental Clinic System"
+  description String
+
+  /// IP address of the admin at time of action
+  ipAddress   String?
+
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([entity])
+  @@index([action])
+  @@index([createdAt])
+  @@map("activity_logs")
+}
+
+// =============================================================================
+// SITE SETTINGS
+// =============================================================================
+
+/// Generic key-value store for site-wide configuration.
+model SiteSettings {
+  id        String   @id @default(uuid())
+
+  /// Unique key, e.g. "seo_default_title", "analytics_id", "maintenance_mode"
+  key       String   @unique
+
+  /// JSON-serialised value (string, number, boolean, or object)
+  value     String   @db.Text
+
+  /// Human label shown in admin settings UI
+  label     String?
+
+  /// Setting group for UI organisation, e.g. "seo", "analytics", "general"
+  group     String   @default("general")
+
+  updatedAt DateTime @updatedAt
+
+  @@index([group])
+  @@map("site_settings")
+}
