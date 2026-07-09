@@ -10,6 +10,11 @@ const intlMiddleware = createMiddleware({
 export default async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // Root path — force redirect to default locale
+  if (pathname === "/") {
+    return NextResponse.redirect(new URL("/en", request.url));
+  }
+
   // API routes — skip everything
   if (pathname.startsWith("/api")) {
     return NextResponse.next();
@@ -28,6 +33,7 @@ export default async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
+    "/",
     "/((?!_next|_vercel|favicon\\.svg|.*\\..*).*)",
   ],
 };

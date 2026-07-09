@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
+import DeletePostBtn from "./DeletePostBtn";
 export const metadata = { title: "Blog | Admin" };
 export default async function BlogPage() {
   const posts = await prisma.blogPost.findMany({ orderBy:{ createdAt:"desc" } });
@@ -55,17 +56,3 @@ export default async function BlogPage() {
   );
 }
 
-function DeletePostBtn({ id }: { id: string }) {
-  return (
-    <form action={async () => {
-      "use server";
-      const { prisma: db } = await import("@/lib/prisma");
-      await db.blogPost.delete({ where:{ id } });
-    }}>
-      <button type="submit" className="btn-danger" style={{ fontSize:"0.75rem", padding:"0.3rem 0.75rem" }}
-        onClick={e=>{ if(!confirm("Delete this post?")) e.preventDefault(); }}>
-        Delete
-      </button>
-    </form>
-  );
-}

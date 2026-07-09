@@ -1,6 +1,7 @@
 import { notFound }  from "next/navigation";
 import { prisma }    from "@/lib/prisma";
 import Link          from "next/link";
+import BackToBlogLink from "@/components/public/BackToBlogLink";
 
 const G = "linear-gradient(135deg,#4f46e5,#06b6d4)";
 
@@ -30,12 +31,7 @@ export default async function BlogPostPage({
       <div className="section-container" style={{ paddingTop: "3rem", paddingBottom: "5rem", maxWidth: "48rem" }}>
 
         {/* Back link */}
-        <Link href={`/${locale}/blog`}
-          style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", fontSize: "0.82rem", color: "var(--text-muted)", textDecoration: "none", marginBottom: "2rem", transition: "color 0.2s" }}
-          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "#818cf8"; }}
-          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "var(--text-muted)"; }}>
-          ← Back to Blog
-        </Link>
+        <BackToBlogLink locale={locale} />
 
         {/* Header */}
         <div style={{ marginBottom: "2.5rem", paddingBottom: "2rem", borderBottom: "1px solid var(--border)" }}>

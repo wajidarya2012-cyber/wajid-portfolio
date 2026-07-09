@@ -19,6 +19,11 @@ const NAV_LINKS = [
 
 const LOCALE_LABELS: Record<string,string> = { en:"EN", ps:"پښتو", fa:"دری" };
 
+function resolveHref(href: string, locale: string, pathname: string): string {
+  if (!href.startsWith("#")) return `/${locale}${href}`;
+  return pathname === `/${locale}` ? href : `/${locale}${href}`;
+}
+
 export default function Navbar({ locale }: { locale: string }) {
   const t                          = useTranslations("nav");
   const { theme, toggleTheme }     = useTheme();
@@ -85,7 +90,7 @@ export default function Navbar({ locale }: { locale: string }) {
               const isActive = href === activeHash || (href.startsWith("/") && pathname.includes(href));
               return (
                 <li key={key}>
-                  <a href={href.startsWith("#") ? href : `/${locale}${href}`}
+                  <a href={resolveHref(href, locale, pathname)}
                     style={{ textDecoration:"none", fontSize:"0.82rem", fontWeight:600, transition:"color 0.2s, opacity 0.2s", position:"relative", paddingBottom:"4px",
                       color: isActive ? "#fff" : "rgba(255,255,255,0.8)",
                       opacity: isActive ? 1 : 0.85,
@@ -139,7 +144,7 @@ export default function Navbar({ locale }: { locale: string }) {
       {/* Mobile menu panel */}
       <div style={{ position:"fixed", top:"64px", left:0, right:0, zIndex:499, background:"rgba(6,11,24,0.98)", backdropFilter:"blur(24px)", WebkitBackdropFilter:"blur(24px)", borderBottom:"1px solid rgba(255,255,255,0.08)", padding:"1.25rem 1.5rem 2rem", display:"flex", flexDirection:"column", gap:"0.25rem", transform:menuOpen?"translateY(0)":"translateY(-110%)", transition:"transform 0.3s cubic-bezier(0.4,0,0.2,1)", pointerEvents:menuOpen?"all":"none" }} className="mobile-menu-panel">
         {NAV_LINKS.map(({ key, href }) => (
-          <a key={key} href={href.startsWith("#") ? href : `/${locale}${href}`}
+          <a key={key} href={resolveHref(href, locale, pathname)}
             onClick={()=>setMenuOpen(false)}
             style={{ fontSize:"1rem", fontWeight:600, color:"rgba(255,255,255,0.75)", textDecoration:"none", padding:"0.875rem 0", borderBottom:"1px solid rgba(255,255,255,0.06)", transition:"color 0.2s" }}
             onMouseEnter={e=>{ (e.currentTarget as HTMLElement).style.color="#fff"; }}
