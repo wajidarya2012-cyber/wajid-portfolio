@@ -58,7 +58,7 @@ const [profile, skillCats, experience, education, certifications, projects] = aw
       <CertSection       certifications={certifications} locale={safeLocale} />
       <ProjectsSection   projects={projects}         locale={safeLocale} />
       <StatsSection />
-      <ContactSection    locale={safeLocale} />
+      <ContactSection profile={profile} locale={safeLocale} />
     </>
   );
 }

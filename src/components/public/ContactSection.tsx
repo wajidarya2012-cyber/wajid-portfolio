@@ -6,7 +6,7 @@ import { useForm }                      from "react-hook-form";
 import { zodResolver }                  from "@hookform/resolvers/zod";
 import { contactSchema, ContactInput }  from "@/lib/validations";
 
-export default function ContactSection({ locale }: { locale: string }) {
+export default function ContactSection({ profile, locale }: { profile: any; locale: string }) {
   const tl                          = useTranslations("contact");
   const [status, setStatus]         = useState<"idle"|"sending"|"success"|"error">("idle");
   const ref                         = useRef<HTMLDivElement>(null);
@@ -45,10 +45,10 @@ export default function ContactSection({ locale }: { locale: string }) {
     color:"var(--text-secondary)", marginBottom:"0.35rem",
   };
 
-  const ITEMS = [
-    { icon:"✉", label:tl("email"),     value:"wajid.arya@example.com",             href:"mailto:wajid.arya@example.com" },
-    { icon:"📞", label:tl("phone"),    value:"+93 XXX XXX XXXX",                   href:"tel:+93XXXXXXXXX" },
-    { icon:"📍", label:tl("location"), value:"Jalalabad, Nangarhar, Afghanistan",   href:"#" },
+    const ITEMS = [
+    { icon:"✉", label:tl("email"),     value: profile?.email ?? "wajid.arya@example.com", href:`mailto:${profile?.email ?? "wajid.arya@example.com"}` },
+    { icon:"📞", label:tl("phone"),    value: profile?.phone ?? "+93 XXX XXX XXXX",        href:`tel:${(profile?.phone ?? "").replace(/\s/g,"") || "+93XXXXXXXXX"}` },
+    { icon:"📍", label:tl("location"), value: profile?.location ?? "Jalalabad, Nangarhar, Afghanistan", href:"#" },
   ];
 
   return (
