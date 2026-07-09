@@ -10,27 +10,37 @@ import { loginSchema, LoginInput } from "@/lib/validations";
 const G = "linear-gradient(135deg,#4f46e5,#06b6d4)";
 
 export default function AdminLoginPage() {
-  const router              = useRouter();
-  const [error, setError]   = useState("");
+  const router                = useRouter();
+  const [error, setError]     = useState("");
   const [loading, setLoading] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
   const { register, handleSubmit, formState: { errors } } = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
   });
 
   async function onSubmit(data: LoginInput) {
+    if (submitted) return;
+    setSubmitted(true);
     setLoading(true);
     setError("");
-    const result = await signIn("credentials", {
-      email:    data.email,
-      password: data.password,
-      redirect: false,
-    });
-    setLoading(false);
-    if (result?.ok) {
-      router.replace("/admin/dashboard");
-    } else {
-      setError("Invalid email or password. Please try again.");
+    try {
+      const result = await signIn("credentials", {
+        email:    data.email,
+        password: data.password,
+        redirect: false,
+      });
+      if (result?.ok) {
+        router.replace("/admin/dashboard");
+      } else {
+        setError("Invalid email or password. Please check your credentials and try again.");
+        setLoading(false);
+        setSubmitted(false);
+      }
+    } catch {
+      setError("Something went wrong. Please try again.");
+      setLoading(false);
+      setSubmitted(false);
     }
   }
 
@@ -86,8 +96,8 @@ export default function AdminLoginPage() {
               </div>
             )}
 
-            <button type="submit" disabled={loading}
-              style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:"0.5rem", padding:"0.85rem 1.5rem", borderRadius:"10px", border:"none", background:G, color:"white", fontWeight:700, fontSize:"0.9rem", cursor:loading?"not-allowed":"pointer", opacity:loading?0.65:1, transition:"all 0.2s", marginTop:"0.25rem", boxShadow:"0 4px 20px rgba(79,70,229,0.4)", fontFamily:"inherit" }}>
+            <button type="submit" disabled={loading || submitted}
+              style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:"0.5rem", padding:"0.85rem 1.5rem", borderRadius:"10px", border:"none", background:G, color:"white", fontWeight:700, fontSize:"0.9rem", cursor:(loading||submitted)?"not-allowed":"pointer", opacity:(loading||submitted)?0.7:1, transition:"all 0.2s", marginTop:"0.25rem", boxShadow:"0 4px 20px rgba(79,70,229,0.4)", fontFamily:"inherit" }}>
               {loading ? (
                 <><span style={{ display:"inline-block", width:"14px", height:"14px", border:"2px solid rgba(255,255,255,0.3)", borderTopColor:"white", borderRadius:"50%", animation:"spin 0.7s linear infinite" }} /> Signing in…</>
               ) : "Sign In →"}

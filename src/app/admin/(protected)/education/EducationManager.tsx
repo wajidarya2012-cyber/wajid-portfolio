@@ -23,16 +23,37 @@ export default function EducationManager({ initialData }: { initialData: Educati
   function set(k:string, v:unknown) { setForm(p=>({...p,[k]:v})); }
 
   async function save() {
-    setSaving(true);
-    const payload = { ...form, endYear: form.endYear === "" ? null : Number(form.endYear) };
-    const isNew   = editing==="new";
-    const res     = await fetch(isNew?"/api/v1/admin/education":`/api/v1/admin/education/${editing}`, {
+    // Client-side guard before hitting the API
+    if (!form.degree_en.trim() || !form.institution_en.trim()) {
+      setMsg("Degree and Institution (English) are required."); return;
+    }
+    const startYearNum = Number(form.startYear);
+    const endYearNum   = form.endYear === "" ? null : Number(form.endYear);
+    if (isNaN(startYearNum) || startYearNum < 1950 || startYearNum > 2100) {
+      setMsg("Start Year must be between 1950 and 2100."); return;
+    }
+    if (endYearNum !== null && (isNaN(endYearNum) || endYearNum < 1950 || endYearNum > 2100)) {
+      setMsg("End Year must be between 1950 and 2100 (or leave blank)."); return;
+    }
+
+    setSaving(true); setMsg(null);
+    const payload = {
+      ...form,
+      degree_ps:      form.degree_ps      || form.degree_en,
+      degree_fa:      form.degree_fa      || form.degree_en,
+      institution_ps: form.institution_ps || form.institution_en,
+      institution_fa: form.institution_fa || form.institution_en,
+      startYear: startYearNum,
+      endYear:   endYearNum,
+    };
+    const isNew = editing==="new";
+    const res   = await fetch(isNew?"/api/v1/admin/education":`/api/v1/admin/education/${editing}`, {
       method:isNew?"POST":"PUT", headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload),
     });
     const data = await res.json();
     setSaving(false);
     if (data.success) { setMsg("Saved!"); setEditing(null); router.refresh(); }
-    else setMsg("Error saving.");
+    else setMsg(data.error ?? "Error saving.");
   }
 
   async function del(id:string) {
@@ -47,7 +68,7 @@ export default function EducationManager({ initialData }: { initialData: Educati
 
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:"1rem" }}>
-      {msg && <div className="alert-success">✅ {msg}</div>}
+      {msg && <div className={msg.includes("Saved") || msg.includes("Deleted") ? "alert-success" : "alert-error"}>{msg.includes("Saved") || msg.includes("Deleted") ? "✅" : "❌"} {msg}</div>}
       <button className="btn-primary" style={{ alignSelf:"flex-start" }} onClick={()=>{setForm({...EMPTY,sortOrder:items.length});setEditing("new");}}>+ Add Education</button>
 
       {editing && (

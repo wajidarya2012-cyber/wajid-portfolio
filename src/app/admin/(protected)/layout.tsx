@@ -1,8 +1,9 @@
 import { redirect }   from "next/navigation";
 import { auth }       from "@/lib/auth";
-import AdminSidebar   from "@/components/admin/AdminSidebar";
-import AdminHeader    from "@/components/admin/AdminHeader";
-import { prisma }     from "@/lib/prisma";
+import AdminSidebar    from "@/components/admin/AdminSidebar";
+import AdminHeader     from "@/components/admin/AdminHeader";
+import AdminLoadingBar from "@/components/admin/AdminLoadingBar";
+import { prisma }      from "@/lib/prisma";
 
 export default async function ProtectedAdminLayout({
   children,
@@ -30,6 +31,8 @@ export default async function ProtectedAdminLayout({
         fontFamily:    "var(--font-inter)",
       }}
     >
+      <AdminLoadingBar />
+      
       <AdminSidebar newMessages={newMessages} />
       <div
         style={{

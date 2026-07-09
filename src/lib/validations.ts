@@ -96,7 +96,7 @@ export const skillSchema = z.object({
   name_ps:    z.string().min(2),
   name_fa:    z.string().min(2),
   percentage: z.number().int().min(0).max(100),
-  categoryId: z.string().uuid(),
+  categoryId: z.string().min(1),
   sortOrder:  z.number().int().min(0).optional(),
 });
 

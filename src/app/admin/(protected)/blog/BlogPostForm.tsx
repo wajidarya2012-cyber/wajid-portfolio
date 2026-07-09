@@ -34,8 +34,16 @@ export default function BlogPostForm({ post }: { post?: BlogPost }) {
   async function save() {
     setSaving(true); setMsg(null);
     const isNew = !post;
+    // Auto-fill PS/FA fields from EN if left empty (schema requires min(1))
+    const payload = {
+      ...form,
+      title_ps:   form.title_ps   || form.title_en,
+      title_fa:   form.title_fa   || form.title_en,
+      content_ps: form.content_ps || form.content_en,
+      content_fa: form.content_fa || form.content_en,
+    };
     const res   = await fetch(isNew?"/api/v1/admin/blog":`/api/v1/admin/blog/${post!.id}`, {
-      method:isNew?"POST":"PUT", headers:{"Content-Type":"application/json"}, body:JSON.stringify(form),
+      method:isNew?"POST":"PUT", headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload),
     });
     const data = await res.json();
     setSaving(false);
