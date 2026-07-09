@@ -16,6 +16,15 @@ const nextConfig = {
   experimental: {
     serverComponentsExternalPackages: ["geoip-lite"],
   },
+  async redirects() {
+    return [
+      {
+        source: "/",
+        destination: "/en",
+        permanent: false,
+      },
+    ];
+  },
 };
 
 module.exports = withNextIntl(nextConfig);
