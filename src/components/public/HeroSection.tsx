@@ -113,7 +113,7 @@ export default function HeroSection({ profile, locale }: { profile: Profile|null
             {/* CTA buttons */}
             <div style={{ display:"flex", flexWrap:"wrap", gap:"0.875rem", marginBottom:"2.25rem" }}>
               <a href="#contact" className="btn-primary">✉ {t("contactBtn")}</a>
-              <a href={profile?.cvUrl ?? "#contact"} target={profile?.cvUrl?"_blank":"_self"} rel="noopener noreferrer" className="btn-secondary">
+              <a href={profile?.cvUrl ? `${profile.cvUrl}?fl_attachment=CV` : "#contact"} target={profile?.cvUrl?"_blank":"_self"} rel="noopener noreferrer" className="btn-secondary">
                 ↓ {t("cvBtn")}
               </a>
             </div>

@@ -9,6 +9,9 @@ import ProjectsSection     from "@/components/public/ProjectsSection";
 import StatsSection        from "@/components/public/StatsSection";
 import ContactSection      from "@/components/public/ContactSection";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function generateMetadata({ params: { locale } }: { params: { locale: string } }) {
   const profile = await prisma.profile.findFirst().catch(() => null);
   const name    = locale==="ps" ? profile?.fullName_ps : locale==="fa" ? profile?.fullName_fa : profile?.fullName_en ?? "Wajid Ali Arya";
@@ -58,7 +61,7 @@ const [profile, skillCats, experience, education, certifications, projects] = aw
       <CertSection       certifications={certifications} locale={safeLocale} />
       <ProjectsSection   projects={projects}         locale={safeLocale} />
       <StatsSection />
-      <ContactSection profile={profile} locale={safeLocale} />
+      <ContactSection    profile={profile}    locale={safeLocale} />
     </>
   );
 }

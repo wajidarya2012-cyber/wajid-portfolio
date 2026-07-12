@@ -15,6 +15,10 @@ const nextConfig = {
   },
   experimental: {
     serverComponentsExternalPackages: ["geoip-lite"],
+    staleTimes: {
+      dynamic: 0,
+      static: 180,
+    },
   },
   async redirects() {
     return [

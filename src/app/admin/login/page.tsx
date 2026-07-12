@@ -30,15 +30,14 @@ export default function AdminLoginPage() {
         password: data.password,
         redirect: false,
       });
-      if (result?.ok) {
-        router.replace("/admin/dashboard");
-      } else {
+      if (!result || result.error) {
         setError("Invalid email or password. Please check your credentials and try again.");
-        setLoading(false);
-        setSubmitted(false);
+        return;
       }
+      router.replace("/admin/dashboard");
     } catch {
       setError("Something went wrong. Please try again.");
+    } finally {
       setLoading(false);
       setSubmitted(false);
     }
@@ -73,7 +72,15 @@ export default function AdminLoginPage() {
           <h1 style={{ fontFamily:"'Syne',sans-serif", fontSize:"1.25rem", fontWeight:700, marginBottom:"0.375rem", color:"#f1f5f9" }}>Sign in</h1>
           <p style={{ fontSize:"0.8rem", color:"#475569", marginBottom:"1.75rem" }}>Enter your credentials to access the dashboard.</p>
 
-          <form onSubmit={handleSubmit(onSubmit)} style={{ display:"flex", flexDirection:"column", gap:"1rem" }}>
+          <form
+            noValidate
+            onSubmit={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleSubmit(onSubmit)(e);
+            }}
+            style={{ display:"flex", flexDirection:"column", gap:"1rem" }}
+          >
             <div>
               <label style={{ display:"block", fontSize:"0.75rem", fontWeight:600, color:"#94a3b8", marginBottom:"0.35rem" }}>Email Address</label>
               <input {...register("email")} type="email" placeholder="admin@example.com" autoComplete="email" style={inp}

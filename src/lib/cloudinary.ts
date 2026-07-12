@@ -68,14 +68,22 @@ export async function uploadBuffer(
 }
 
 // ── Upload a document/CV (PDF, DOCX) ──────────────────────────────────────
+// Cloudinary restricts delivery of "raw" PDFs by default for security
+// (returns "Failed to load PDF document"). Uploading PDFs as resource_type
+// "image" bypasses that restriction since Cloudinary can render PDF pages
+// as images, and the secure_url still serves the original file correctly
+// with a .pdf extension so browsers/PDF viewers open it normally.
 export async function uploadDocument(
   buffer: Buffer,
   folder: string,
   filename: string
 ): Promise<UploadResult> {
-  return uploadBuffer(buffer, folder, filename, {
-    resource_type: "raw",
-    format:        undefined,
+  // Strip any existing extension — Cloudinary appends the correct one
+  // automatically based on the `format` option below.
+  const baseName = filename.replace(/\.[^/.]+$/, "");
+  return uploadBuffer(buffer, folder, baseName, {
+    resource_type: "image",
+    format:        "pdf",
   });
 }
 

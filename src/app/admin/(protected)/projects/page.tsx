@@ -1,14 +1,17 @@
 import { prisma }          from "@/lib/prisma";
 import Link                 from "next/link";
 import AdminProjectsClient  from "./AdminProjectsClient";
-
+import ProjectCategoriesManager from "@/components/admin/ProjectCategoriesManager";
 export default async function AdminProjectsPage() {
   const [projects, categories] = await Promise.all([
     prisma.project.findMany({
       include: { category: true, images: { where: { isThumbnail: true }, take: 1 } },
       orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
     }),
-    prisma.projectCategory.findMany({ orderBy: { sortOrder: "asc" } }),
+    prisma.projectCategory.findMany({
+      orderBy: { sortOrder: "asc" },
+      include: { _count: { select: { projects: true } } },
+    }),
   ]);
 
   return (
@@ -22,6 +25,7 @@ export default async function AdminProjectsPage() {
           ➕ Add Project
         </Link>
       </div>
+      <ProjectCategoriesManager categories={categories} />
       <AdminProjectsClient projects={projects} categories={categories} />
     </div>
   );

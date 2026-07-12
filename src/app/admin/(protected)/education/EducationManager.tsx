@@ -58,7 +58,9 @@ export default function EducationManager({ initialData }: { initialData: Educati
 
   async function del(id:string) {
     if (!confirm("Delete?")) return;
-    await fetch(`/api/v1/admin/education/${id}`,{method:"DELETE"});
+    const res  = await fetch(`/api/v1/admin/education/${id}`,{method:"DELETE"});
+    const data = await res.json();
+    if (!data.success) { setMsg("Error: " + (data.error ?? "Failed to delete.")); return; }
     setItems(p=>p.filter(i=>i.id!==id)); setMsg("Deleted.");
   }
 

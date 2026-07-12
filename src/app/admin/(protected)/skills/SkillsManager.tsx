@@ -28,7 +28,9 @@ export default function SkillsManager({ initialCategories }: { initialCategories
 
   async function deleteCategory(id: string) {
     if (!confirm("Delete this category and all its skills?")) return;
-    await fetch(`/api/v1/admin/skills/categories/${id}`, { method:"DELETE" });
+    const res  = await fetch(`/api/v1/admin/skills/categories/${id}`, { method:"DELETE" });
+    const data = await res.json();
+    if (!data.success) { setMsg("Error: " + (data.error ?? "Failed to delete category.")); return; }
     setCats(prev => prev.filter(c => c.id !== id));
     setMsg("Category deleted.");
   }
@@ -49,7 +51,9 @@ export default function SkillsManager({ initialCategories }: { initialCategories
   }
 
   async function deleteSkill(id: string) {
-    await fetch(`/api/v1/admin/skills/${id}`, { method:"DELETE" });
+    const res  = await fetch(`/api/v1/admin/skills/${id}`, { method:"DELETE" });
+    const data = await res.json();
+    if (!data.success) { setMsg("Error: " + (data.error ?? "Failed to delete skill.")); return; }
     setCats(prev => prev.map(c => ({ ...c, skills: c.skills.filter(s => s.id !== id) })));
     setMsg("Skill deleted.");
   }

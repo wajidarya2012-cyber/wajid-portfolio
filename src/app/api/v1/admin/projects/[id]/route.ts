@@ -38,31 +38,29 @@ export async function PUT(request: NextRequest, { params }: Params) {
   const images:   ImageInput[]   = Array.isArray(body.images)   ? body.images   : [];
 
   try {
-    // Replace features & images atomically: delete-then-recreate keeps this simple
-    // and avoids diffing logic, acceptable for the admin's low write volume.
-    const project = await prisma.$transaction(async (tx) => {
-      await tx.projectFeature.deleteMany({ where: { projectId: params.id } });
-      await tx.projectImage.deleteMany({ where: { projectId: params.id } });
-
-      return tx.project.update({
-        where: { id: params.id },
-        data: {
-          ...parsed.data,
-          features: {
-            create: features
-              .filter(f => f.en?.trim())
-              .map((f, i) => ({ text_en: f.en, text_ps: f.ps || f.en, text_fa: f.fa || f.en, sortOrder: i })),
-          },
-          images: {
-            create: images.map((img, i) => ({
-              url: img.url, publicId: img.publicId,
-              isThumbnail: img.isThumbnail, caption: img.caption || null,
-              sortOrder: i,
-            })),
-          },
+    // Replace features & images via nested deleteMany+create in a single
+    // update mutation — avoids an interactive $transaction, which is
+    // unreliable over pooled (pgbouncer) connections like Neon.
+    const project = await prisma.project.update({
+      where: { id: params.id },
+      data: {
+        ...parsed.data,
+        features: {
+          deleteMany: {},
+          create: features
+            .filter(f => f?.en?.trim())
+            .map((f, i) => ({ text_en: f.en, text_ps: f.ps || f.en, text_fa: f.fa || f.en, sortOrder: i })),
         },
-        include: { category: true, images: true, features: true, links: true },
-      });
+        images: {
+          deleteMany: {},
+          create: images.map((img, i) => ({
+            url: img.url, publicId: img.publicId,
+            isThumbnail: img.isThumbnail, caption: img.caption || null,
+            sortOrder: i,
+          })),
+        },
+      },
+      include: { category: true, images: true, features: true, links: true },
     });
 
     await logActivity(user!.id, "UPDATE", "Project", `Updated project: ${project.title_en}`, project.id, request);

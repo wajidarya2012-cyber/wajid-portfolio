@@ -64,7 +64,9 @@ export default function ExperienceManager({ initialData }: { initialData: Experi
 
   async function del(id: string) {
     if (!confirm("Delete this experience entry?")) return;
-    await fetch(`/api/v1/admin/experience/${id}`, { method:"DELETE" });
+    const res  = await fetch(`/api/v1/admin/experience/${id}`, { method:"DELETE" });
+    const data = await res.json();
+    if (!data.success) { setMsg("Error: " + (data.error ?? "Failed to delete.")); return; }
     setItems(prev => prev.filter(i => i.id !== id));
     setMsg("Deleted.");
   }

@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Image                            from "next/image";
 import { useTranslations }              from "next-intl";
 import type { ProjectWithRelations }    from "@/types";
+import ImageLightbox                    from "./ImageLightbox";
 
 const G = "linear-gradient(135deg,#4f46e5,#06b6d4)";
 
@@ -25,6 +26,7 @@ export default function ProjectsSection({ projects, locale }: { projects: Projec
   const tl                      = useTranslations("projects");
   const [active, setActive]     = useState("all");
   const [selected, setSelected] = useState<ProjectWithRelations|null>(null);
+  const [lightboxIndex, setLightboxIndex] = useState<number|null>(null);
   const ref                     = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -40,6 +42,8 @@ export default function ProjectsSection({ projects, locale }: { projects: Projec
     document.body.style.overflow = selected ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
   }, [selected]);
+
+  useEffect(() => { setLightboxIndex(null); }, [selected]);
 
   const cats    = ["all", ...Array.from(new Set(projects.map(p => p.category?.slug ?? "general")))];
   const filtered = active === "all" ? projects : projects.filter(p => p.category?.slug === active);
@@ -200,14 +204,20 @@ export default function ProjectsSection({ projects, locale }: { projects: Projec
               )}
 
               {/* Gallery */}
-              {selected.images.length > 1 && (
+              {selected.images.length > 0 && (
                 <div>
                   <h4 style={{ fontFamily:"var(--font-syne)", fontWeight:700, fontSize:"0.875rem", color:"#06b6d4", marginBottom:"0.75rem" }}>🖼 {tl("gallery")}</h4>
                   <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(180px,1fr))", gap:"0.625rem" }}>
-                    {selected.images.map(img => (
-                      <div key={img.id} style={{ position:"relative", aspectRatio:"16/9", borderRadius:"10px", overflow:"hidden" }}>
+                    {selected.images.map((img, i) => (
+                      <button
+                        key={img.id}
+                        type="button"
+                        onClick={() => setLightboxIndex(i)}
+                        aria-label="Open image"
+                        style={{ position:"relative", aspectRatio:"16/9", borderRadius:"10px", overflow:"hidden", border:"none", padding:0, cursor:"zoom-in" }}
+                      >
                         <Image src={img.url} alt={img.caption??""} fill style={{ objectFit:"cover" }} />
-                      </div>
+                      </button>
                     ))}
                   </div>
                 </div>
@@ -227,6 +237,16 @@ export default function ProjectsSection({ projects, locale }: { projects: Projec
             </div>
           </div>
         </div>
+      )}
+
+      {/* Lightbox */}
+      {selected && lightboxIndex !== null && (
+        <ImageLightbox
+          images={selected.images}
+          index={lightboxIndex}
+          onClose={() => setLightboxIndex(null)}
+          onIndexChange={setLightboxIndex}
+        />
       )}
     </>
   );
