@@ -72,6 +72,15 @@ export default function HeroSection({ profile, locale }: { profile: Profile|null
                  : locale==="fa" ? profile?.bio_fa
                  : profile?.bio_en;
 
+  const availableText = (locale==="ps" ? profile?.availableText_ps : locale==="fa" ? profile?.availableText_fa : profile?.availableText_en)
+                       || profile?.availableText_en || "Available for Opportunities";
+  const badgeTitle    = (locale==="ps" ? profile?.badgeTitle_ps : locale==="fa" ? profile?.badgeTitle_fa : profile?.badgeTitle_en)
+                       || profile?.badgeTitle_en || "CS Graduate";
+  const badgeSub      = (locale==="ps" ? profile?.badgeSub_ps : locale==="fa" ? profile?.badgeSub_fa : profile?.badgeSub_en)
+                       || profile?.badgeSub_en || "IT & Networks";
+  const yearsExp      = profile?.yearsExperience ?? 8;
+  const projectsCnt   = profile?.projectsCount   ?? 4;
+
   return (
     <section id="hero" style={{ minHeight:"100vh", position:"relative", overflow:"hidden", display:"flex", alignItems:"center", paddingTop:"64px", background:"var(--bg-primary)" }}>
       {/* Canvas */}
@@ -90,7 +99,7 @@ export default function HeroSection({ profile, locale }: { profile: Profile|null
             <div style={{ display:"inline-flex", alignItems:"center", gap:"0.5rem", padding:"0.35rem 0.875rem 0.35rem 0.625rem", borderRadius:"9999px", border:"1px solid rgba(79,70,229,0.3)", background:"rgba(79,70,229,0.08)", marginBottom:"1.75rem", backdropFilter:"blur(8px)" }}>
               <span style={{ display:"inline-block", width:"7px", height:"7px", borderRadius:"50%", background:"#06b6d4", animation:"pulseDot 2.2s ease-in-out infinite", flexShrink:0 }} />
               <span style={{ fontSize:"0.72rem", fontWeight:600, color:"#06b6d4", fontFamily:"var(--font-fira)", letterSpacing:"0.04em" }}>
-                {t("available")}
+                {availableText}
               </span>
             </div>
 
@@ -160,7 +169,7 @@ export default function HeroSection({ profile, locale }: { profile: Profile|null
               <div style={{ width:"320px", height:"320px", borderRadius:"50%", padding:"3px", background:G, animation:"float 7s ease-in-out infinite", boxShadow:"0 0 60px rgba(79,70,229,0.35)" }}>
                 <div style={{ width:"100%", height:"100%", borderRadius:"50%", background:"var(--bg-secondary)", overflow:"hidden", display:"flex", alignItems:"center", justifyContent:"center" }}>
                   {profile?.photoUrl
-                    ? <Image src={profile.photoUrl} alt={fullName ?? "Wajid Ali Arya"} width={320} height={320} style={{ objectFit:"cover", width:"100%", height:"100%" }} priority />
+                    ? <Image src={profile.photoUrl} alt={fullName ?? "Wajid Ali Arya"} width={320} height={320} style={{ objectFit:"cover", objectPosition:"center 30%", width:"100%", height:"100%" }} priority />
                     : (
                       <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:"0.5rem" }}>
                         <span style={{ fontSize:"5rem", opacity:0.3 }}>👤</span>
@@ -175,14 +184,14 @@ export default function HeroSection({ profile, locale }: { profile: Profile|null
               <div className="glass-card" style={{ position:"absolute", top:"8px", left:"-24px", borderRadius:"14px", padding:"0.65rem 0.875rem", display:"flex", alignItems:"center", gap:"0.5rem", animation:"float 7s ease-in-out infinite", animationDelay:"-2s" }}>
                 <span style={{ fontSize:"1.3rem" }}>🏆</span>
                 <div>
-                  <p style={{ fontSize:"0.68rem", fontWeight:700, lineHeight:1.2, margin:0 }}>{t("badge.title")}</p>
-                  <p style={{ fontSize:"0.6rem", color:"var(--text-muted)", margin:0 }}>{t("badge.sub")}</p>
+                  <p style={{ fontSize:"0.68rem", fontWeight:700, lineHeight:1.2, margin:0 }}>{badgeTitle}</p>
+                  <p style={{ fontSize:"0.6rem", color:"var(--text-muted)", margin:0 }}>{badgeSub}</p>
                 </div>
               </div>
 
               {/* Stats badge */}
               <div className="glass-card" style={{ position:"absolute", bottom:"8px", right:"-24px", borderRadius:"14px", padding:"0.65rem 1rem", display:"flex", gap:"0.875rem", alignItems:"center", animation:"float 7s ease-in-out infinite", animationDelay:"-4s" }}>
-                {[{n:"8+",l:"Years"},{n:"4+",l:"Projects"}].map(({n,l},i) => (
+                {[{n:`${yearsExp}+`,l:"Years"},{n:`${projectsCnt}+`,l:"Projects"}].map(({n,l},i) => (
                   <div key={l} style={{ textAlign:"center" }}>
                     <p style={{ fontFamily:"var(--font-syne)", fontSize:"1.3rem", fontWeight:800, margin:0, background:G, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>{n}</p>
                     <p style={{ fontSize:"0.58rem", color:"var(--text-muted)", textTransform:"uppercase", letterSpacing:"0.06em", margin:0 }}>{l}</p>

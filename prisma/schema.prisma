@@ -126,6 +126,23 @@ model Profile {
   twitterUrl  String?
   websiteUrl  String?
 
+  // Hero availability badge (trilingual)
+  availableText_en String? @default("Available for Opportunities")
+  availableText_ps String?
+  availableText_fa String?
+
+  // Hero profile badge (trilingual)
+  badgeTitle_en String? @default("CS Graduate")
+  badgeTitle_ps String?
+  badgeTitle_fa String?
+  badgeSub_en   String? @default("IT & Networks")
+  badgeSub_ps   String?
+  badgeSub_fa   String?
+
+  // Hero stats
+  yearsExperience Int? @default(8)
+  projectsCount   Int? @default(4)
+
   updatedAt DateTime @updatedAt
 
   @@map("profile")
@@ -469,6 +486,9 @@ model BlogPost {
   /// Cover image (Cloudinary)
   coverImage   String?
   coverPublicId String?
+
+  /// Optional featured video (external URL, e.g. YouTube/Vimeo/mp4)
+  featuredVideoUrl String?
 
   status      BlogStatus @default(DRAFT)
 

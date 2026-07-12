@@ -47,9 +47,20 @@ export default function ProfileForm({ profile }: { profile: Profile | null }) {
     photoPublicId:profile?.photoPublicId?? "",
     cvUrl:        profile?.cvUrl        ?? "",
     cvPublicId:   profile?.cvPublicId   ?? "",
+    availableText_en: profile?.availableText_en ?? "Available for Opportunities",
+    availableText_ps: profile?.availableText_ps ?? "",
+    availableText_fa: profile?.availableText_fa ?? "",
+    badgeTitle_en: profile?.badgeTitle_en ?? "CS Graduate",
+    badgeTitle_ps: profile?.badgeTitle_ps ?? "",
+    badgeTitle_fa: profile?.badgeTitle_fa ?? "",
+    badgeSub_en:   profile?.badgeSub_en   ?? "IT & Networks",
+    badgeSub_ps:   profile?.badgeSub_ps   ?? "",
+    badgeSub_fa:   profile?.badgeSub_fa   ?? "",
+    yearsExperience: profile?.yearsExperience ?? 8,
+    projectsCount:   profile?.projectsCount   ?? 4,
   });
 
-  function set(key: string, value: string) {
+  function set(key: string, value: string | number) {
     setForm(prev => ({ ...prev, [key]: value }));
   }
 
@@ -243,6 +254,34 @@ export default function ProfileForm({ profile }: { profile: Profile | null }) {
                 placeholder={ph} style={inputStyle} />
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* Hero Badges & Stats */}
+      <div className="admin-card">
+        <h3 style={{ fontWeight:700, fontSize:"0.95rem", marginBottom:"1rem" }}>Hero Section — Badges & Stats</h3>
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"1rem", marginBottom:"1rem" }}>
+          <div>
+            <label style={labelStyle}>Availability Badge Text (EN)</label>
+            <input value={form.availableText_en} onChange={e => set("availableText_en", e.target.value)} placeholder="Available for Opportunities" style={inputStyle} />
+          </div>
+          <div>
+            <label style={labelStyle}>Profile Badge Title (EN)</label>
+            <input value={form.badgeTitle_en} onChange={e => set("badgeTitle_en", e.target.value)} placeholder="CS Graduate" style={inputStyle} />
+          </div>
+          <div>
+            <label style={labelStyle}>Profile Badge Subtitle (EN)</label>
+            <input value={form.badgeSub_en} onChange={e => set("badgeSub_en", e.target.value)} placeholder="IT & Networks" style={inputStyle} />
+          </div>
+          <div />
+          <div>
+            <label style={labelStyle}>Years of Experience</label>
+            <input type="number" min={0} value={form.yearsExperience} onChange={e => set("yearsExperience", Number(e.target.value))} style={inputStyle} />
+          </div>
+          <div>
+            <label style={labelStyle}>Projects Count</label>
+            <input type="number" min={0} value={form.projectsCount} onChange={e => set("projectsCount", Number(e.target.value))} style={inputStyle} />
+          </div>
         </div>
       </div>
 

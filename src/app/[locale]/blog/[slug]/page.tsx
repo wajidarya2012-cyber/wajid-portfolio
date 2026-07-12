@@ -45,6 +45,31 @@ export default async function BlogPostPage({
           )}
         </div>
 
+        {/* Featured image */}
+        {post.coverImage && (
+          <div style={{ width: "100%", borderRadius: "16px", overflow: "hidden", marginBottom: "2rem" }}>
+            <img src={post.coverImage} alt="" style={{ width: "100%", display: "block" }} />
+          </div>
+        )}
+
+        {/* Featured video */}
+        {post.featuredVideoUrl && (
+          <div style={{ marginBottom: "2rem" }}>
+            {/^https?:\/\/(www\.)?(youtube\.com|youtu\.be)/.test(post.featuredVideoUrl) ? (
+              <div style={{ position: "relative", paddingBottom: "56.25%", height: 0, borderRadius: "16px", overflow: "hidden" }}>
+                <iframe
+                  src={post.featuredVideoUrl.replace("watch?v=", "embed/")}
+                  style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", border: "none" }}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              </div>
+            ) : (
+              <video src={post.featuredVideoUrl} controls style={{ width: "100%", borderRadius: "16px", display: "block" }} />
+            )}
+          </div>
+        )}
+
         {/* Content */}
         <div
           className="prose-content"

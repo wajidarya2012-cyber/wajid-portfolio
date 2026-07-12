@@ -10,6 +10,7 @@ const EMPTY = {
   excerpt_en:"", excerpt_ps:"", excerpt_fa:"",
   metaTitle_en:"", metaTitle_ps:"", metaTitle_fa:"",
   metaDesc_en:"", metaDesc_ps:"", metaDesc_fa:"",
+  coverImage:"", coverPublicId:"", featuredVideoUrl:"",
   status:"DRAFT" as "DRAFT"|"PUBLISHED"|"ARCHIVED",
 };
 
@@ -24,10 +25,27 @@ export default function BlogPostForm({ post }: { post?: BlogPost }) {
     excerpt_en:post.excerpt_en??"", excerpt_ps:post.excerpt_ps??"", excerpt_fa:post.excerpt_fa??"",
     metaTitle_en:post.metaTitle_en??"", metaTitle_ps:post.metaTitle_ps??"", metaTitle_fa:post.metaTitle_fa??"",
     metaDesc_en:post.metaDesc_en??"", metaDesc_ps:post.metaDesc_ps??"", metaDesc_fa:post.metaDesc_fa??"",
+    coverImage:post.coverImage??"", coverPublicId:post.coverPublicId??"", featuredVideoUrl:post.featuredVideoUrl??"",
     status:post.status as "DRAFT"|"PUBLISHED"|"ARCHIVED",
   } : EMPTY);
-  const [saving, setSaving] = useState(false);
-  const [msg, setMsg]       = useState<{type:"success"|"error";text:string}|null>(null);
+  const [saving, setSaving]       = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [msg, setMsg]             = useState<{type:"success"|"error";text:string}|null>(null);
+
+  async function handleCoverUpload(file: File) {
+    setUploading(true);
+    const fd = new FormData();
+    fd.append("file", file);
+    fd.append("folder", "blog");
+    const res  = await fetch("/api/v1/admin/upload", { method:"POST", body:fd });
+    const data = await res.json();
+    setUploading(false);
+    if (data.success) {
+      setForm(p => ({ ...p, coverImage: data.data.url, coverPublicId: data.data.publicId }));
+    } else {
+      setMsg({ type:"error", text:"Cover image upload failed." });
+    }
+  }
 
   function set(k:string,v:string) { setForm(p=>({...p,[k]:v})); }
 
@@ -41,6 +59,9 @@ export default function BlogPostForm({ post }: { post?: BlogPost }) {
       title_fa:   form.title_fa   || form.title_en,
       content_ps: form.content_ps || form.content_en,
       content_fa: form.content_fa || form.content_en,
+      coverImage:      form.coverImage      || undefined,
+      coverPublicId:   form.coverPublicId   || undefined,
+      featuredVideoUrl: form.featuredVideoUrl || undefined,
     };
     const res   = await fetch(isNew?"/api/v1/admin/blog":`/api/v1/admin/blog/${post!.id}`, {
       method:isNew?"POST":"PUT", headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload),
@@ -58,6 +79,7 @@ export default function BlogPostForm({ post }: { post?: BlogPost }) {
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:"1.25rem" }}>
       {/* Status & Slug row */}
+      {/* Status & Slug row */}
       <div className="admin-card" style={{ display:"grid", gridTemplateColumns:"1fr 160px", gap:"1rem", alignItems:"end" }}>
         <div>
           <label style={lbl}>URL Slug *</label>
@@ -71,6 +93,38 @@ export default function BlogPostForm({ post }: { post?: BlogPost }) {
             <option value="PUBLISHED">Published</option>
             <option value="ARCHIVED">Archived</option>
           </select>
+        </div>
+      </div>
+
+      {/* Featured media */}
+      <div className="admin-card" style={{ display:"flex", flexDirection:"column", gap:"0.875rem" }}>
+        <label style={lbl}>Featured Image</label>
+        {form.coverImage && (
+          <div style={{ position:"relative", width:"100%", maxWidth:"320px", borderRadius:"10px", overflow:"hidden", border:"1px solid var(--border)" }}>
+            <img src={form.coverImage} alt="Cover" style={{ width:"100%", display:"block" }} />
+          </div>
+        )}
+        <div style={{ display:"flex", gap:"0.75rem", alignItems:"center", flexWrap:"wrap" }}>
+          <input type="file" accept="image/*" id="cover-upload" style={{ display:"none" }}
+            onChange={e => { const f = e.target.files?.[0]; if (f) handleCoverUpload(f); }} />
+          <label htmlFor="cover-upload" className="btn-secondary" style={{ fontSize:"0.8rem", cursor:"pointer" }}>
+            {uploading ? "Uploading…" : form.coverImage ? "Replace Image" : "Upload Image"}
+          </label>
+          {form.coverImage && (
+            <button className="btn-danger" style={{ fontSize:"0.8rem" }}
+              onClick={() => setForm(p => ({ ...p, coverImage:"", coverPublicId:"" }))}>
+              Remove
+            </button>
+          )}
+        </div>
+
+        <div>
+          <label style={lbl}>Featured Video URL (optional)</label>
+          <input value={form.featuredVideoUrl} onChange={e => set("featuredVideoUrl", e.target.value)}
+            placeholder="https://youtube.com/watch?v=... or .mp4 link" style={inp} />
+          <p style={{ fontSize:"0.7rem", color:"var(--text-muted)", marginTop:"0.25rem" }}>
+            Shown on the blog details page. If a Featured Image is also set, the image is used on cards/thumbnails and the video appears in the article.
+          </p>
         </div>
       </div>
 

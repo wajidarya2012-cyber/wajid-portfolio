@@ -175,6 +175,9 @@ export const blogPostSchema = z.object({
   metaDesc_en:  z.string().optional(),
   metaDesc_ps:  z.string().optional(),
   metaDesc_fa:  z.string().optional(),
+  coverImage:      z.string().url().optional().or(z.literal("")),
+  coverPublicId:   z.string().optional(),
+  featuredVideoUrl: z.string().url().optional().or(z.literal("")),
   status:       z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]).default("DRAFT"),
 });
 

@@ -20,6 +20,10 @@ const WRITABLE_FIELDS = [
   "photoUrl", "photoPublicId",
   "cvUrl", "cvPublicId",
   "linkedinUrl", "githubUrl", "twitterUrl", "websiteUrl",
+  "availableText_en", "availableText_ps", "availableText_fa",
+  "badgeTitle_en", "badgeTitle_ps", "badgeTitle_fa",
+  "badgeSub_en", "badgeSub_ps", "badgeSub_fa",
+  "yearsExperience", "projectsCount",
 ] as const;
 
 function pickWritable(body: Record<string, unknown>): Record<string, unknown> {
