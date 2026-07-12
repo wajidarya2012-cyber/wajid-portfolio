@@ -192,26 +192,26 @@ export default function ProfileForm({ profile }: { profile: Profile | null }) {
           <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"1rem" }}>
             <div>
               <label style={labelStyle}>Full Name *</label>
-              <input value={(form as Record<string,string>)[`fullName_${key}`]}
+              <input value={(form as Record<string,unknown>)[`fullName_${key}`] as string}
                 onChange={e => set(`fullName_${key}`, e.target.value)}
                 style={{ ...inputStyle, direction: dir }} />
             </div>
             <div>
               <label style={labelStyle}>Professional Title *</label>
-              <input value={(form as Record<string,string>)[`title_${key}`]}
+              <input value={(form as Record<string,unknown>)[`title_${key}`] as string}
                 onChange={e => set(`title_${key}`, e.target.value)}
                 style={{ ...inputStyle, direction: dir }} />
             </div>
           </div>
           <div>
             <label style={labelStyle}>Short Bio (Hero Section) *</label>
-            <textarea value={(form as Record<string,string>)[`bio_${key}`]}
+            <textarea value={(form as Record<string,unknown>)[`bio_${key}`] as string}
               onChange={e => set(`bio_${key}`, e.target.value)}
               rows={3} style={{ ...inputStyle, resize:"vertical", direction: dir }} />
           </div>
           <div>
             <label style={labelStyle}>About Text (About Section) *</label>
-            <textarea value={(form as Record<string,string>)[`aboutText_${key}`]}
+            <textarea value={(form as Record<string,unknown>)[`aboutText_${key}`] as string}
               onChange={e => set(`aboutText_${key}`, e.target.value)}
               rows={5} style={{ ...inputStyle, resize:"vertical", direction: dir }} />
           </div>
@@ -229,7 +229,7 @@ export default function ProfileForm({ profile }: { profile: Profile | null }) {
           ].map(({ key, label, type, ph }) => (
             <div key={key}>
               <label style={labelStyle}>{label}</label>
-              <input type={type} value={(form as Record<string,string>)[key]}
+              <input type={type} value={(form as Record<string,unknown>)[key] as string}
                 onChange={e => set(key, e.target.value)}
                 placeholder={ph} style={inputStyle} />
             </div>
@@ -249,7 +249,7 @@ export default function ProfileForm({ profile }: { profile: Profile | null }) {
           ].map(({ key, label, ph }) => (
             <div key={key}>
               <label style={labelStyle}>{label}</label>
-              <input type="url" value={(form as Record<string,string>)[key]}
+              <input type="url" value={(form as Record<string,unknown>)[key] as string}
                 onChange={e => set(key, e.target.value)}
                 placeholder={ph} style={inputStyle} />
             </div>
