@@ -22,18 +22,22 @@ export default function AboutSection({ profile, locale }: { profile: Profile|nul
     return () => observer.disconnect();
   }, []);
 
-  const VALUES = [
-    { icon:"💡", key:"innovation" }, { icon:"🛡️", key:"reliability" },
-    { icon:"🤝", key:"collaboration" }, { icon:"📈", key:"growth" },
-  ] as const;
+  type CoreValue = { icon:string; title_en:string; title_ps:string; title_fa:string; desc_en:string; desc_ps:string; desc_fa:string };
+  const DEFAULT_VALUES: CoreValue[] = [
+    { icon:"💡", title_en:"Innovation",    title_ps:"", title_fa:"", desc_en:"Solving complex problems with creative digital solutions", desc_ps:"", desc_fa:"" },
+    { icon:"🛡️", title_en:"Reliability",   title_ps:"", title_fa:"", desc_en:"Building systems organizations can depend on",              desc_ps:"", desc_fa:"" },
+    { icon:"🤝", title_en:"Collaboration", title_ps:"", title_fa:"", desc_en:"Working effectively with teams and stakeholders",           desc_ps:"", desc_fa:"" },
+    { icon:"📈", title_en:"Growth",        title_ps:"", title_fa:"", desc_en:"Continuously learning and evolving with technology",        desc_ps:"", desc_fa:"" },
+  ];
+  const VALUES = ((profile?.coreValues as CoreValue[] | null) ?? DEFAULT_VALUES);
 
   const INFO = [
     { icon:"👤", label:tl("info.name"),          value: profile ? pick(profile as Record<string,unknown>,"fullName",locale) : "Wajid Ali Arya" },
     { icon:"💼", label:tl("info.role"),          value: "IT Manager · Software Developer · DBA · Network Specialist" },
-    { icon:"🎓", label:tl("info.education"),     value: "B.Sc. Computer Science — IT & Networks" },
+    { icon:"🎓", label:tl("info.education"),     value: pick(profile as Record<string,unknown> ?? {}, "education", locale) || "B.Sc. Computer Science — IT & Networks" },
     { icon:"📍", label:tl("info.location"),      value: profile?.location ?? "Jalalabad, Nangarhar, Afghanistan" },
-    { icon:"🛠️", label:tl("info.specialization"),value: "Database Admin · Networking · Software Dev · IT Security" },
-    { icon:"🌐", label:tl("info.languages"),     value: "Pashto · Dari · English" },
+    { icon:"🛠️", label:tl("info.specialization"),value: pick(profile as Record<string,unknown> ?? {}, "specialization", locale) || "Database Admin · Networking · Software Dev · IT Security" },
+    { icon:"🌐", label:tl("info.languages"),     value: pick(profile as Record<string,unknown> ?? {}, "languages", locale) || "Pashto · Dari · English" },
   ];
 
   return (
@@ -59,15 +63,15 @@ export default function AboutSection({ profile, locale }: { profile: Profile|nul
 
             {/* Values */}
             <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,180px),1fr))", gap:"0.875rem" }}>
-              {VALUES.map(({icon,key}, idx) => (
-                <div key={key} className="glass-card" style={{ borderRadius:"16px", padding:"1.25rem", cursor:"default", transition:"all 0.3s", minWidth:0, transitionDelay:`${idx*0.06}s` }}
+              {VALUES.map((v, idx) => (
+                <div key={idx} className="glass-card" style={{ borderRadius:"16px", padding:"1.25rem", cursor:"default", transition:"all 0.3s", minWidth:0, transitionDelay:`${idx*0.06}s` }}
                   onMouseEnter={e=>{ const el=e.currentTarget as HTMLElement; el.style.borderColor="rgba(79,70,229,0.45)"; el.style.transform="translateY(-4px) scale(1.02)"; el.style.boxShadow="0 12px 32px rgba(79,70,229,0.18)"; }}
                   onMouseLeave={e=>{ const el=e.currentTarget as HTMLElement; el.style.borderColor="var(--border)"; el.style.transform="none"; el.style.boxShadow="var(--shadow-card)"; }}>
                   <div style={{ width:"44px", height:"44px", borderRadius:"12px", background:"linear-gradient(135deg,rgba(79,70,229,0.15),rgba(6,182,212,0.08))", border:"1px solid rgba(79,70,229,0.2)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"1.3rem", marginBottom:"0.75rem" }}>
-                    {icon}
+                    {v.icon}
                   </div>
-                  <h4 style={{ fontFamily:"var(--font-syne)", fontWeight:700, fontSize:"0.9rem", marginBottom:"0.35rem", wordBreak:"break-word" }}>{tl(`values.${key}`)}</h4>
-                  <p style={{ fontSize:"0.78rem", color:"var(--text-muted)", lineHeight:1.65, margin:0 }}>{tl(`values.${key}Desc`)}</p>
+                  <h4 style={{ fontFamily:"var(--font-syne)", fontWeight:700, fontSize:"0.9rem", marginBottom:"0.35rem", wordBreak:"break-word" }}>{pick(v as unknown as Record<string,unknown>, "title", locale)}</h4>
+                  <p style={{ fontSize:"0.78rem", color:"var(--text-muted)", lineHeight:1.65, margin:0 }}>{pick(v as unknown as Record<string,unknown>, "desc", locale)}</p>
                 </div>
               ))}
             </div>

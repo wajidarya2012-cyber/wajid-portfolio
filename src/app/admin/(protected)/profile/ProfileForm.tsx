@@ -58,7 +58,29 @@ export default function ProfileForm({ profile }: { profile: Profile | null }) {
     badgeSub_fa:   profile?.badgeSub_fa   ?? "",
     yearsExperience: profile?.yearsExperience ?? 8,
     projectsCount:   profile?.projectsCount   ?? 4,
+    education_en:      profile?.education_en      ?? "B.Sc. Computer Science — IT & Networks",
+    education_ps:      profile?.education_ps      ?? "",
+    education_fa:      profile?.education_fa      ?? "",
+    specialization_en: profile?.specialization_en ?? "Database Admin · Networking · Software Dev · IT Security",
+    specialization_ps: profile?.specialization_ps ?? "",
+    specialization_fa: profile?.specialization_fa ?? "",
+    languages_en:      profile?.languages_en      ?? "Pashto · Dari · English",
+    languages_ps:      profile?.languages_ps      ?? "",
+    languages_fa:      profile?.languages_fa      ?? "",
   });
+
+  const [coreValues, setCoreValues] = useState<{ icon:string; title_en:string; title_ps:string; title_fa:string; desc_en:string; desc_ps:string; desc_fa:string }[]>(
+    (profile?.coreValues as { icon:string; title_en:string; title_ps:string; title_fa:string; desc_en:string; desc_ps:string; desc_fa:string }[] | null) ?? [
+      { icon:"💡", title_en:"Innovation",     title_ps:"", title_fa:"", desc_en:"Solving complex problems with creative digital solutions", desc_ps:"", desc_fa:"" },
+      { icon:"🛡️", title_en:"Reliability",    title_ps:"", title_fa:"", desc_en:"Building systems organizations can depend on",              desc_ps:"", desc_fa:"" },
+      { icon:"🤝", title_en:"Collaboration",  title_ps:"", title_fa:"", desc_en:"Working effectively with teams and stakeholders",           desc_ps:"", desc_fa:"" },
+      { icon:"📈", title_en:"Growth",         title_ps:"", title_fa:"", desc_en:"Continuously learning and evolving with technology",        desc_ps:"", desc_fa:"" },
+    ]
+  );
+
+  function setValueField(idx: number, field: string, value: string) {
+    setCoreValues(prev => prev.map((v, i) => i === idx ? { ...v, [field]: value } : v));
+  }
 
   function set(key: string, value: string | number) {
     setForm(prev => ({ ...prev, [key]: value }));
@@ -104,7 +126,7 @@ export default function ProfileForm({ profile }: { profile: Profile | null }) {
     const res  = await fetch("/api/v1/admin/profile", {
       method:"PUT",
       headers:{"Content-Type":"application/json"},
-      body: JSON.stringify(form),
+      body: JSON.stringify({ ...form, coreValues }),
     });
     const data = await res.json();
     setSaving(false);
@@ -282,6 +304,39 @@ export default function ProfileForm({ profile }: { profile: Profile | null }) {
             <label style={labelStyle}>Projects Count</label>
             <input type="number" min={0} value={form.projectsCount} onChange={e => set("projectsCount", Number(e.target.value))} style={inputStyle} />
           </div>
+        </div>
+      </div>
+
+      {/* Quick Facts */}
+      <div className="admin-card">
+        <h3 style={{ fontWeight:700, fontSize:"0.95rem", marginBottom:"1rem" }}>About Section — Quick Facts</h3>
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:"1rem" }}>
+          <div>
+            <label style={labelStyle}>Education (EN)</label>
+            <input value={form.education_en} onChange={e => set("education_en", e.target.value)} style={inputStyle} />
+          </div>
+          <div>
+            <label style={labelStyle}>Specialization (EN)</label>
+            <input value={form.specialization_en} onChange={e => set("specialization_en", e.target.value)} style={inputStyle} />
+          </div>
+          <div>
+            <label style={labelStyle}>Languages (EN)</label>
+            <input value={form.languages_en} onChange={e => set("languages_en", e.target.value)} style={inputStyle} />
+          </div>
+        </div>
+      </div>
+
+      {/* Core Values */}
+      <div className="admin-card">
+        <h3 style={{ fontWeight:700, fontSize:"0.95rem", marginBottom:"1rem" }}>About Section — Core Values</h3>
+        <div style={{ display:"flex", flexDirection:"column", gap:"1rem" }}>
+          {coreValues.map((v, idx) => (
+            <div key={idx} style={{ display:"grid", gridTemplateColumns:"60px 1fr 2fr", gap:"0.75rem", alignItems:"start", padding:"0.75rem", background:"var(--bg-secondary)", borderRadius:"8px" }}>
+              <input value={v.icon} onChange={e => setValueField(idx, "icon", e.target.value)} style={{ ...inputStyle, textAlign:"center" }} />
+              <input value={v.title_en} onChange={e => setValueField(idx, "title_en", e.target.value)} placeholder="Title" style={inputStyle} />
+              <input value={v.desc_en} onChange={e => setValueField(idx, "desc_en", e.target.value)} placeholder="Description" style={inputStyle} />
+            </div>
+          ))}
         </div>
       </div>
 

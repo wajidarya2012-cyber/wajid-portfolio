@@ -143,6 +143,20 @@ model Profile {
   yearsExperience Int? @default(8)
   projectsCount   Int? @default(4)
 
+  // About "Quick Facts" card
+  education_en      String?
+  education_ps      String?
+  education_fa      String?
+  specialization_en String?
+  specialization_ps String?
+  specialization_fa String?
+  languages_en      String?
+  languages_ps      String?
+  languages_fa      String?
+
+  // About "Core Values" cards
+  coreValues Json?
+
   updatedAt DateTime @updatedAt
 
   @@map("profile")
