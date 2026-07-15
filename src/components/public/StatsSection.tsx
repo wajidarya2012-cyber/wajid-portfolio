@@ -2,15 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useTranslations }              from "next-intl";
+import type { Profile }                 from "@/types";
 
 const G = "linear-gradient(135deg,#4f46e5,#06b6d4)";
-
-const STATS = [
-  { count:8,  suffix:"+", key:"years"          },
-  { count:4,  suffix:"+", key:"projects"       },
-  { count:4,  suffix:"",  key:"certifications" },
-  { count:10, suffix:"+", key:"organizations"  },
-];
 
 function Counter({ target, suffix }: { target:number; suffix:string }) {
   const [val, setVal]  = useState(0);
@@ -44,9 +38,16 @@ function Counter({ target, suffix }: { target:number; suffix:string }) {
   );
 }
 
-export default function StatsSection() {
+export default function StatsSection({ profile }: { profile?: Profile | null }) {
   const tl  = useTranslations("stats");
   const ref = useRef<HTMLDivElement>(null);
+
+  const STATS = [
+    { count: profile?.yearsExperience     ?? 8,  suffix:"+", key:"years"          },
+    { count: profile?.projectsCount       ?? 4,  suffix:"+", key:"projects"       },
+    { count: profile?.certificationsCount ?? 4,  suffix:"",  key:"certifications" },
+    { count: profile?.organizationsCount  ?? 10, suffix:"+", key:"organizations"  },
+  ];
 
   useEffect(() => {
     const observer = new IntersectionObserver((entries) => {

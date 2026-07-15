@@ -28,6 +28,9 @@ const WRITABLE_FIELDS = [
   "specialization_en", "specialization_ps", "specialization_fa",
   "languages_en", "languages_ps", "languages_fa",
   "coreValues",
+  "footerTagline_en", "footerTagline_ps", "footerTagline_fa",
+  "certificationsCount", "organizationsCount",
+  "loginBrandName", "loginSubtitle", "loginFooterNote",
 ] as const;
 
 function pickWritable(body: Record<string, unknown>): Record<string, unknown> {

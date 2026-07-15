@@ -5,6 +5,7 @@ import Navbar                    from "@/components/shared/Navbar";
 import Footer                    from "@/components/shared/Footer";
 import ThemeProvider             from "@/components/shared/ThemeProvider";
 import ScrollUI                  from "@/components/shared/ScrollUI";
+import { prisma }                from "@/lib/prisma";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -19,6 +20,7 @@ export default async function LocaleLayout({
 }) {
   const messages = await getMessages();
   const dir      = isRTL(locale) ? "rtl" : "ltr";
+  const profile  = await prisma.profile.findFirst().catch(() => null);
 
   return (
     <NextIntlClientProvider messages={messages}>
@@ -27,7 +29,7 @@ export default async function LocaleLayout({
           <ScrollUI />
           <Navbar locale={locale} />
           <main style={{ flex: 1 }}>{children}</main>
-          <Footer locale={locale} />
+          <Footer locale={locale} profile={profile} />
         </div>
       </ThemeProvider>
     </NextIntlClientProvider>

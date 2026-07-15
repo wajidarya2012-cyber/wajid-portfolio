@@ -67,6 +67,14 @@ export default function ProfileForm({ profile }: { profile: Profile | null }) {
     languages_en:      profile?.languages_en      ?? "Pashto · Dari · English",
     languages_ps:      profile?.languages_ps      ?? "",
     languages_fa:      profile?.languages_fa      ?? "",
+    footerTagline_en: profile?.footerTagline_en ?? "Building technology solutions that create real value — from Jalalabad, Afghanistan to the world.",
+    footerTagline_ps: profile?.footerTagline_ps ?? "",
+    footerTagline_fa: profile?.footerTagline_fa ?? "",
+    certificationsCount: profile?.certificationsCount ?? 4,
+    organizationsCount:  profile?.organizationsCount  ?? 10,
+    loginBrandName:  profile?.loginBrandName  ?? "W.Arya",
+    loginSubtitle:   profile?.loginSubtitle   ?? "Admin Dashboard",
+    loginFooterNote: profile?.loginFooterNote ?? "Protected area — authorised personnel only.",
   });
 
   const [coreValues, setCoreValues] = useState<{ icon:string; title_en:string; title_ps:string; title_fa:string; desc_en:string; desc_ps:string; desc_fa:string }[]>(
@@ -337,6 +345,44 @@ export default function ProfileForm({ profile }: { profile: Profile | null }) {
               <input value={v.desc_en} onChange={e => setValueField(idx, "desc_en", e.target.value)} placeholder="Description" style={inputStyle} />
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* Footer & Stats */}
+      <div className="admin-card">
+        <h3 style={{ fontWeight:700, fontSize:"0.95rem", marginBottom:"1rem" }}>Footer & Stats Section</h3>
+        <div style={{ marginBottom:"1rem" }}>
+          <label style={labelStyle}>Footer Tagline (EN)</label>
+          <textarea value={form.footerTagline_en} onChange={e => set("footerTagline_en", e.target.value)} rows={2} style={{ ...inputStyle, resize:"vertical" }} />
+        </div>
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"1rem" }}>
+          <div>
+            <label style={labelStyle}>Certifications Count</label>
+            <input type="number" min={0} value={form.certificationsCount} onChange={e => set("certificationsCount", Number(e.target.value))} style={inputStyle} />
+          </div>
+          <div>
+            <label style={labelStyle}>Organizations Served</label>
+            <input type="number" min={0} value={form.organizationsCount} onChange={e => set("organizationsCount", Number(e.target.value))} style={inputStyle} />
+          </div>
+        </div>
+      </div>
+
+      {/* Admin Login Branding */}
+      <div className="admin-card">
+        <h3 style={{ fontWeight:700, fontSize:"0.95rem", marginBottom:"1rem" }}>Admin Login Page Branding</h3>
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"1rem", marginBottom:"1rem" }}>
+          <div>
+            <label style={labelStyle}>Brand Name</label>
+            <input value={form.loginBrandName} onChange={e => set("loginBrandName", e.target.value)} style={inputStyle} />
+          </div>
+          <div>
+            <label style={labelStyle}>Subtitle</label>
+            <input value={form.loginSubtitle} onChange={e => set("loginSubtitle", e.target.value)} style={inputStyle} />
+          </div>
+        </div>
+        <div>
+          <label style={labelStyle}>Footer Note</label>
+          <input value={form.loginFooterNote} onChange={e => set("loginFooterNote", e.target.value)} style={inputStyle} />
         </div>
       </div>
 

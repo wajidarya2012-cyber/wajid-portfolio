@@ -10,9 +10,11 @@ export default function SettingsForm({ settingsMap, profile }: { settingsMap: Re
     seo_default_description: settingsMap["seo_default_description"] ?? "Technology Consultant based in Jalalabad, Afghanistan",
   });
   const [pwd, setPwd]   = useState({ currentPassword:"", newPassword:"", confirmPassword:"" });
+  const [emailForm, setEmailForm] = useState({ currentPassword:"", newEmail:"" });
   const [saving, setSaving] = useState(false);
   const [msg, setMsg]   = useState<{type:"success"|"error";text:string}|null>(null);
   const [pwdMsg, setPwdMsg] = useState<{type:"success"|"error";text:string}|null>(null);
+  const [emailMsg, setEmailMsg] = useState<{type:"success"|"error";text:string}|null>(null);
 
   const inp: React.CSSProperties = { width:"100%", background:"var(--bg-secondary)", border:"1px solid var(--border)", borderRadius:"6px", color:"var(--text-primary)", fontFamily:"inherit", fontSize:"0.875rem", padding:"0.7rem 0.875rem", outline:"none" };
   const lbl: React.CSSProperties = { display:"block", fontSize:"0.75rem", fontWeight:600, color:"var(--text-secondary)", marginBottom:"0.3rem" };
@@ -23,6 +25,14 @@ export default function SettingsForm({ settingsMap, profile }: { settingsMap: Re
     const data = await res.json();
     setSaving(false);
     setMsg(data.success ? {type:"success",text:"SEO settings saved!"} : {type:"error",text:"Failed to save."});
+  }
+  async function changeEmail() {
+    if (!emailForm.newEmail || !emailForm.currentPassword) { setEmailMsg({type:"error",text:"Both fields are required."}); return; }
+    setEmailMsg(null);
+    const res  = await fetch("/api/v1/admin/settings/email", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(emailForm) });
+    const data = await res.json();
+    if (data.success) { setEmailMsg({type:"success",text:"Login email updated! Use it next time you sign in."}); setEmailForm({currentPassword:"",newEmail:""}); }
+    else setEmailMsg({type:"error",text:data.error??"Failed."});
   }
 
   async function changePassword() {
@@ -65,6 +75,21 @@ export default function SettingsForm({ settingsMap, profile }: { settingsMap: Re
         </div>
         {msg && <div className={msg.type==="success"?"alert-success":"alert-error"}>{msg.type==="success"?"✅":"❌"} {msg.text}</div>}
         <button className="btn-primary" style={{ alignSelf:"flex-start" }} onClick={saveSeo} disabled={saving}>{saving?"Saving…":"Save SEO Settings"}</button>
+      </div>
+
+      {/* Change Admin Email */}
+      <div className="admin-card" style={{ display:"flex", flexDirection:"column", gap:"0.875rem" }}>
+        <h3 style={{ fontWeight:700, fontSize:"0.95rem" }}>✉️ Change Login Email</h3>
+        <div>
+          <label style={lbl}>New Email Address</label>
+          <input type="email" value={emailForm.newEmail} onChange={e=>setEmailForm(p=>({...p,newEmail:e.target.value}))} style={inp} placeholder="new@email.com" />
+        </div>
+        <div>
+          <label style={lbl}>Current Password (to confirm)</label>
+          <input type="password" value={emailForm.currentPassword} onChange={e=>setEmailForm(p=>({...p,currentPassword:e.target.value}))} style={inp} autoComplete="current-password" />
+        </div>
+        {emailMsg && <div className={emailMsg.type==="success"?"alert-success":"alert-error"}>{emailMsg.type==="success"?"✅":"❌"} {emailMsg.text}</div>}
+        <button className="btn-primary" style={{ alignSelf:"flex-start" }} onClick={changeEmail}>Update Email</button>
       </div>
 
       {/* Change Password */}

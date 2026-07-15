@@ -157,6 +157,20 @@ model Profile {
   // About "Core Values" cards
   coreValues Json?
 
+  // Footer
+  footerTagline_en String?
+  footerTagline_ps String?
+  footerTagline_fa String?
+
+  // Stats section
+  certificationsCount Int? @default(4)
+  organizationsCount  Int? @default(10)
+
+  // Admin login page branding
+  loginBrandName String? @default("W.Arya")
+  loginSubtitle  String? @default("Admin Dashboard")
+  loginFooterNote String? @default("Protected area — authorised personnel only.")
+
   updatedAt DateTime @updatedAt
 
   @@map("profile")

@@ -6,18 +6,18 @@ async function getAnalytics() {
 
   const [visitorRows, pageRows, countryRows, topProjects] = await Promise.all([
     prisma.$queryRaw<{ date: string; views: bigint; unique: bigint }[]>`
-      SELECT DATE(created_at)::text AS date, COUNT(*) AS views, COUNT(DISTINCT session_id) AS unique
-      FROM visitor_analytics WHERE created_at >= ${since30} AND event = 'PAGE_VIEW'
-      GROUP BY DATE(created_at) ORDER BY date ASC`,
+      SELECT DATE("createdAt")::text AS date, COUNT(*) AS views, COUNT(DISTINCT "sessionId") AS unique
+      FROM visitor_analytics WHERE "createdAt" >= ${since30} AND event = 'PAGE_VIEW'
+      GROUP BY DATE("createdAt") ORDER BY date ASC`,
 
     prisma.$queryRaw<{ page: string; views: bigint }[]>`
       SELECT page, COUNT(*) AS views FROM visitor_analytics
-      WHERE created_at >= ${since30} AND event = 'PAGE_VIEW'
+      WHERE "createdAt" >= ${since30} AND event = 'PAGE_VIEW'
       GROUP BY page ORDER BY views DESC LIMIT 10`,
 
     prisma.$queryRaw<{ country: string; count: bigint }[]>`
       SELECT COALESCE(country,'Unknown') AS country, COUNT(*) AS count
-      FROM visitor_analytics WHERE created_at >= ${since30}
+      FROM visitor_analytics WHERE "createdAt" >= ${since30}
       GROUP BY country ORDER BY count DESC LIMIT 12`,
 
     prisma.project.findMany({

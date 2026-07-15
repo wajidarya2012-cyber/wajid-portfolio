@@ -2,6 +2,7 @@
 
 import Link               from "next/link";
 import { useTranslations } from "next-intl";
+import type { Profile }    from "@/types";
 
 const G = "linear-gradient(135deg,#4f46e5,#06b6d4)";
 
@@ -39,8 +40,13 @@ const ROLES = [
   "Network & Systems Specialist",
 ];
 
-export default function Footer({ locale }: { locale: string }) {
+export default function Footer({ locale, profile }: { locale: string; profile?: Profile | null }) {
   const tl = useTranslations("footer");
+
+  function pick(field: string): string {
+    const obj = (profile ?? {}) as Record<string, unknown>;
+    return ((obj[`${field}_${locale}`] ?? obj[`${field}_en`] ?? "") as string);
+  }
 
   return (
     <footer style={{ background:"var(--bg-secondary)", borderTop:"1px solid var(--border)", overflow:"hidden" }}>
@@ -66,7 +72,7 @@ export default function Footer({ locale }: { locale: string }) {
               ))}
             </div>
             <p style={{ fontSize:"0.8rem", color:"var(--text-muted)", lineHeight:1.75, maxWidth:"260px", marginBottom:"1.25rem" }}>
-              Building technology solutions that create real value — from Jalalabad, Afghanistan to the world.
+              {pick("footerTagline") || "Building technology solutions that create real value — from Jalalabad, Afghanistan to the world."}
             </p>
             {/* Socials */}
             <div style={{ display:"flex", gap:"0.6rem", flexWrap:"wrap" }}>
