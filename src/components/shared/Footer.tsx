@@ -113,10 +113,10 @@ export default function Footer({ locale, profile }: { locale: string; profile?: 
       <div style={{ borderTop:"1px solid var(--border)" }}>
         <div className="section-container" style={{ padding:"1rem 1.25rem", display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:"0.5rem" }}>
           <p style={{ fontSize:"0.73rem", color:"var(--text-muted)" }}>
-            © {new Date().getFullYear()} Wajid Ali Arya. {tl("rights")}
+            © {new Date().getFullYear()} {pick("fullName") || "Wajid Ali Arya"}. {pick("footerRights") || tl("rights")}
           </p>
           <p style={{ fontSize:"0.72rem", color:"var(--text-muted)" }}>
-            {tl("builtWith")}
+            {pick("footerBuiltWith") || tl("builtWith")}
           </p>
           <Link href="/admin/login" style={{ fontSize:"0.72rem", color:"var(--text-muted)", textDecoration:"none", opacity:0.5, transition:"opacity 0.2s" }}
             onMouseEnter={e=>{ (e.currentTarget as HTMLElement).style.opacity="1"; }}

@@ -75,6 +75,12 @@ export default function ProfileForm({ profile }: { profile: Profile | null }) {
     loginBrandName:  profile?.loginBrandName  ?? "W.Arya",
     loginSubtitle:   profile?.loginSubtitle   ?? "Admin Dashboard",
     loginFooterNote: profile?.loginFooterNote ?? "Protected area — authorised personnel only.",
+    footerRights_en:    profile?.footerRights_en    ?? "All rights reserved.",
+    footerRights_ps:    profile?.footerRights_ps    ?? "",
+    footerRights_fa:    profile?.footerRights_fa    ?? "",
+    footerBuiltWith_en: profile?.footerBuiltWith_en ?? "Built with Next.js & Tailwind CSS",
+    footerBuiltWith_ps: profile?.footerBuiltWith_ps ?? "",
+    footerBuiltWith_fa: profile?.footerBuiltWith_fa ?? "",
   });
 
   const [coreValues, setCoreValues] = useState<{ icon:string; title_en:string; title_ps:string; title_fa:string; desc_en:string; desc_ps:string; desc_fa:string }[]>(
@@ -363,6 +369,21 @@ export default function ProfileForm({ profile }: { profile: Profile | null }) {
           <div>
             <label style={labelStyle}>Organizations Served</label>
             <input type="number" min={0} value={form.organizationsCount} onChange={e => set("organizationsCount", Number(e.target.value))} style={inputStyle} />
+          </div>
+        </div>
+      </div>
+
+      {/* Footer Bottom Bar */}
+      <div className="admin-card">
+        <h3 style={{ fontWeight:700, fontSize:"0.95rem", marginBottom:"1rem" }}>Footer — Copyright Line</h3>
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"1rem" }}>
+          <div>
+            <label style={labelStyle}>Rights Text (EN)</label>
+            <input value={form.footerRights_en} onChange={e => set("footerRights_en", e.target.value)} placeholder="All rights reserved." style={inputStyle} />
+          </div>
+          <div>
+            <label style={labelStyle}>Built With Text (EN)</label>
+            <input value={form.footerBuiltWith_en} onChange={e => set("footerBuiltWith_en", e.target.value)} placeholder="Built with Next.js & Tailwind CSS" style={inputStyle} />
           </div>
         </div>
       </div>

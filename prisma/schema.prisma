@@ -171,6 +171,14 @@ model Profile {
   loginSubtitle  String? @default("Admin Dashboard")
   loginFooterNote String? @default("Protected area — authorised personnel only.")
 
+  // Footer bottom bar
+  footerRights_en    String? @default("All rights reserved.")
+  footerRights_ps     String?
+  footerRights_fa     String?
+  footerBuiltWith_en String? @default("Built with Next.js & Tailwind CSS")
+  footerBuiltWith_ps String?
+  footerBuiltWith_fa String?
+
   updatedAt DateTime @updatedAt
 
   @@map("profile")
