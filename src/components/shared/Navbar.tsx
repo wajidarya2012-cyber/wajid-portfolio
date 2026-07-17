@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect }        from "react";
+import { useState, useEffect, useRef }        from "react";
 import Link                            from "next/link";
 import { usePathname, useRouter }      from "next/navigation";
 import { useTranslations }             from "next-intl";
@@ -11,11 +11,13 @@ const NAV_LINKS = [
   { key:"about",          href:"#about"          },
   { key:"skills",         href:"#skills"         },
   { key:"experience",     href:"#experience"     },
-  { key:"projects",       href:"#projects"       },
   { key:"certifications", href:"#certifications" },
+  { key:"projects",       href:"#projects"       },
   { key:"blog",           href:"/blog"           },
   { key:"contact",        href:"#contact"        },
 ];
+
+const SECTION_IDS = ["about","skills","experience","certifications","projects","contact"];
 
 const LOCALE_LABELS: Record<string,string> = { en:"EN", ps:"پښتو", fa:"دری" };
 
@@ -32,22 +34,46 @@ export default function Navbar({ locale }: { locale: string }) {
   const [scrolled, setScrolled]    = useState(false);
   const [menuOpen, setMenuOpen]    = useState(false);
   const [activeHash, setActiveHash] = useState("");
+  const clickLockRef = useRef<string | null>(null);
+  const clickLockTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    const onScroll = () => {
-      setScrolled(window.scrollY > 30);
-      // Update active section
-      const sections = ["about","skills","experience","projects","certifications","contact"];
-      for (const id of sections.reverse()) {
-        const el = document.getElementById(id);
-        if (el && window.scrollY >= el.offsetTop - 120) {
-          setActiveHash(`#${id}`); break;
-        }
-      }
-    };
-    window.addEventListener("scroll", onScroll, { passive:true });
-    return () => window.removeEventListener("scroll", onScroll);
+    const onScrollBg = () => setScrolled(window.scrollY > 30);
+    window.addEventListener("scroll", onScrollBg, { passive:true });
+
+    // Track which section is currently most visible using IntersectionObserver
+    // (avoids the manual-scroll-math race that could show two "active" links at once).
+    const visibleRatios = new Map<string, number>();
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => { visibleRatios.set(entry.target.id, entry.intersectionRatio); });
+
+      // A click just fired — trust it over the observer for a short grace period
+      // so smooth-scroll doesn't briefly re-activate a section it's passing through.
+      if (clickLockRef.current) return;
+
+      let bestId = "";
+      let bestRatio = 0;
+      visibleRatios.forEach((ratio, id) => {
+        if (ratio > bestRatio) { bestRatio = ratio; bestId = id; }
+      });
+      if (bestId) setActiveHash(`#${bestId}`);
+    }, { threshold: [0, 0.15, 0.3, 0.5, 0.75, 1], rootMargin: "-80px 0px -40% 0px" });
+
+    SECTION_IDS.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
+    });
+
+    return () => { window.removeEventListener("scroll", onScrollBg); observer.disconnect(); };
   }, []);
+
+  function handleNavClick(href: string) {
+    if (!href.startsWith("#")) return;
+    setActiveHash(href);
+    clickLockRef.current = href;
+    if (clickLockTimerRef.current) clearTimeout(clickLockTimerRef.current);
+    clickLockTimerRef.current = setTimeout(() => { clickLockRef.current = null; }, 900);
+  }
 
   // Close mobile menu on route change
   useEffect(() => { setMenuOpen(false); }, [pathname]);
@@ -91,6 +117,7 @@ export default function Navbar({ locale }: { locale: string }) {
               return (
                 <li key={key}>
                   <a href={resolveHref(href, locale, pathname)}
+                    onClick={() => handleNavClick(href)}
                     style={{ textDecoration:"none", fontSize:"0.82rem", fontWeight:600, transition:"color 0.2s, opacity 0.2s", position:"relative", paddingBottom:"4px",
                       color: isActive ? "#fff" : "rgba(255,255,255,0.8)",
                       opacity: isActive ? 1 : 0.85,
@@ -145,7 +172,7 @@ export default function Navbar({ locale }: { locale: string }) {
       <div style={{ position:"fixed", top:"64px", left:0, right:0, zIndex:499, background:"rgba(6,11,24,0.98)", backdropFilter:"blur(24px)", WebkitBackdropFilter:"blur(24px)", borderBottom:"1px solid rgba(255,255,255,0.08)", padding:"1.25rem 1.5rem 2rem", display:"flex", flexDirection:"column", gap:"0.25rem", transform:menuOpen?"translateY(0)":"translateY(-110%)", transition:"transform 0.3s cubic-bezier(0.4,0,0.2,1)", pointerEvents:menuOpen?"all":"none" }} className="mobile-menu-panel">
         {NAV_LINKS.map(({ key, href }) => (
           <a key={key} href={resolveHref(href, locale, pathname)}
-            onClick={()=>setMenuOpen(false)}
+            onClick={()=>{ handleNavClick(href); setMenuOpen(false); }}
             style={{ fontSize:"1rem", fontWeight:600, color:"rgba(255,255,255,0.75)", textDecoration:"none", padding:"0.875rem 0", borderBottom:"1px solid rgba(255,255,255,0.06)", transition:"color 0.2s" }}
             onMouseEnter={e=>{ (e.currentTarget as HTMLElement).style.color="#fff"; }}
             onMouseLeave={e=>{ (e.currentTarget as HTMLElement).style.color="rgba(255,255,255,0.75)"; }}>

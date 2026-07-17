@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { analyticsTrackSchema } from "@/lib/validations";
 import { getIp } from "@/lib/utils";
+import { rateLimit } from "@/lib/rateLimit";
 
 // Lightweight IP→country lookup (geoip-lite, bundled DB — no external call)
 async function getCountry(ip: string): Promise<string | null> {
@@ -16,13 +17,17 @@ async function getCountry(ip: string): Promise<string | null> {
 
 export async function POST(request: NextRequest) {
   try {
+    const ip = getIp(request);
+    const { ok } = rateLimit(`analytics:${ip}`, 60, 60 * 1000); // 60 events/min per IP
+    if (!ok) {
+      return NextResponse.json({ success: false }, { status: 429 });
+    }
+
     const body   = await request.json();
     const parsed = analyticsTrackSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json({ success: false }, { status: 422 });
     }
-
-    const ip      = getIp(request);
     const country = await getCountry(ip);
 
     await prisma.visitorAnalytics.create({

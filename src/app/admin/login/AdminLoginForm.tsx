@@ -82,11 +82,11 @@ export default function AdminLoginForm({ brandName, subtitle, footerNote }: Prop
               e.stopPropagation();
               handleSubmit(onSubmit)(e);
             }}
-            style={{ display:"flex", flexDirection:"column", gap:"1rem" }}
+            style={{ display:"flex", flexDirection:"column", gap:"1rem", opacity: loading ? 0.6 : 1, transition:"opacity 0.2s", pointerEvents: loading ? "none" : "auto" }}
           >
             <div>
               <label style={{ display:"block", fontSize:"0.75rem", fontWeight:600, color:"#94a3b8", marginBottom:"0.35rem" }}>Email Address</label>
-              <input {...register("email")} type="email" placeholder="admin@example.com" autoComplete="email" style={inp}
+              <input {...register("email")} type="email" placeholder="admin@example.com" autoComplete="email" disabled={loading} style={inp}
                 onFocus={e=>{ (e.target as HTMLInputElement).style.borderColor="#4f46e5"; (e.target as HTMLInputElement).style.boxShadow="0 0 0 3px rgba(79,70,229,0.18)"; }}
                 onBlur={e =>{  (e.target as HTMLInputElement).style.borderColor="rgba(255,255,255,0.08)"; (e.target as HTMLInputElement).style.boxShadow="none"; }} />
               {errors.email && <p style={{ fontSize:"0.72rem", color:"#f87171", marginTop:"0.3rem" }}>{errors.email.message}</p>}
@@ -94,7 +94,7 @@ export default function AdminLoginForm({ brandName, subtitle, footerNote }: Prop
 
             <div>
               <label style={{ display:"block", fontSize:"0.75rem", fontWeight:600, color:"#94a3b8", marginBottom:"0.35rem" }}>Password</label>
-              <input {...register("password")} type="password" placeholder="••••••••" autoComplete="current-password" style={inp}
+              <input {...register("password")} type="password" placeholder="••••••••" autoComplete="current-password" disabled={loading} style={inp}
                 onFocus={e=>{ (e.target as HTMLInputElement).style.borderColor="#4f46e5"; (e.target as HTMLInputElement).style.boxShadow="0 0 0 3px rgba(79,70,229,0.18)"; }}
                 onBlur={e =>{  (e.target as HTMLInputElement).style.borderColor="rgba(255,255,255,0.08)"; (e.target as HTMLInputElement).style.boxShadow="none"; }} />
               {errors.password && <p style={{ fontSize:"0.72rem", color:"#f87171", marginTop:"0.3rem" }}>{errors.password.message}</p>}
@@ -107,12 +107,21 @@ export default function AdminLoginForm({ brandName, subtitle, footerNote }: Prop
             )}
 
             <button type="submit" disabled={loading || submitted}
-              style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:"0.5rem", padding:"0.85rem 1.5rem", borderRadius:"10px", border:"none", background:G, color:"white", fontWeight:700, fontSize:"0.9rem", cursor:(loading||submitted)?"not-allowed":"pointer", opacity:(loading||submitted)?0.7:1, transition:"all 0.2s", marginTop:"0.25rem", boxShadow:"0 4px 20px rgba(79,70,229,0.4)", fontFamily:"inherit" }}>
+              style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:"0.6rem", padding:"0.85rem 1.5rem", borderRadius:"10px", border:"none", background:G, color:"white", fontWeight:700, fontSize:"0.9rem", cursor:(loading||submitted)?"not-allowed":"pointer", opacity:(loading||submitted)?0.85:1, transition:"all 0.2s", marginTop:"0.25rem", boxShadow: loading ? "0 4px 24px rgba(79,70,229,0.6)" : "0 4px 20px rgba(79,70,229,0.4)", fontFamily:"inherit" }}>
               {loading ? (
-                <><span style={{ display:"inline-block", width:"14px", height:"14px", border:"2px solid rgba(255,255,255,0.3)", borderTopColor:"white", borderRadius:"50%", animation:"spin 0.7s linear infinite" }} /> Signing in…</>
+                <>
+                  <span style={{ display:"inline-block", width:"16px", height:"16px", border:"2.5px solid rgba(255,255,255,0.35)", borderTopColor:"white", borderRadius:"50%", animation:"spin 0.6s linear infinite", flexShrink:0 }} />
+                  Signing in…
+                </>
               ) : "Sign In →"}
             </button>
           </form>
+
+          {loading && (
+            <div style={{ marginTop:"1rem", height:"3px", borderRadius:"2px", background:"rgba(255,255,255,0.08)", overflow:"hidden" }}>
+              <div style={{ height:"100%", width:"40%", borderRadius:"2px", background:G, animation:"loadingBar 1.1s ease-in-out infinite" }} />
+            </div>
+          )}
         </div>
 
         <p style={{ textAlign:"center", fontSize:"0.72rem", color:"#334155", marginTop:"1.5rem" }}>
@@ -120,7 +129,15 @@ export default function AdminLoginForm({ brandName, subtitle, footerNote }: Prop
         </p>
       </div>
 
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } } * { box-sizing: border-box; }`}</style>
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes loadingBar {
+          0%   { transform: translateX(-100%); }
+          50%  { transform: translateX(150%); }
+          100% { transform: translateX(150%); }
+        }
+        * { box-sizing: border-box; }
+      `}</style>
     </div>
   );
 }

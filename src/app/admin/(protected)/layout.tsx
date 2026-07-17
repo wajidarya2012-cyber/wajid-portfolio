@@ -12,8 +12,9 @@ export default async function ProtectedAdminLayout({
 }) {
   const session = await auth();
 
-  // Not authenticated → send to login (no loop — login is outside this layout)
-  if (!session?.user) {
+  // Not authenticated, or authenticated but not an admin → send to login
+  // (no loop — login is outside this layout)
+  if (!session?.user || session.user.role !== "ADMIN") {
     redirect("/admin/login");
   }
 

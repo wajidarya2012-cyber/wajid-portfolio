@@ -7,12 +7,18 @@ async function main() {
   console.log("🌱 Seeding database...");
 
   // ── Admin user ────────────────────────────────────────────────────────
-  const hashedPw = await bcrypt.hash(process.env.ADMIN_PASSWORD ?? "Admin@2025!", 12);
+  if (!process.env.ADMIN_EMAIL || !process.env.ADMIN_PASSWORD) {
+    throw new Error(
+      "ADMIN_EMAIL and ADMIN_PASSWORD must be set in the environment before seeding. " +
+      "No fallback credentials are provided for security reasons."
+    );
+  }
+  const hashedPw = await bcrypt.hash(process.env.ADMIN_PASSWORD, 12);
   const admin    = await prisma.user.upsert({
-    where:  { email: process.env.ADMIN_EMAIL ?? "admin@wajid-arya.com" },
+    where:  { email: process.env.ADMIN_EMAIL },
     update: { password: hashedPw },
     create: {
-      email:    process.env.ADMIN_EMAIL    ?? "admin@wajid-arya.com",
+      email:    process.env.ADMIN_EMAIL,
       password: hashedPw,
       name:     "Wajid Ali Arya",
       role:     "ADMIN",

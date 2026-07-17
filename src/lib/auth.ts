@@ -3,6 +3,8 @@ import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import { rateLimit } from "@/lib/rateLimit";
+import { headers } from "next/headers";
 
 // Extend session types
 declare module "next-auth" {
@@ -46,6 +48,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       async authorize(credentials) {
         const parsed = loginSchema.safeParse(credentials);
         if (!parsed.success) return null;
+
+        const ip = headers().get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+        const { ok } = rateLimit(`login:${ip}`, 8, 15 * 60 * 1000); // 8 attempts / 15 min per IP
+        if (!ok) return null;
 
         const user = await prisma.user.findUnique({
           where: { email: parsed.data.email },

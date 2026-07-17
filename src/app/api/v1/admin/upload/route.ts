@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin, logActivity } from "@/lib/adminGuard";
 import { uploadBuffer, uploadDocument, deleteResource } from "@/lib/cloudinary";
 
+const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+const ALLOWED_DOC_TYPES   = ["application/pdf"];
+
 export async function POST(request: NextRequest) {
   const { user, error } = await requireAdmin(request);
   if (error) return error;
@@ -14,6 +17,11 @@ export async function POST(request: NextRequest) {
 
     if (!file) {
       return NextResponse.json({ success: false, error: "No file provided" }, { status: 400 });
+    }
+
+    const allowedTypes = type === "document" ? ALLOWED_DOC_TYPES : ALLOWED_IMAGE_TYPES;
+    if (!allowedTypes.includes(file.type)) {
+      return NextResponse.json({ success: false, error: `Invalid file type: ${file.type}` }, { status: 415 });
     }
 
     const maxSize = type === "document" ? 10 * 1024 * 1024 : 5 * 1024 * 1024; // 10MB doc / 5MB image

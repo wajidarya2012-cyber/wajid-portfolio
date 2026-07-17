@@ -1,6 +1,7 @@
 import { notFound }  from "next/navigation";
 import { prisma }    from "@/lib/prisma";
 import Link          from "next/link";
+import DOMPurify     from "isomorphic-dompurify";
 import BackToBlogLink from "@/components/public/BackToBlogLink";
 
 const G = "linear-gradient(135deg,#4f46e5,#06b6d4)";
