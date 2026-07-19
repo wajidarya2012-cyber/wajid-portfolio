@@ -5,6 +5,7 @@ import SkillsSection       from "@/components/public/SkillsSection";
 import ExperienceSection   from "@/components/public/ExperienceSection";
 import EducationSection    from "@/components/public/EducationSection";
 import CertSection         from "@/components/public/CertSection";
+import JourneySection      from "@/components/public/JourneySection";
 import ProjectsSection     from "@/components/public/ProjectsSection";
 import StatsSection        from "@/components/public/StatsSection";
 import ContactSection      from "@/components/public/ContactSection";
@@ -30,7 +31,7 @@ export async function generateMetadata({ params: { locale } }: { params: { local
 export default async function HomePage({ params: { locale } }: { params: { locale: string } }) {
   const safeLocale = ["en","ps","fa"].includes(locale) ? locale : "en";
 
-const [profile, skillCats, experience, education, certifications, projects] = await Promise.all([
+const [profile, skillCats, experience, education, certifications, journeySlides, projects] = await Promise.all([
     prisma.profile.findFirst().catch(() => null),
     prisma.skillCategory.findMany({
       include: { skills: { orderBy: { sortOrder:"asc" } } },
@@ -39,6 +40,7 @@ const [profile, skillCats, experience, education, certifications, projects] = aw
     prisma.experience.findMany({ orderBy: { sortOrder:"asc" } }).catch(() => []),
     prisma.education.findMany({  orderBy: { sortOrder:"asc" } }).catch(() => []),
     prisma.certification.findMany({ orderBy: { sortOrder:"asc" } }).catch(() => []),
+    prisma.journeySlide.findMany({ orderBy: { sortOrder:"asc" } }).catch(() => []),
     prisma.project.findMany({
       where:   { status:"ACTIVE" },
       include: {
@@ -59,6 +61,7 @@ const [profile, skillCats, experience, education, certifications, projects] = aw
       <ExperienceSection experience={experience}     locale={safeLocale} />
       <EducationSection  education={education}       locale={safeLocale} />
       <CertSection       certifications={certifications} locale={safeLocale} />
+      <JourneySection    slides={journeySlides}      locale={safeLocale} />
       <ProjectsSection   projects={projects}         locale={safeLocale} />
       <StatsSection profile={profile} />
       <ContactSection    profile={profile}    locale={safeLocale} />

@@ -12,6 +12,7 @@ const NAV = [
   { label:"Experience",     href:"/admin/experience",     icon:"💼" },
   { label:"Education",      href:"/admin/education",      icon:"🎓" },
   { label:"Certifications", href:"/admin/certifications", icon:"🏅" },
+  { label:"Journey",        href:"/admin/journey",        icon:"🧭" },
   { label:"Blog",           href:"/admin/blog",           icon:"📝" },
   { label:"Gallery",        href:"/admin/gallery",        icon:"🖼"  },
   { label:"Messages",       href:"/admin/messages",       icon:"📬", badgeKey:"messages" },

@@ -59,6 +59,10 @@
     "eyebrow": "Credentials",
     "title": "Certifications & Trainings"
   },
+  "journey": {
+    "eyebrow": "My Path",
+    "title": "Professional Journey"
+  },
   "projects": {
     "eyebrow": "Portfolio",
     "title": "Software Projects",

@@ -157,6 +157,19 @@ export const certificationSchema = z.object({
   sortOrder:      z.number().int().min(0).optional(),
 });
 
+// ── Journey Slide ────────────────────────────────────────────────────────────
+export const journeySlideSchema = z.object({
+  title_en:   z.string().min(2),
+  title_ps:   z.string().min(1),
+  title_fa:   z.string().min(1),
+  caption_en: z.string().optional(),
+  caption_ps: z.string().optional(),
+  caption_fa: z.string().optional(),
+  imageUrl:      z.string().min(1),
+  imagePublicId: z.string().optional(),
+  sortOrder:     z.number().int().min(0).optional(),
+});
+
 // ── Blog Post ──────────────────────────────────────────────────────────────
 export const blogPostSchema = z.object({
   title_en:     z.string().min(2),
@@ -233,6 +246,7 @@ export type SkillInput            = z.infer<typeof skillSchema>;
 export type ExperienceInput       = z.infer<typeof experienceSchema>;
 export type EducationInput        = z.infer<typeof educationSchema>;
 export type CertificationInput    = z.infer<typeof certificationSchema>;
+export type JourneySlideInput     = z.infer<typeof journeySlideSchema>;
 export type BlogPostInput         = z.infer<typeof blogPostSchema>;
 export type GalleryItemInput      = z.infer<typeof galleryItemSchema>;
 export type ContactInput          = z.infer<typeof contactSchema>;

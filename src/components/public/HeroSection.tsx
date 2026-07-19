@@ -169,7 +169,7 @@ export default function HeroSection({ profile, locale }: { profile: Profile|null
               <div style={{ width:"320px", height:"320px", borderRadius:"50%", padding:"3px", background:G, animation:"float 7s ease-in-out infinite", boxShadow:"0 0 60px rgba(79,70,229,0.35)" }}>
                 <div style={{ width:"100%", height:"100%", borderRadius:"50%", background:"var(--bg-secondary)", overflow:"hidden", display:"flex", alignItems:"center", justifyContent:"center" }}>
                   {profile?.photoUrl
-                    ? <Image src={profile.photoUrl} alt={fullName ?? "Wajid Ali Arya"} width={320} height={320} style={{ objectFit:"cover", objectPosition:"center 30%", width:"100%", height:"100%" }} priority />
+                    ? <Image src={profile.photoUrl} alt={fullName ?? "Wajid Ali Arya"} width={320} height={320} style={{ objectFit:"cover", objectPosition:"center 30%", width:"100%", height:"100%" }} priority unoptimized />
                     : (
                       <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:"0.5rem" }}>
                         <span style={{ fontSize:"5rem", opacity:0.3 }}>👤</span>

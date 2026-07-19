@@ -21,13 +21,17 @@ export default async function LocaleLayout({
   const messages = await getMessages();
   const dir      = isRTL(locale) ? "rtl" : "ltr";
   const profile  = await prisma.profile.findFirst().catch(() => null);
+  const brandSettings = await prisma.siteSettings.findMany({
+    where: { key: { in: ["brand_name", "brand_tagline"] } },
+  }).catch(() => []);
+  const brandMap = Object.fromEntries(brandSettings.map(s => [s.key, s.value]));
 
   return (
     <NextIntlClientProvider messages={messages}>
       <ThemeProvider>
         <div dir={dir} lang={locale} style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
           <ScrollUI />
-          <Navbar locale={locale} />
+          <Navbar locale={locale} brandName={brandMap.brand_name} brandTagline={brandMap.brand_tagline} />
           <main style={{ flex: 1 }}>{children}</main>
           <Footer locale={locale} profile={profile} />
         </div>

@@ -1,5 +1,5 @@
-"use client";
-import { useState }  from "react";
+﻿"use client";
+import { useState, useRef }  from "react";
 import { useRouter } from "next/navigation";
 import type { Profile } from "@/types";
 
@@ -9,12 +9,25 @@ export default function SettingsForm({ settingsMap, profile }: { settingsMap: Re
     seo_default_title:       settingsMap["seo_default_title"]       ?? "Wajid Ali Arya | IT Manager & Software Developer",
     seo_default_description: settingsMap["seo_default_description"] ?? "Technology Consultant based in Jalalabad, Afghanistan",
   });
+  const [brand, setBrand] = useState({
+    brand_name:    settingsMap["brand_name"]    ?? "W.Arya",
+    brand_tagline: settingsMap["brand_tagline"] ?? "IT Manager & Developer",
+  });
+  const [brandSaving, setBrandSaving] = useState(false);
+  const [brandMsg, setBrandMsg] = useState<{type:"success"|"error";text:string}|null>(null);
   const [pwd, setPwd]   = useState({ currentPassword:"", newPassword:"", confirmPassword:"" });
   const [emailForm, setEmailForm] = useState({ currentPassword:"", newEmail:"" });
   const [saving, setSaving] = useState(false);
   const [msg, setMsg]   = useState<{type:"success"|"error";text:string}|null>(null);
   const [pwdMsg, setPwdMsg] = useState<{type:"success"|"error";text:string}|null>(null);
   const [emailMsg, setEmailMsg] = useState<{type:"success"|"error";text:string}|null>(null);
+
+  const [backupDownloading, setBackupDownloading] = useState(false);
+  const [restoring, setRestoring]   = useState(false);
+  const [backupMsg, setBackupMsg]   = useState<{type:"success"|"error";text:string}|null>(null);
+  const [pendingFile, setPendingFile] = useState<File|null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const inp: React.CSSProperties = { width:"100%", background:"var(--bg-secondary)", border:"1px solid var(--border)", borderRadius:"6px", color:"var(--text-primary)", fontFamily:"inherit", fontSize:"0.875rem", padding:"0.7rem 0.875rem", outline:"none" };
   const lbl: React.CSSProperties = { display:"block", fontSize:"0.75rem", fontWeight:600, color:"var(--text-secondary)", marginBottom:"0.3rem" };
@@ -25,6 +38,14 @@ export default function SettingsForm({ settingsMap, profile }: { settingsMap: Re
     const data = await res.json();
     setSaving(false);
     setMsg(data.success ? {type:"success",text:"SEO settings saved!"} : {type:"error",text:"Failed to save."});
+  }
+  async function saveBrand() {
+    setBrandSaving(true); setBrandMsg(null);
+    const res  = await fetch("/api/v1/admin/settings", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(brand) });
+    const data = await res.json();
+    setBrandSaving(false);
+    setBrandMsg(data.success ? {type:"success",text:"Branding saved! Refresh the public site to see it."} : {type:"error",text:"Failed to save."});
+    if (data.success) router.refresh();
   }
   async function changeEmail() {
     if (!emailForm.newEmail || !emailForm.currentPassword) { setEmailMsg({type:"error",text:"Both fields are required."}); return; }
@@ -45,6 +66,73 @@ export default function SettingsForm({ settingsMap, profile }: { settingsMap: Re
     else setPwdMsg({type:"error",text:data.error??"Failed."});
   }
 
+  async function downloadBackup() {
+    setBackupDownloading(true); setBackupMsg(null);
+    try {
+      const res = await fetch("/api/v1/admin/backup");
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setBackupMsg({ type:"error", text: data.error ?? "Failed to generate backup." });
+        return;
+      }
+      const blob = await res.blob();
+      const disposition = res.headers.get("Content-Disposition") ?? "";
+      const match = disposition.match(/filename="(.+)"/);
+      const filename = match?.[1] ?? `wajid-portfolio-backup-${new Date().toISOString().slice(0,10)}.json`;
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = filename;
+      document.body.appendChild(a); a.click(); a.remove();
+      window.URL.revokeObjectURL(url);
+      setBackupMsg({ type:"success", text:"Backup downloaded successfully." });
+    } catch {
+      setBackupMsg({ type:"error", text:"Network error while downloading backup." });
+    } finally {
+      setBackupDownloading(false);
+    }
+  }
+
+  function handleFileSelect(file: File | undefined) {
+    if (!file) return;
+    setPendingFile(file);
+    setConfirmOpen(true);
+  }
+
+  async function confirmRestore() {
+    if (!pendingFile) return;
+    setConfirmOpen(false);
+    setRestoring(true); setBackupMsg(null);
+    try {
+      const text = await pendingFile.text();
+      let payload: unknown;
+      try { payload = JSON.parse(text); }
+      catch { setBackupMsg({ type:"error", text:"Selected file is not valid JSON." }); setRestoring(false); return; }
+
+      const res  = await fetch("/api/v1/admin/backup/restore", {
+        method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setBackupMsg({ type:"success", text:"Backup restored successfully! Reloading…" });
+        setTimeout(() => router.refresh(), 1200);
+      } else {
+        setBackupMsg({ type:"error", text: data.error ?? "Restore failed." });
+      }
+    } catch {
+      setBackupMsg({ type:"error", text:"Network error while restoring backup." });
+    } finally {
+      setRestoring(false);
+      setPendingFile(null);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  }
+
+  function cancelRestore() {
+    setConfirmOpen(false);
+    setPendingFile(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:"1.25rem" }}>
 
@@ -60,6 +148,24 @@ export default function SettingsForm({ settingsMap, profile }: { settingsMap: Re
           To update your name, go to <a href="/admin/profile" style={{ color:"#818cf8" }}>Profile settings</a>.
           Correct spelling: <strong>واجد علی آریا</strong>
         </p>
+      </div>
+
+      {/* Branding */}
+      <div className="admin-card" style={{ display:"flex", flexDirection:"column", gap:"0.875rem" }}>
+        <h3 style={{ fontWeight:700, fontSize:"0.95rem" }}>🎨 Website Branding</h3>
+        <p style={{ fontSize:"0.8rem", color:"var(--text-muted)" }}>
+          Controls the logo text and tagline shown in the site navigation bar.
+        </p>
+        <div>
+          <label style={lbl}>Logo / Site Name</label>
+          <input value={brand.brand_name} onChange={e=>setBrand(p=>({...p,brand_name:e.target.value}))} style={inp} />
+        </div>
+        <div>
+          <label style={lbl}>Tagline</label>
+          <input value={brand.brand_tagline} onChange={e=>setBrand(p=>({...p,brand_tagline:e.target.value}))} style={inp} />
+        </div>
+        {brandMsg && <div className={brandMsg.type==="success"?"alert-success":"alert-error"}>{brandMsg.type==="success"?"✅":"❌"} {brandMsg.text}</div>}
+        <button className="btn-primary" style={{ alignSelf:"flex-start" }} onClick={saveBrand} disabled={brandSaving}>{brandSaving?"Saving…":"Save Branding"}</button>
       </div>
 
       {/* SEO */}
@@ -112,6 +218,57 @@ export default function SettingsForm({ settingsMap, profile }: { settingsMap: Re
         {pwdMsg && <div className={pwdMsg.type==="success"?"alert-success":"alert-error"}>{pwdMsg.type==="success"?"✅":"❌"} {pwdMsg.text}</div>}
         <button className="btn-primary" style={{ alignSelf:"flex-start" }} onClick={changePassword}>Change Password</button>
       </div>
+
+      {/* Backup & Restore */}
+      <div className="admin-card" style={{ display:"flex", flexDirection:"column", gap:"0.875rem" }}>
+        <h3 style={{ fontWeight:700, fontSize:"0.95rem" }}>🗄️ Backup & Restore</h3>
+        <p style={{ fontSize:"0.8rem", color:"var(--text-muted)" }}>
+          Download a complete backup of your portfolio content (profile, projects, skills, experience, education, certifications, blog posts, gallery, messages, and settings). Restoring will replace all current content with the data in the selected backup file.
+        </p>
+
+        <div style={{ display:"flex", flexWrap:"wrap", gap:"0.75rem" }}>
+          <button className="btn-primary" onClick={downloadBackup} disabled={backupDownloading}>
+            {backupDownloading ? "Preparing…" : "⬇️ Download Backup"}
+          </button>
+
+          <input ref={fileInputRef} type="file" accept="application/json,.json" style={{ display:"none" }}
+            onChange={e => handleFileSelect(e.target.files?.[0])} />
+          <button className="btn-secondary" onClick={() => fileInputRef.current?.click()} disabled={restoring}>
+            {restoring ? "Restoring…" : "⬆️ Restore from Backup"}
+          </button>
+        </div>
+
+        {backupMsg && <div className={backupMsg.type==="success"?"alert-success":"alert-error"}>{backupMsg.type==="success"?"✅":"❌"} {backupMsg.text}</div>}
+      </div>
+
+      {/* Restore confirmation dialog */}
+      {confirmOpen && pendingFile && (
+        <div
+          onClick={cancelRestore}
+          style={{ position:"fixed", inset:0, zIndex:2000, background:"rgba(0,0,0,0.7)", backdropFilter:"blur(6px)", display:"flex", alignItems:"center", justifyContent:"center", padding:"1rem" }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            className="admin-card"
+            style={{ maxWidth:"420px", width:"100%", borderLeft:"3px solid #f59e0b" }}
+          >
+            <h3 style={{ fontWeight:700, fontSize:"1rem", marginBottom:"0.75rem" }}>⚠️ Confirm Restore</h3>
+            <p style={{ fontSize:"0.85rem", color:"var(--text-secondary)", marginBottom:"0.5rem" }}>
+              You are about to restore from:
+            </p>
+            <p style={{ fontSize:"0.8rem", fontFamily:"monospace", background:"var(--bg-secondary)", padding:"0.5rem 0.75rem", borderRadius:"6px", marginBottom:"0.875rem", wordBreak:"break-all" }}>
+              {pendingFile.name}
+            </p>
+            <p style={{ fontSize:"0.82rem", color:"#f59e0b", marginBottom:"1.25rem" }}>
+              This will permanently replace ALL current portfolio content (profile, projects, skills, experience, education, certifications, blog, gallery, messages, settings) with the data from this file. This cannot be undone.
+            </p>
+            <div style={{ display:"flex", gap:"0.75rem" }}>
+              <button className="btn-primary" style={{ background:"#f59e0b" }} onClick={confirmRestore}>Yes, Restore Now</button>
+              <button className="btn-ghost" onClick={cancelRestore}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Quick links */}
       <div className="admin-card">

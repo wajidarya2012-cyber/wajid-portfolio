@@ -149,6 +149,7 @@ export default function ProjectForm({
           <div>
             <label className="block text-xs mb-1.5" style={{ color: "var(--text-secondary)" }}>Title ({activeLocale})*</label>
             <input
+              key={`title_${activeLocale}`}
               {...register(`title_${activeLocale}` as "title_en")}
               onBlur={(e) => { if (activeLocale === "en" && !isEdit) setValue("slug", createSlug(e.target.value)); }}
               className="input-field"
@@ -166,12 +167,12 @@ export default function ProjectForm({
 
         <div>
           <label className="block text-xs mb-1.5" style={{ color: "var(--text-secondary)" }}>Description ({activeLocale})*</label>
-          <textarea {...register(`description_${activeLocale}` as "description_en")} rows={4} className="input-field resize-none" />
+          <textarea key={`description_${activeLocale}`} {...register(`description_${activeLocale}` as "description_en")} rows={4} className="input-field resize-none" />
         </div>
 
         <div>
           <label className="block text-xs mb-1.5" style={{ color: "var(--text-secondary)" }}>Challenge Solved ({activeLocale})</label>
-          <textarea {...register(`challenge_${activeLocale}` as "challenge_en")} rows={3} className="input-field resize-none" />
+          <textarea key={`challenge_${activeLocale}`} {...register(`challenge_${activeLocale}` as "challenge_en")} rows={3} className="input-field resize-none" />
         </div>
       </div>
 

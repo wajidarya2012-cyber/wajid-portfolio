@@ -15,6 +15,8 @@ const ALLOWED_KEYS = new Set([
   "seo_default_description",
   "maintenance_mode",
   "cv_download_tracking",
+  "brand_name",
+  "brand_tagline",
 ]);
 
 export async function POST(request: NextRequest) {

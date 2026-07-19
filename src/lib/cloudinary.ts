@@ -1,10 +1,22 @@
 import { v2 as cloudinary } from "cloudinary";
 
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME!,
-  api_key:    process.env.CLOUDINARY_API_KEY!,
-  api_secret: process.env.CLOUDINARY_API_SECRET!,
-});
+// Configured lazily (per-call) rather than once at import time, so a missing/
+// invalid credential produces a clear, actionable error instead of Cloudinary
+// silently receiving `undefined` values (which previously surfaced only as a
+// generic "Upload failed").
+function configureCloudinary() {
+  const cloud_name = process.env.CLOUDINARY_CLOUD_NAME;
+  const api_key    = process.env.CLOUDINARY_API_KEY;
+  const api_secret = process.env.CLOUDINARY_API_SECRET;
+
+  if (!cloud_name || !api_key || !api_secret) {
+    throw new Error(
+      "Cloudinary is not configured: CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET must all be set in .env (and the dev/deployment server restarted after editing it)."
+    );
+  }
+
+  cloudinary.config({ cloud_name, api_key, api_secret, secure: true });
+}
 
 export interface UploadResult {
   url:       string;
@@ -21,6 +33,7 @@ export async function uploadImage(
   folder: string,
   options?: Record<string, unknown>
 ): Promise<UploadResult> {
+  configureCloudinary();
   const result = await cloudinary.uploader.upload(source, {
     folder:         `wajid-portfolio/${folder}`,
     transformation: [{ quality: "auto", fetch_format: "auto" }],
@@ -43,6 +56,7 @@ export async function uploadBuffer(
   filename?: string,
   options?: Record<string, unknown>
 ): Promise<UploadResult> {
+  configureCloudinary();
   return new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
       {
@@ -92,6 +106,7 @@ export async function deleteResource(
   publicId:     string,
   resourceType: "image" | "raw" = "image"
 ): Promise<void> {
+  configureCloudinary();
   await cloudinary.uploader.destroy(publicId, { resource_type: resourceType });
 }
 

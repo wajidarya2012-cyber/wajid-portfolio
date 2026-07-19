@@ -488,6 +488,32 @@ model Certification {
 }
 
 // =============================================================================
+// PROFESSIONAL JOURNEY (homepage slideshow, between Certifications & Projects)
+// =============================================================================
+
+model JourneySlide {
+  id   String @id @default(uuid())
+
+  title_en   String
+  title_ps   String
+  title_fa   String
+
+  caption_en String? @db.Text
+  caption_ps String? @db.Text
+  caption_fa String? @db.Text
+
+  /// Cloudinary image URL
+  imageUrl      String
+  imagePublicId String?
+
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("journey_slides")
+}
+
+// =============================================================================
 // BLOG
 // =============================================================================
 

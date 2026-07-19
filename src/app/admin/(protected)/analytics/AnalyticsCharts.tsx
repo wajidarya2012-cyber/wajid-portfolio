@@ -4,11 +4,14 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 
 interface Props {
   data: {
+    summary: { totalPageViews: number; totalVisitors: number; cvDownloads: number; contactSubmits: number };
     visitorTrend: { date: string; views: number; unique: number }[];
     topPages:     { page: string; views: number }[];
     countries:    { country: string; count: number }[];
     topProjects:  { id: string; title_en: string; slug: string; viewCount: number }[];
   };
+  from?: string;
+  to?: string;
 }
 
 const CHART_STYLE = {
@@ -19,12 +22,52 @@ const CHART_STYLE = {
   tooltip:    { background: "#0f1629", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 12 },
 };
 
-export default function AnalyticsCharts({ data }: Props) {
+function rangeLabel(from?: string, to?: string) {
+  if (!from && !to) return "All Time";
+  if (from && to)   return `${from} → ${to}`;
+  if (from)         return `From ${from}`;
+  return `Until ${to}`;
+}
+
+export default function AnalyticsCharts({ data, from, to }: Props) {
+  const label = rangeLabel(from, to);
+  const SUMMARY = [
+    { label:"Page Views",     value:data.summary.totalPageViews, icon:"👁" },
+    { label:"Unique Visitors",value:data.summary.totalVisitors,  icon:"👤" },
+    { label:"CV Downloads",   value:data.summary.cvDownloads,    icon:"📄" },
+    { label:"Contact Submits",value:data.summary.contactSubmits, icon:"📬" },
+  ];
+
+  const hasAnyData =
+    data.summary.totalPageViews > 0 || data.summary.totalVisitors > 0 ||
+    data.summary.cvDownloads > 0 || data.summary.contactSubmits > 0;
+
   return (
     <div className="space-y-6">
+      {/* Summary cards */}
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {SUMMARY.map(({ label:l, value, icon }) => (
+          <div key={l} className="glass-card rounded-2xl p-5">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-semibold uppercase tracking-wider" style={{ color:"var(--text-muted)" }}>{l}</span>
+              <span style={{ fontSize:"1.1rem" }}>{icon}</span>
+            </div>
+            <p className="font-display text-2xl font-bold">{value.toLocaleString()}</p>
+          </div>
+        ))}
+      </div>
+
+      {!hasAnyData && (
+        <div className="glass-card rounded-2xl p-10 text-center">
+          <p className="text-sm" style={{ color:"var(--text-muted)" }}>
+            No analytics data {from || to ? "for the selected date range" : "yet"}. Data will appear here once visitors browse the site.
+          </p>
+        </div>
+      )}
+
       {/* Visitor trend */}
       <div className="glass-card rounded-2xl p-6">
-        <h2 className="font-display font-bold mb-5">Visitor Trend — Last 30 Days</h2>
+        <h2 className="font-display font-bold mb-5">Visitor Trend — {label}</h2>
         {data.visitorTrend.length > 0 ? (
           <ResponsiveContainer width="100%" height={240}>
             <LineChart data={data.visitorTrend}>

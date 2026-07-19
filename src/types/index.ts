@@ -9,6 +9,7 @@ import type {
   Experience,
   Education,
   Certification,
+  JourneySlide,
   BlogPost,
   GalleryItem,
   ContactMessage,
@@ -20,7 +21,7 @@ import type {
 // ── Re-export Prisma types ─────────────────────────────────────────────────
 export type {
   Project, ProjectImage, ProjectFeature, ProjectLink, ProjectCategory,
-  Skill, SkillCategory, Experience, Education, Certification,
+  Skill, SkillCategory, Experience, Education, Certification, JourneySlide,
   BlogPost, GalleryItem, ContactMessage, Profile, ActivityLog, User,
 };
 

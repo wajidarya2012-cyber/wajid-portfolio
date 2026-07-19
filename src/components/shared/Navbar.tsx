@@ -26,7 +26,7 @@ function resolveHref(href: string, locale: string, pathname: string): string {
   return pathname === `/${locale}` ? href : `/${locale}${href}`;
 }
 
-export default function Navbar({ locale }: { locale: string }) {
+export default function Navbar({ locale, brandName = "W.Arya", brandTagline = "IT Manager & Developer" }: { locale: string; brandName?: string; brandTagline?: string }) {
   const t                          = useTranslations("nav");
   const { theme, toggleTheme }     = useTheme();
   const pathname                   = usePathname();
@@ -103,10 +103,10 @@ export default function Navbar({ locale }: { locale: string }) {
           {/* Logo */}
           <Link href={`/${locale}`} style={{ textDecoration:"none", display:"flex", flexDirection:"column", lineHeight:1.1 }}>
             <span style={{ fontFamily:"var(--font-syne)", fontWeight:800, fontSize:"1.2rem", background:"linear-gradient(135deg,#4f46e5,#06b6d4)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>
-              W.Arya
+              {brandName}
             </span>
             <span style={{ fontSize:"0.58rem", color:"rgba(255,255,255,0.5)", fontFamily:"var(--font-fira)", letterSpacing:"0.05em" }}>
-              IT Manager & Developer
+              {brandTagline}
             </span>
           </Link>
 
