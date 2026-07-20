@@ -17,11 +17,14 @@
     "bio": "تبدیل ایده‌ها به راه‌حل‌های دیجیتال از طریق توسعه نرم‌افزار، مدیریت IT و نوآوری.",
     "contactBtn": "تماس با من",
     "cvBtn": "دانلود رزومه",
-    "badge": { "title": "فارغ‌التحصیل علوم کامپیوتر", "sub": "IT و شبکه" }
+    "badge": { "title": "فارغ‌التحصیل علوم کامپیوتر", "sub": "IT و شبکه" },
+    "yearsShort": "سال",
+    "projectsShort": "پروژه"
   },
   "about": {
     "eyebrow": "بیشتر بدانید",
     "title": "درباره من",
+    "quickFacts": "حقایق سریع",
     "values": {
       "innovation": "نوآوری",
       "innovationDesc": "حل مشکلات پیچیده با راه‌حل‌های دیجیتال خلاقانه",
@@ -94,6 +97,7 @@
     "email": "ایمیل",
     "phone": "تلفن",
     "location": "موقعیت",
+    "workingHours": "ساعات کاری",
     "form": {
       "name": "نام کامل",
       "email": "آدرس ایمیل",
@@ -126,7 +130,15 @@
   },
   "footer": {
     "rights": "تمام حقوق محفوظ است.",
-    "builtWith": "ساخته شده با Next.js و Tailwind CSS"
+    "builtWith": "ساخته شده با Next.js و Tailwind CSS",
+    "quickLinks": "لینک‌های سریع",
+    "contact": "تماس",
+    "contactEmail": "ایمیل",
+    "contactPhone": "تلفن",
+    "contactLocation": "موقعیت",
+    "contactHours": "ساعات کاری",
+    "privacyPolicy": "حریم خصوصی",
+    "termsConditions": "شرایط و ضوابط"
   },
   "common": {
     "loading": "در حال بارگذاری...",

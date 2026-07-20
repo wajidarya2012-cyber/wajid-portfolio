@@ -88,6 +88,7 @@ export const skillCategorySchema = z.object({
   name_fa:   z.string().min(1),
   icon:      z.string().min(1),
   sortOrder: z.number().int().min(0).optional(),
+  visible:   z.boolean().optional(),
 });
 
 // ── Skill ──────────────────────────────────────────────────────────────────
@@ -98,6 +99,9 @@ export const skillSchema = z.object({
   percentage: z.number().int().min(0).max(100),
   categoryId: z.string().min(1),
   sortOrder:  z.number().int().min(0).optional(),
+  icon:       z.string().optional(),
+  visible:    z.boolean().optional(),
+  featured:   z.boolean().optional(),
 });
 
 // ── Experience ─────────────────────────────────────────────────────────────

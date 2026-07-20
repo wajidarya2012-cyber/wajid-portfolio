@@ -22,18 +22,32 @@ export default async function LocaleLayout({
   const dir      = isRTL(locale) ? "rtl" : "ltr";
   const profile  = await prisma.profile.findFirst().catch(() => null);
   const brandSettings = await prisma.siteSettings.findMany({
-    where: { key: { in: ["brand_name", "brand_tagline"] } },
+    where: { key: { in: [
+      "brand_name", "brand_tagline", "logo_url", "nav_items",
+      "footer_visibility", "legal_privacy_url", "legal_terms_url", "contact_working_hours",
+    ] } },
   }).catch(() => []);
   const brandMap = Object.fromEntries(brandSettings.map(s => [s.key, s.value]));
+  let navConfig: import("@/lib/navConfig").NavItemConfig[] = [];
+  try { const parsed = brandMap.nav_items ? JSON.parse(brandMap.nav_items) : []; if (Array.isArray(parsed)) navConfig = parsed; } catch {}
+  let footerVisibility: Record<string, boolean> = {};
+  try { footerVisibility = brandMap.footer_visibility ? JSON.parse(brandMap.footer_visibility) : {}; } catch {}
 
   return (
     <NextIntlClientProvider messages={messages}>
       <ThemeProvider>
         <div dir={dir} lang={locale} style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
           <ScrollUI />
-          <Navbar locale={locale} brandName={brandMap.brand_name} brandTagline={brandMap.brand_tagline} />
+          <Navbar locale={locale} brandName={brandMap.brand_name} brandTagline={brandMap.brand_tagline} logoUrl={brandMap.logo_url} navConfig={navConfig} />
           <main style={{ flex: 1 }}>{children}</main>
-          <Footer locale={locale} profile={profile} />
+          <Footer
+            locale={locale}
+            profile={profile}
+            navConfig={navConfig}
+            footerVisibility={footerVisibility}
+            workingHours={brandMap.contact_working_hours}
+            legalLinks={{ privacyUrl: brandMap.legal_privacy_url, termsUrl: brandMap.legal_terms_url }}
+          />
         </div>
       </ThemeProvider>
     </NextIntlClientProvider>

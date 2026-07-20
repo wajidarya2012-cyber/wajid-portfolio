@@ -132,6 +132,61 @@ model Profile {
   availableText_ps String?
   availableText_fa String?
 
+  // Hero — optional greeting kicker shown above the name (trilingual)
+  heroGreeting_en String?
+  heroGreeting_ps String?
+  heroGreeting_fa String?
+
+  // Hero — primary/secondary CTA buttons. Text is trilingual; URL is shared.
+  // Empty/unset falls back to the built-in Contact/CV-download behaviour.
+  heroCtaPrimaryText_en   String?
+  heroCtaPrimaryText_ps   String?
+  heroCtaPrimaryText_fa   String?
+  heroCtaPrimaryUrl       String?
+  heroCtaSecondaryText_en String?
+  heroCtaSecondaryText_ps String?
+  heroCtaSecondaryText_fa String?
+  heroCtaSecondaryUrl     String?
+
+  /// Rotating typed titles under the name, e.g. [{ en, ps, fa }, ...].
+  /// Falls back to the built-in translation-based phrase list when null.
+  heroRoles Json?
+
+  /// Hero "Core Technologies" tag badges — simple string array, e.g. ["Python","Java"].
+  /// Falls back to the built-in default list when null.
+  heroTechTags Json?
+
+  /// Show/hide toggles for optional Hero elements, e.g.
+  /// { showGreeting, showSubtitle, showAvailabilityBadge, showProfileBadge,
+  ///   showStats, showSocialLinks, showTechTags, showScrollIndicator, showBackground }.
+  /// Missing keys default to visible (true) — null means "show everything".
+  heroVisibility Json?
+
+  // About — optional section title/subtitle overrides (trilingual). Falls back to the
+  // built-in translation when unset.
+  aboutTitle_en    String?
+  aboutTitle_ps    String?
+  aboutTitle_fa    String?
+  aboutSubtitle_en String?
+  aboutSubtitle_ps String?
+  aboutSubtitle_fa String?
+
+  // About — optional signature image (Cloudinary)
+  signatureUrl      String?
+  signaturePublicId String?
+
+  // About — optional CV download button text override (trilingual). Reuses the
+  // existing cvUrl/cvPublicId fields above; falls back to the Hero button text.
+  aboutCvBtnText_en String?
+  aboutCvBtnText_ps String?
+  aboutCvBtnText_fa String?
+
+  /// Show/hide toggles for optional About section elements, e.g.
+  /// { showSubtitle, showProfileImage, showSignature, showCvButton,
+  ///   showQuickFacts, showCoreValues, showCounters, showTechStack }.
+  /// Missing keys default to visible (true) — null means "show everything".
+  aboutVisibility Json?
+
   // Hero profile badge (trilingual)
   badgeTitle_en String? @default("CS Graduate")
   badgeTitle_ps String?
@@ -350,6 +405,7 @@ model SkillCategory {
   /// Font Awesome or Heroicons icon name
   icon      String   @default("code")
   sortOrder Int      @default(0)
+  visible   Boolean  @default(true)
 
   // Relations
   skills    Skill[]
@@ -367,6 +423,11 @@ model Skill {
 
   /// 0–100
   percentage Int    @default(0)
+
+  /// Optional per-skill icon/emoji (falls back to the category icon when unset)
+  icon       String?
+  visible    Boolean @default(true)
+  featured   Boolean @default(false)
 
   categoryId String
   category   SkillCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)

@@ -14,7 +14,7 @@ type TabKey = "en"|"ps"|"fa";
 
 const G = "linear-gradient(135deg,#4f46e5,#06b6d4)";
 
-export default function ProfileForm({ profile }: { profile: Profile | null }) {
+export default function ProfileForm({ profile, heroBgImages }: { profile: Profile | null; heroBgImages: string[] }) {
   const router = useRouter();
   const [tab, setTab]         = useState<TabKey>("en");
   const [saving, setSaving]   = useState(false);
@@ -81,6 +81,28 @@ export default function ProfileForm({ profile }: { profile: Profile | null }) {
     footerBuiltWith_en: profile?.footerBuiltWith_en ?? "Built with Next.js & Tailwind CSS",
     footerBuiltWith_ps: profile?.footerBuiltWith_ps ?? "",
     footerBuiltWith_fa: profile?.footerBuiltWith_fa ?? "",
+    heroGreeting_en: (profile as unknown as Record<string,string>)?.heroGreeting_en ?? "",
+    heroGreeting_ps: (profile as unknown as Record<string,string>)?.heroGreeting_ps ?? "",
+    heroGreeting_fa: (profile as unknown as Record<string,string>)?.heroGreeting_fa ?? "",
+    heroCtaPrimaryText_en: (profile as unknown as Record<string,string>)?.heroCtaPrimaryText_en ?? "",
+    heroCtaPrimaryText_ps: (profile as unknown as Record<string,string>)?.heroCtaPrimaryText_ps ?? "",
+    heroCtaPrimaryText_fa: (profile as unknown as Record<string,string>)?.heroCtaPrimaryText_fa ?? "",
+    heroCtaPrimaryUrl:     (profile as unknown as Record<string,string>)?.heroCtaPrimaryUrl     ?? "",
+    heroCtaSecondaryText_en: (profile as unknown as Record<string,string>)?.heroCtaSecondaryText_en ?? "",
+    heroCtaSecondaryText_ps: (profile as unknown as Record<string,string>)?.heroCtaSecondaryText_ps ?? "",
+    heroCtaSecondaryText_fa: (profile as unknown as Record<string,string>)?.heroCtaSecondaryText_fa ?? "",
+    heroCtaSecondaryUrl:     (profile as unknown as Record<string,string>)?.heroCtaSecondaryUrl     ?? "",
+    aboutTitle_en: (profile as unknown as Record<string,string>)?.aboutTitle_en ?? "",
+    aboutTitle_ps: (profile as unknown as Record<string,string>)?.aboutTitle_ps ?? "",
+    aboutTitle_fa: (profile as unknown as Record<string,string>)?.aboutTitle_fa ?? "",
+    aboutSubtitle_en: (profile as unknown as Record<string,string>)?.aboutSubtitle_en ?? "",
+    aboutSubtitle_ps: (profile as unknown as Record<string,string>)?.aboutSubtitle_ps ?? "",
+    aboutSubtitle_fa: (profile as unknown as Record<string,string>)?.aboutSubtitle_fa ?? "",
+    aboutCvBtnText_en: (profile as unknown as Record<string,string>)?.aboutCvBtnText_en ?? "",
+    aboutCvBtnText_ps: (profile as unknown as Record<string,string>)?.aboutCvBtnText_ps ?? "",
+    aboutCvBtnText_fa: (profile as unknown as Record<string,string>)?.aboutCvBtnText_fa ?? "",
+    signatureUrl:       (profile as unknown as Record<string,string>)?.signatureUrl       ?? "",
+    signaturePublicId:  (profile as unknown as Record<string,string>)?.signaturePublicId  ?? "",
   });
 
   const [coreValues, setCoreValues] = useState<{ icon:string; title_en:string; title_ps:string; title_fa:string; desc_en:string; desc_ps:string; desc_fa:string }[]>(
@@ -94,6 +116,91 @@ export default function ProfileForm({ profile }: { profile: Profile | null }) {
 
   function setValueField(idx: number, field: string, value: string) {
     setCoreValues(prev => prev.map((v, i) => i === idx ? { ...v, [field]: value } : v));
+  }
+
+  const [heroRoles, setHeroRoles] = useState<{ en:string; ps:string; fa:string }[]>(
+    (profile as unknown as Record<string,unknown>)?.heroRoles as { en:string; ps:string; fa:string }[] ?? []
+  );
+  const [heroTechTags, setHeroTechTags] = useState<string>(
+    ((profile as unknown as Record<string,unknown>)?.heroTechTags as string[] ?? []).join(", ")
+  );
+  const DEFAULT_VISIBILITY = {
+    showGreeting:true, showSubtitle:true, showAvailabilityBadge:true, showProfileBadge:true,
+    showStats:true, showSocialLinks:true, showTechTags:true, showScrollIndicator:true, showBackground:true,
+  };
+  const [heroVisibility, setHeroVisibility] = useState<Record<string, boolean>>({
+    ...DEFAULT_VISIBILITY,
+    ...(((profile as unknown as Record<string,unknown>)?.heroVisibility as Record<string,boolean>) ?? {}),
+  });
+
+  const ABOUT_DEFAULT_VISIBILITY = {
+    showSubtitle:true, showProfileImage:false, showSignature:true, showCvButton:true,
+    showQuickFacts:true, showCoreValues:true, showCounters:false, showTechStack:false,
+  };
+  const [aboutVisibility, setAboutVisibility] = useState<Record<string, boolean>>({
+    ...ABOUT_DEFAULT_VISIBILITY,
+    ...(((profile as unknown as Record<string,unknown>)?.aboutVisibility as Record<string,boolean>) ?? {}),
+  });
+  const [signatureUploading, setSignatureUploading] = useState(false);
+
+  async function handleSignatureUpload(file: File) {
+    if (!file) return;
+    setSignatureUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("folder", "signature");
+      const res  = await fetch("/api/v1/admin/upload", { method:"POST", body:fd });
+      const data = await res.json().catch(() => null);
+      if (res.ok && data?.success) { set("signatureUrl", data.data.url); set("signaturePublicId", data.data.publicId); }
+      else setMsg({ type:"error", text: data?.error ?? "Signature upload failed." });
+    } catch (err) {
+      setMsg({ type:"error", text: err instanceof Error ? err.message : "Network error during upload." });
+    } finally {
+      setSignatureUploading(false);
+    }
+  }
+
+  const [heroBg, setHeroBg] = useState<string[]>(heroBgImages ?? []);
+  const [heroBgUploading, setHeroBgUploading] = useState(false);
+  const [heroBgSaving, setHeroBgSaving]       = useState(false);
+  const [heroBgMsg, setHeroBgMsg]             = useState<{type:"success"|"error";text:string}|null>(null);
+
+  function addHeroRole() { setHeroRoles(prev => [...prev, { en:"", ps:"", fa:"" }]); }
+  function removeHeroRole(idx: number) { setHeroRoles(prev => prev.filter((_, i) => i !== idx)); }
+  function setHeroRoleField(idx: number, field: "en"|"ps"|"fa", value: string) {
+    setHeroRoles(prev => prev.map((r, i) => i === idx ? { ...r, [field]: value } : r));
+  }
+
+  async function handleHeroBgUpload(file: File) {
+    if (!file) return;
+    setHeroBgUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("folder", "hero-bg");
+      const res  = await fetch("/api/v1/admin/upload", { method:"POST", body:fd });
+      const data = await res.json().catch(() => null);
+      if (res.ok && data?.success) setHeroBg(prev => [...prev, data.data.url]);
+      else setHeroBgMsg({ type:"error", text: data?.error ?? "Image upload failed." });
+    } catch (err) {
+      setHeroBgMsg({ type:"error", text: err instanceof Error ? err.message : "Network error during upload." });
+    } finally {
+      setHeroBgUploading(false);
+    }
+  }
+  function removeHeroBgImage(url: string) { setHeroBg(prev => prev.filter(u => u !== url)); }
+
+  async function saveHeroBg() {
+    setHeroBgSaving(true); setHeroBgMsg(null);
+    const res  = await fetch("/api/v1/admin/settings", {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ hero_bg_images: JSON.stringify(heroBg) }),
+    });
+    const data = await res.json();
+    setHeroBgSaving(false);
+    setHeroBgMsg(data.success ? { type:"success", text:"Hero background saved!" } : { type:"error", text:"Failed to save." });
+    if (data.success) router.refresh();
   }
 
   function set(key: string, value: string | number) {
@@ -137,10 +244,19 @@ export default function ProfileForm({ profile }: { profile: Profile | null }) {
 
   async function handleSave() {
     setSaving(true); setMsg(null);
+    const heroRolesPayload = heroRoles.filter(r => r.en || r.ps || r.fa);
+    const heroTechTagsPayload = heroTechTags.split(",").map(s => s.trim()).filter(Boolean);
     const res  = await fetch("/api/v1/admin/profile", {
       method:"PUT",
       headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({ ...form, coreValues }),
+      body: JSON.stringify({
+        ...form,
+        coreValues,
+        heroRoles: heroRolesPayload.length ? heroRolesPayload : null,
+        heroTechTags: heroTechTagsPayload.length ? heroTechTagsPayload : null,
+        heroVisibility,
+        aboutVisibility,
+      }),
     });
     const data = await res.json();
     setSaving(false);
@@ -251,6 +367,46 @@ export default function ProfileForm({ profile }: { profile: Profile | null }) {
               onChange={e => set(`aboutText_${key}`, e.target.value)}
               rows={5} style={{ ...inputStyle, resize:"vertical", direction: dir }} />
           </div>
+          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:"1rem" }}>
+            <div>
+              <label style={labelStyle}>Hero Greeting (optional)</label>
+              <input value={(form as Record<string,unknown>)[`heroGreeting_${key}`] as string}
+                onChange={e => set(`heroGreeting_${key}`, e.target.value)}
+                placeholder="Hello, I'm" style={{ ...inputStyle, direction: dir }} />
+            </div>
+            <div>
+              <label style={labelStyle}>Primary Button Text</label>
+              <input value={(form as Record<string,unknown>)[`heroCtaPrimaryText_${key}`] as string}
+                onChange={e => set(`heroCtaPrimaryText_${key}`, e.target.value)}
+                placeholder="Contact Me" style={{ ...inputStyle, direction: dir }} />
+            </div>
+            <div>
+              <label style={labelStyle}>Secondary Button Text</label>
+              <input value={(form as Record<string,unknown>)[`heroCtaSecondaryText_${key}`] as string}
+                onChange={e => set(`heroCtaSecondaryText_${key}`, e.target.value)}
+                placeholder="Download CV" style={{ ...inputStyle, direction: dir }} />
+            </div>
+          </div>
+          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:"1rem" }}>
+            <div>
+              <label style={labelStyle}>About — Section Title (optional)</label>
+              <input value={(form as Record<string,unknown>)[`aboutTitle_${key}`] as string}
+                onChange={e => set(`aboutTitle_${key}`, e.target.value)}
+                placeholder="About Me" style={{ ...inputStyle, direction: dir }} />
+            </div>
+            <div>
+              <label style={labelStyle}>About — Subtitle (optional)</label>
+              <input value={(form as Record<string,unknown>)[`aboutSubtitle_${key}`] as string}
+                onChange={e => set(`aboutSubtitle_${key}`, e.target.value)}
+                style={{ ...inputStyle, direction: dir }} />
+            </div>
+            <div>
+              <label style={labelStyle}>About — CV Button Text (optional)</label>
+              <input value={(form as Record<string,unknown>)[`aboutCvBtnText_${key}`] as string}
+                onChange={e => set(`aboutCvBtnText_${key}`, e.target.value)}
+                placeholder="Download CV" style={{ ...inputStyle, direction: dir }} />
+            </div>
+          </div>
         </div>
       ))}
 
@@ -318,6 +474,101 @@ export default function ProfileForm({ profile }: { profile: Profile | null }) {
             <label style={labelStyle}>Projects Count</label>
             <input type="number" min={0} value={form.projectsCount} onChange={e => set("projectsCount", Number(e.target.value))} style={inputStyle} />
           </div>
+          <div>
+            <label style={labelStyle}>Primary Button URL (optional — default: #contact)</label>
+            <input value={form.heroCtaPrimaryUrl} onChange={e => set("heroCtaPrimaryUrl", e.target.value)} placeholder="#contact" style={inputStyle} />
+          </div>
+          <div>
+            <label style={labelStyle}>Secondary Button URL (optional — default: CV download)</label>
+            <input value={form.heroCtaSecondaryUrl} onChange={e => set("heroCtaSecondaryUrl", e.target.value)} placeholder="https://..." style={inputStyle} />
+          </div>
+        </div>
+      </div>
+
+      {/* Hero — Rotating Titles */}
+      <div className="admin-card">
+        <h3 style={{ fontWeight:700, fontSize:"0.95rem", marginBottom:"0.25rem" }}>Hero Section — Rotating Titles</h3>
+        <p style={{ fontSize:"0.8rem", color:"var(--text-muted)", marginBottom:"1rem" }}>
+          Phrases typed under your name. Leave empty to use the site&apos;s default list.
+        </p>
+        <div style={{ display:"flex", flexDirection:"column", gap:"0.75rem" }}>
+          {heroRoles.map((r, idx) => (
+            <div key={idx} style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr auto", gap:"0.5rem", alignItems:"center" }}>
+              <input value={r.en} onChange={e => setHeroRoleField(idx, "en", e.target.value)} placeholder="English" style={inputStyle} />
+              <input value={r.ps} onChange={e => setHeroRoleField(idx, "ps", e.target.value)} placeholder="پښتو" style={{ ...inputStyle, direction:"rtl" }} />
+              <input value={r.fa} onChange={e => setHeroRoleField(idx, "fa", e.target.value)} placeholder="دری" style={{ ...inputStyle, direction:"rtl" }} />
+              <button className="btn-danger" style={{ padding:"0.5rem 0.75rem", fontSize:"0.75rem" }} onClick={() => removeHeroRole(idx)}>✕</button>
+            </div>
+          ))}
+        </div>
+        <button className="btn-secondary" style={{ marginTop:"0.875rem", fontSize:"0.8rem" }} onClick={addHeroRole}>+ Add Phrase</button>
+      </div>
+
+      {/* Hero — Tech Tags */}
+      <div className="admin-card">
+        <h3 style={{ fontWeight:700, fontSize:"0.95rem", marginBottom:"0.25rem" }}>Hero Section — Tech Tag Badges</h3>
+        <p style={{ fontSize:"0.8rem", color:"var(--text-muted)", marginBottom:"0.875rem" }}>
+          Comma-separated list. Leave empty to use the default list.
+        </p>
+        <input value={heroTechTags} onChange={e => setHeroTechTags(e.target.value)} placeholder="Python, Java, Node.js, IT Security" style={inputStyle} />
+      </div>
+
+      {/* Hero — Background Image / Slideshow */}
+      <div className="admin-card">
+        <h3 style={{ fontWeight:700, fontSize:"0.95rem", marginBottom:"0.25rem" }}>Hero Section — Background Image / Slideshow</h3>
+        <p style={{ fontSize:"0.8rem", color:"var(--text-muted)", marginBottom:"0.875rem" }}>
+          Upload one image for a static background, or several for an auto-rotating slideshow. Leave empty for the default particle background.
+        </p>
+        {heroBg.length > 0 && (
+          <div style={{ display:"flex", flexWrap:"wrap", gap:"0.75rem", marginBottom:"0.875rem" }}>
+            {heroBg.map(url => (
+              <div key={url} style={{ position:"relative", width:"96px", height:"64px", borderRadius:"6px", overflow:"hidden", border:"1px solid var(--border)" }}>
+                <img src={url} alt="" style={{ width:"100%", height:"100%", objectFit:"cover" }} />
+                <button onClick={() => removeHeroBgImage(url)}
+                  style={{ position:"absolute", top:"2px", right:"2px", width:"20px", height:"20px", borderRadius:"50%", border:"none", background:"rgba(0,0,0,0.7)", color:"#fff", fontSize:"0.7rem", cursor:"pointer", lineHeight:1 }}>
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+        <input type="file" accept="image/*" id="hero-bg-upload" style={{ display:"none" }}
+          onChange={e => { const f = e.target.files?.[0]; if (f) handleHeroBgUpload(f); }} />
+        <div style={{ display:"flex", gap:"0.75rem", flexWrap:"wrap", alignItems:"center" }}>
+          <label htmlFor="hero-bg-upload" className="btn-secondary" style={{ fontSize:"0.8rem", cursor:"pointer" }}>
+            {heroBgUploading ? "Uploading…" : "+ Add Image"}
+          </label>
+          <button className="btn-primary" style={{ fontSize:"0.8rem" }} onClick={saveHeroBg} disabled={heroBgSaving || heroBgUploading}>
+            {heroBgSaving ? "Saving…" : "Save Background"}
+          </button>
+        </div>
+        {heroBgMsg && <div className={heroBgMsg.type==="success"?"alert-success":"alert-error"} style={{ marginTop:"0.75rem" }}>{heroBgMsg.type==="success"?"✅":"❌"} {heroBgMsg.text}</div>}
+      </div>
+
+      {/* Hero — Visibility Toggles */}
+      <div className="admin-card">
+        <h3 style={{ fontWeight:700, fontSize:"0.95rem", marginBottom:"0.25rem" }}>Hero Section — Show / Hide Elements</h3>
+        <p style={{ fontSize:"0.8rem", color:"var(--text-muted)", marginBottom:"1rem" }}>
+          Toggle optional Hero elements on or off without touching any code.
+        </p>
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"0.6rem" }}>
+          {[
+            { key:"showGreeting",           label:"Greeting kicker" },
+            { key:"showSubtitle",           label:"Subtitle (Professional Title)" },
+            { key:"showAvailabilityBadge",  label:"Availability badge" },
+            { key:"showProfileBadge",       label:"Profile badge (CS Graduate)" },
+            { key:"showStats",              label:"Stats badge (Years / Projects)" },
+            { key:"showSocialLinks",        label:"Social links" },
+            { key:"showTechTags",           label:"Tech tag badges" },
+            { key:"showScrollIndicator",    label:"Scroll indicator" },
+            { key:"showBackground",         label:"Background image / slideshow" },
+          ].map(({ key, label }) => (
+            <label key={key} style={{ display:"flex", alignItems:"center", gap:"0.5rem", fontSize:"0.82rem", color:"var(--text-secondary)", cursor:"pointer" }}>
+              <input type="checkbox" checked={heroVisibility[key] !== false}
+                onChange={e => setHeroVisibility(prev => ({ ...prev, [key]: e.target.checked }))} />
+              {label}
+            </label>
+          ))}
         </div>
       </div>
 
@@ -350,6 +601,53 @@ export default function ProfileForm({ profile }: { profile: Profile | null }) {
               <input value={v.title_en} onChange={e => setValueField(idx, "title_en", e.target.value)} placeholder="Title" style={inputStyle} />
               <input value={v.desc_en} onChange={e => setValueField(idx, "desc_en", e.target.value)} placeholder="Description" style={inputStyle} />
             </div>
+          ))}
+        </div>
+      </div>
+
+      {/* About — Signature Image */}
+      <div className="admin-card">
+        <h3 style={{ fontWeight:700, fontSize:"0.95rem", marginBottom:"0.25rem" }}>About Section — Signature Image (optional)</h3>
+        <p style={{ fontSize:"0.8rem", color:"var(--text-muted)", marginBottom:"0.875rem" }}>
+          Shown under your About description if uploaded. The CV download button reuses the CV file from the field above.
+        </p>
+        <div style={{ display:"flex", alignItems:"center", gap:"1rem", flexWrap:"wrap" }}>
+          <div style={{ width:"140px", height:"56px", borderRadius:"6px", overflow:"hidden", background:"var(--bg-secondary)", border:"1px solid var(--border)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+            {form.signatureUrl ? <img src={form.signatureUrl} alt="Signature" style={{ maxWidth:"100%", maxHeight:"100%", objectFit:"contain" }} /> : <span style={{ fontSize:"1.2rem", opacity:0.4 }}>✍️</span>}
+          </div>
+          <input type="file" accept="image/*" id="signature-upload" style={{ display:"none" }}
+            onChange={e => { const f = e.target.files?.[0]; if (f) handleSignatureUpload(f); }} />
+          <label htmlFor="signature-upload" className="btn-secondary" style={{ fontSize:"0.8rem", cursor:"pointer" }}>
+            {signatureUploading ? "Uploading…" : form.signatureUrl ? "Replace Signature" : "Upload Signature"}
+          </label>
+          {form.signatureUrl && (
+            <button type="button" className="btn-ghost" style={{ fontSize:"0.8rem" }} onClick={()=>{ set("signatureUrl",""); set("signaturePublicId",""); }}>Remove</button>
+          )}
+        </div>
+      </div>
+
+      {/* About — Visibility Toggles */}
+      <div className="admin-card">
+        <h3 style={{ fontWeight:700, fontSize:"0.95rem", marginBottom:"0.25rem" }}>About Section — Show / Hide Elements</h3>
+        <p style={{ fontSize:"0.8rem", color:"var(--text-muted)", marginBottom:"1rem" }}>
+          Toggle optional About elements on or off without touching any code.
+        </p>
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"0.6rem" }}>
+          {[
+            { key:"showSubtitle",     label:"Subtitle" },
+            { key:"showProfileImage", label:"Small profile image" },
+            { key:"showSignature",    label:"Signature image" },
+            { key:"showCvButton",     label:"CV download button" },
+            { key:"showQuickFacts",   label:"Quick Facts panel" },
+            { key:"showCoreValues",   label:"Core Values cards" },
+            { key:"showCounters",     label:"Achievement counters" },
+            { key:"showTechStack",    label:"Tech stack tags" },
+          ].map(({ key, label }) => (
+            <label key={key} style={{ display:"flex", alignItems:"center", gap:"0.5rem", fontSize:"0.82rem", color:"var(--text-secondary)", cursor:"pointer" }}>
+              <input type="checkbox" checked={aboutVisibility[key] !== false}
+                onChange={e => setAboutVisibility(prev => ({ ...prev, [key]: e.target.checked }))} />
+              {label}
+            </label>
           ))}
         </div>
       </div>

@@ -17,11 +17,14 @@
     "bio": "د سافټویر پراختیا، IT مدیریت او نوښت له لارې نظریات ډیجیټل حلونو ته بدلوم.",
     "contactBtn": "اړیکه ونیسئ",
     "cvBtn": "CV ډاونلوډ کړئ",
-    "badge": { "title": "د کمپیوتر ساینس فارغ", "sub": "IT او شبکې" }
+    "badge": { "title": "د کمپیوتر ساینس فارغ", "sub": "IT او شبکې" },
+    "yearsShort": "کلونه",
+    "projectsShort": "پروژې"
   },
   "about": {
     "eyebrow": "زما د اړه",
     "title": "زما د اړه",
+    "quickFacts": "چټک حقایق",
     "values": {
       "innovation": "نوښت",
       "innovationDesc": "د ډیجیټل حلونو له لارې پیچلو ستونزو حل کول",
@@ -94,6 +97,7 @@
     "email": "بریښنالیک",
     "phone": "تلیفون",
     "location": "ځای",
+    "workingHours": "د کار ساعتونه",
     "form": {
       "name": "بشپړ نوم",
       "email": "د بریښنالیک پته",
@@ -126,7 +130,15 @@
   },
   "footer": {
     "rights": "ټول حقوق خوندي دي.",
-    "builtWith": "د Next.js او Tailwind CSS سره جوړ شوی"
+    "builtWith": "د Next.js او Tailwind CSS سره جوړ شوی",
+    "quickLinks": "چټک لینکونه",
+    "contact": "اړیکه",
+    "contactEmail": "بریښنالیک",
+    "contactPhone": "تلیفون",
+    "contactLocation": "ځای",
+    "contactHours": "د کار ساعتونه",
+    "privacyPolicy": "د محرمیت تګلاره",
+    "termsConditions": "شرایط او مقررات"
   },
   "common": {
     "loading": "بار کیږي...",

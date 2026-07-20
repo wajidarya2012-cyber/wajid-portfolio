@@ -17,11 +17,14 @@
     "bio": "Transforming Ideas into Digital Solutions through Software Development, IT Management, and Innovation.",
     "contactBtn": "Contact Me",
     "cvBtn": "Download CV",
-    "badge": { "title": "CS Graduate", "sub": "IT & Networks" }
+    "badge": { "title": "CS Graduate", "sub": "IT & Networks" },
+    "yearsShort": "Years",
+    "projectsShort": "Projects"
   },
   "about": {
     "eyebrow": "Get to Know Me",
     "title": "About Me",
+    "quickFacts": "Quick Facts",
     "values": {
       "innovation": "Innovation",
       "innovationDesc": "Solving complex problems with creative digital solutions",
@@ -94,6 +97,7 @@
     "email": "Email",
     "phone": "Phone",
     "location": "Location",
+    "workingHours": "Working Hours",
     "form": {
       "name": "Full Name",
       "email": "Email Address",
@@ -126,7 +130,15 @@
   },
   "footer": {
     "rights": "All rights reserved.",
-    "builtWith": "Built with Next.js & Tailwind CSS"
+    "builtWith": "Built with Next.js & Tailwind CSS",
+    "quickLinks": "Quick Links",
+    "contact": "Contact",
+    "contactEmail": "Email",
+    "contactPhone": "Phone",
+    "contactLocation": "Location",
+    "contactHours": "Working Hours",
+    "privacyPolicy": "Privacy Policy",
+    "termsConditions": "Terms & Conditions"
   },
   "common": {
     "loading": "Loading...",

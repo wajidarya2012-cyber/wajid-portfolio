@@ -17,6 +17,21 @@ const ALLOWED_KEYS = new Set([
   "cv_download_tracking",
   "brand_name",
   "brand_tagline",
+  "logo_url",
+  "logo_public_id",
+  "favicon_url",
+  "favicon_public_id",
+  "og_image_url",
+  "og_image_public_id",
+  "ga_measurement_id",
+  "google_site_verification",
+  "contact_working_hours",
+  "hero_bg_images",
+  "nav_items",
+  "footer_visibility",
+  "legal_privacy_url",
+  "legal_terms_url",
+  "skills_section_config",
 ]);
 
 export async function POST(request: NextRequest) {

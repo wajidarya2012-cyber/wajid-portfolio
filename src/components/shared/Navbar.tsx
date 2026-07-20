@@ -6,16 +6,7 @@ import { usePathname, useRouter }      from "next/navigation";
 import { useTranslations }             from "next-intl";
 import { useTheme }                    from "./ThemeProvider";
 import { locales }                     from "@/i18n";
-
-const NAV_LINKS = [
-  { key:"about",          href:"#about"          },
-  { key:"skills",         href:"#skills"         },
-  { key:"experience",     href:"#experience"     },
-  { key:"certifications", href:"#certifications" },
-  { key:"projects",       href:"#projects"       },
-  { key:"blog",           href:"/blog"           },
-  { key:"contact",        href:"#contact"        },
-];
+import { buildNavItems, type NavItemConfig } from "@/lib/navConfig";
 
 const SECTION_IDS = ["about","skills","experience","certifications","projects","contact"];
 
@@ -26,7 +17,7 @@ function resolveHref(href: string, locale: string, pathname: string): string {
   return pathname === `/${locale}` ? href : `/${locale}${href}`;
 }
 
-export default function Navbar({ locale, brandName = "W.Arya", brandTagline = "IT Manager & Developer" }: { locale: string; brandName?: string; brandTagline?: string }) {
+export default function Navbar({ locale, brandName = "W.Arya", brandTagline = "IT Manager & Developer", logoUrl, navConfig }: { locale: string; brandName?: string; brandTagline?: string; logoUrl?: string; navConfig?: NavItemConfig[] }) {
   const t                          = useTranslations("nav");
   const { theme, toggleTheme }     = useTheme();
   const pathname                   = usePathname();
@@ -36,6 +27,8 @@ export default function Navbar({ locale, brandName = "W.Arya", brandTagline = "I
   const [activeHash, setActiveHash] = useState("");
   const clickLockRef = useRef<string | null>(null);
   const clickLockTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const navItems = buildNavItems(navConfig, locale, t);
 
   useEffect(() => {
     const onScrollBg = () => setScrolled(window.scrollY > 30);
@@ -101,30 +94,38 @@ export default function Navbar({ locale, brandName = "W.Arya", brandTagline = "I
         <div className="section-container" style={{ display:"flex", alignItems:"center", justifyContent:"space-between", width:"100%", height:"100%" }}>
 
           {/* Logo */}
-          <Link href={`/${locale}`} style={{ textDecoration:"none", display:"flex", flexDirection:"column", lineHeight:1.1 }}>
-            <span style={{ fontFamily:"var(--font-syne)", fontWeight:800, fontSize:"1.2rem", background:"linear-gradient(135deg,#4f46e5,#06b6d4)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>
-              {brandName}
-            </span>
-            <span style={{ fontSize:"0.58rem", color:"rgba(255,255,255,0.5)", fontFamily:"var(--font-fira)", letterSpacing:"0.05em" }}>
-              {brandTagline}
+          <Link href={`/${locale}`} style={{ textDecoration:"none", display:"flex", alignItems:"center", gap:"0.6rem" }}>
+            {logoUrl && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={logoUrl} alt={brandName} style={{ height:"32px", width:"auto", maxWidth:"120px", objectFit:"contain" }} />
+            )}
+            <span style={{ display:"flex", flexDirection:"column", lineHeight:1.1 }}>
+              <span style={{ fontFamily:"var(--font-syne)", fontWeight:800, fontSize:"1.2rem", background:"linear-gradient(135deg,#4f46e5,#06b6d4)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>
+                {brandName}
+              </span>
+              <span style={{ fontSize:"0.58rem", color:"rgba(255,255,255,0.5)", fontFamily:"var(--font-fira)", letterSpacing:"0.05em" }}>
+                {brandTagline}
+              </span>
             </span>
           </Link>
 
           {/* Desktop links */}
           <ul style={{ display:"none", listStyle:"none", alignItems:"center", gap:"1.75rem", margin:0, padding:0 }} className="desktop-nav">
-            {NAV_LINKS.map(({ key, href }) => {
+            {navItems.map(({ key, href, label, newTab }) => {
               const isActive = href === activeHash || (href.startsWith("/") && pathname.includes(href));
               return (
                 <li key={key}>
                   <a href={resolveHref(href, locale, pathname)}
                     onClick={() => handleNavClick(href)}
+                    target={newTab ? "_blank" : undefined}
+                    rel={newTab ? "noopener noreferrer" : undefined}
                     style={{ textDecoration:"none", fontSize:"0.82rem", fontWeight:600, transition:"color 0.2s, opacity 0.2s", position:"relative", paddingBottom:"4px",
                       color: isActive ? "#fff" : "rgba(255,255,255,0.8)",
                       opacity: isActive ? 1 : 0.85,
                     }}
                     onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "#fff"; (e.currentTarget as HTMLElement).style.opacity = "1"; }}
                     onMouseLeave={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.8)"; (e.currentTarget as HTMLElement).style.opacity = "0.85"; } }}>
-                    {t(key)}
+                    {label}
                     <span style={{ position:"absolute", bottom:0, left:0, right:0, height:"2px", borderRadius:"2px", background:"linear-gradient(135deg,#4f46e5,#06b6d4)", transform:isActive?"scaleX(1)":"scaleX(0)", transformOrigin:"left", transition:"transform 0.25s ease" }} />
                   </a>
                 </li>
@@ -170,13 +171,15 @@ export default function Navbar({ locale, brandName = "W.Arya", brandTagline = "I
 
       {/* Mobile menu panel */}
       <div style={{ position:"fixed", top:"64px", left:0, right:0, zIndex:499, background:"rgba(6,11,24,0.98)", backdropFilter:"blur(24px)", WebkitBackdropFilter:"blur(24px)", borderBottom:"1px solid rgba(255,255,255,0.08)", padding:"1.25rem 1.5rem 2rem", display:"flex", flexDirection:"column", gap:"0.25rem", transform:menuOpen?"translateY(0)":"translateY(-110%)", transition:"transform 0.3s cubic-bezier(0.4,0,0.2,1)", pointerEvents:menuOpen?"all":"none" }} className="mobile-menu-panel">
-        {NAV_LINKS.map(({ key, href }) => (
+        {navItems.map(({ key, href, label, newTab }) => (
           <a key={key} href={resolveHref(href, locale, pathname)}
             onClick={()=>{ handleNavClick(href); setMenuOpen(false); }}
+            target={newTab ? "_blank" : undefined}
+            rel={newTab ? "noopener noreferrer" : undefined}
             style={{ fontSize:"1rem", fontWeight:600, color:"rgba(255,255,255,0.75)", textDecoration:"none", padding:"0.875rem 0", borderBottom:"1px solid rgba(255,255,255,0.06)", transition:"color 0.2s" }}
             onMouseEnter={e=>{ (e.currentTarget as HTMLElement).style.color="#fff"; }}
             onMouseLeave={e=>{ (e.currentTarget as HTMLElement).style.color="rgba(255,255,255,0.75)"; }}>
-            {t(key)}
+            {label}
           </a>
         ))}
       </div>
