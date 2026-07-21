@@ -8,10 +8,14 @@ export default async function ProfilePage() {
     prisma.profile.findFirst(),
     prisma.siteSettings.findUnique({ where: { key: "hero_bg_images" } }),
   ]);
-  let heroBgImages: string[] = [];
+  let heroBgImages: { desktopUrl: string; [key: string]: unknown }[] = [];
   try {
     const parsed = heroBgSetting?.value ? JSON.parse(heroBgSetting.value) : [];
-    if (Array.isArray(parsed)) heroBgImages = parsed.filter(u => typeof u === "string");
+    if (Array.isArray(parsed)) {
+      heroBgImages = parsed
+        .map((entry: unknown) => typeof entry === "string" ? { desktopUrl: entry } : entry)
+        .filter((s: { desktopUrl?: unknown }) => s && typeof s.desktopUrl === "string");
+    }
   } catch {}
 
   return (

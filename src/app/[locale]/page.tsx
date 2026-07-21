@@ -56,8 +56,15 @@ const [profile, skillCats, experience, education, certifications, journeySlides,
   ]);
   const workingHours = siteSettings.find(s => s.key === "contact_working_hours")?.value;
   const heroBgImagesRaw = siteSettings.find(s => s.key === "hero_bg_images")?.value;
-  let heroBgImages: string[] = [];
-  try { const parsed = heroBgImagesRaw ? JSON.parse(heroBgImagesRaw) : []; if (Array.isArray(parsed)) heroBgImages = parsed.filter(u => typeof u === "string"); } catch {}
+  let heroBgSlides: import("@/components/public/HeroSection").HeroBgSlide[] = [];
+  try {
+    const parsed = heroBgImagesRaw ? JSON.parse(heroBgImagesRaw) : [];
+    if (Array.isArray(parsed)) {
+      heroBgSlides = parsed
+        .map((entry: unknown) => typeof entry === "string" ? { desktopUrl: entry } : entry)
+        .filter((s: { desktopUrl?: unknown }) => s && typeof s.desktopUrl === "string");
+    }
+  } catch {}
   let skillsConfig: import("@/components/public/SkillsSection").SkillsSectionConfig = {};
   try { const raw = siteSettings.find(s => s.key === "skills_section_config")?.value; if (raw) skillsConfig = JSON.parse(raw); } catch {}
   let experienceConfig: import("@/components/public/ExperienceSection").ExperienceSectionConfig = {};
@@ -77,7 +84,7 @@ const [profile, skillCats, experience, education, certifications, journeySlides,
 
   return (
     <>
-      <HeroSection       profile={profile}           locale={safeLocale} heroBgImages={heroBgImages} />
+      <HeroSection       profile={profile}           locale={safeLocale} heroBgSlides={heroBgSlides} />
       {middleSections.map(s => <Fragment key={s.key}>{s.node}</Fragment>)}
       <StatsSection profile={profile} />
       <ContactSection    profile={profile}    locale={safeLocale} workingHours={workingHours} />

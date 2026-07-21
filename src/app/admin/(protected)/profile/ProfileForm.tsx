@@ -14,7 +14,9 @@ type TabKey = "en"|"ps"|"fa";
 
 const G = "linear-gradient(135deg,#4f46e5,#06b6d4)";
 
-export default function ProfileForm({ profile, heroBgImages }: { profile: Profile | null; heroBgImages: string[] }) {
+type HeroBgSlideLite = { desktopUrl: string; [key: string]: unknown };
+
+export default function ProfileForm({ profile, heroBgImages }: { profile: Profile | null; heroBgImages: HeroBgSlideLite[] }) {
   const router = useRouter();
   const [tab, setTab]         = useState<TabKey>("en");
   const [saving, setSaving]   = useState(false);
@@ -161,7 +163,7 @@ export default function ProfileForm({ profile, heroBgImages }: { profile: Profil
     }
   }
 
-  const [heroBg, setHeroBg] = useState<string[]>(heroBgImages ?? []);
+  const [heroBg, setHeroBg] = useState<HeroBgSlideLite[]>(heroBgImages ?? []);
   const [heroBgUploading, setHeroBgUploading] = useState(false);
   const [heroBgSaving, setHeroBgSaving]       = useState(false);
   const [heroBgMsg, setHeroBgMsg]             = useState<{type:"success"|"error";text:string}|null>(null);
@@ -181,7 +183,7 @@ export default function ProfileForm({ profile, heroBgImages }: { profile: Profil
       fd.append("folder", "hero-bg");
       const res  = await fetch("/api/v1/admin/upload", { method:"POST", body:fd });
       const data = await res.json().catch(() => null);
-      if (res.ok && data?.success) setHeroBg(prev => [...prev, data.data.url]);
+      if (res.ok && data?.success) setHeroBg(prev => [...prev, { desktopUrl: data.data.url, order: prev.length, active: true }]);
       else setHeroBgMsg({ type:"error", text: data?.error ?? "Image upload failed." });
     } catch (err) {
       setHeroBgMsg({ type:"error", text: err instanceof Error ? err.message : "Network error during upload." });
@@ -189,7 +191,7 @@ export default function ProfileForm({ profile, heroBgImages }: { profile: Profil
       setHeroBgUploading(false);
     }
   }
-  function removeHeroBgImage(url: string) { setHeroBg(prev => prev.filter(u => u !== url)); }
+  function removeHeroBgImage(url: string) { setHeroBg(prev => prev.filter(s => s.desktopUrl !== url)); }
 
   async function saveHeroBg() {
     setHeroBgSaving(true); setHeroBgMsg(null);
@@ -521,10 +523,10 @@ export default function ProfileForm({ profile, heroBgImages }: { profile: Profil
         </p>
         {heroBg.length > 0 && (
           <div style={{ display:"flex", flexWrap:"wrap", gap:"0.75rem", marginBottom:"0.875rem" }}>
-            {heroBg.map(url => (
-              <div key={url} style={{ position:"relative", width:"96px", height:"64px", borderRadius:"6px", overflow:"hidden", border:"1px solid var(--border)" }}>
-                <img src={url} alt="" style={{ width:"100%", height:"100%", objectFit:"cover" }} />
-                <button onClick={() => removeHeroBgImage(url)}
+            {heroBg.map(slide => (
+              <div key={slide.desktopUrl} style={{ position:"relative", width:"96px", height:"64px", borderRadius:"6px", overflow:"hidden", border:"1px solid var(--border)" }}>
+                <img src={slide.desktopUrl} alt="" style={{ width:"100%", height:"100%", objectFit:"cover" }} />
+                <button onClick={() => removeHeroBgImage(slide.desktopUrl)}
                   style={{ position:"absolute", top:"2px", right:"2px", width:"20px", height:"20px", borderRadius:"50%", border:"none", background:"rgba(0,0,0,0.7)", color:"#fff", fontSize:"0.7rem", cursor:"pointer", lineHeight:1 }}>
                   ✕
                 </button>

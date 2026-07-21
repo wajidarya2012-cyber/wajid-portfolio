@@ -13,13 +13,28 @@ const BG_ROTATE_MS = 6500;
 
 type RoleItem = { en?: string; ps?: string; fa?: string };
 
+// Prepared for the future Admin CMS — desktop image is required, mobile image is optional
+// (falls back to the desktop image). Caption/CTA fields are stored now so the admin UI can
+// wire them up later without any data-shape changes.
+export type HeroBgSlide = {
+  desktopUrl: string;
+  mobileUrl?: string;
+  title_en?: string; title_ps?: string; title_fa?: string;
+  subtitle_en?: string; subtitle_ps?: string; subtitle_fa?: string;
+  description_en?: string; description_ps?: string; description_fa?: string;
+  buttonText_en?: string; buttonText_ps?: string; buttonText_fa?: string;
+  buttonLink?: string;
+  order?: number;
+  active?: boolean;
+};
+
 function pickLocale<T extends Record<string, unknown>>(obj: T | null | undefined, field: string, locale: string, fallback = ""): string {
   if (!obj) return fallback;
   const val = (obj[`${field}_${locale}`] ?? obj[`${field}_en`]) as string | undefined;
   return val || fallback;
 }
 
-export default function HeroSection({ profile, locale, heroBgImages = [] }: { profile: Profile | null; locale: string; heroBgImages?: string[] }) {
+export default function HeroSection({ profile, locale, heroBgSlides = [] }: { profile: Profile | null; locale: string; heroBgSlides?: HeroBgSlide[] }) {
   const t         = useTranslations("hero");
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const typeRef   = useRef<HTMLSpanElement>(null);
@@ -31,13 +46,18 @@ export default function HeroSection({ profile, locale, heroBgImages = [] }: { pr
   const visibility = (p.heroVisibility as Record<string, boolean> | null) ?? {};
   const show = (key: string) => visibility[key] !== false;
 
+  // Active slides, sorted by order — inactive slides are excluded entirely.
+  const slides = heroBgSlides
+    .filter(s => s.active !== false && s.desktopUrl)
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+
   /* ── Background slideshow rotation ── */
   useEffect(() => {
-    if (!show("showBackground") || heroBgImages.length <= 1) return;
-    const id = setInterval(() => setBgIndex(i => (i + 1) % heroBgImages.length), BG_ROTATE_MS);
+    if (!show("showBackground") || slides.length <= 1) return;
+    const id = setInterval(() => setBgIndex(i => (i + 1) % slides.length), BG_ROTATE_MS);
     return () => clearInterval(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [heroBgImages.length]);
+  }, [slides.length]);
 
   /* ── Particle canvas ── */
   useEffect(() => {
@@ -139,23 +159,27 @@ export default function HeroSection({ profile, locale, heroBgImages = [] }: { pr
     ? (p.heroTechTags as string[])
     : DEFAULT_TECHS;
 
-  const showBg = show("showBackground") && heroBgImages.length > 0;
+  const showBg = show("showBackground") && slides.length > 0;
 
   return (
     <section id="hero" style={{ minHeight:"100vh", position:"relative", overflow:"hidden", display:"flex", alignItems:"center", paddingTop:"64px", background:"var(--bg-primary)" }}>
       {/* Optional background image / slideshow */}
       {showBg && (
         <>
-          {heroBgImages.map((src, i) => (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              key={src}
-              src={src}
-              alt=""
-              aria-hidden="true"
-              loading={i === 0 ? "eager" : "lazy"}
-              style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover", opacity: i === bgIndex ? 0.32 : 0, transition:"opacity 1.4s ease" }}
-            />
+          {slides.map((slide, i) => (
+            <picture key={slide.desktopUrl + i} style={{ position:"absolute", inset:0, opacity: i === bgIndex ? 0.32 : 0, transition:"opacity 1.4s ease" }}>
+              {slide.mobileUrl && <source media="(max-width: 640px)" srcSet={slide.mobileUrl} />}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={slide.desktopUrl}
+                alt=""
+                aria-hidden="true"
+                loading={i === 0 ? "eager" : "lazy"}
+                decoding="async"
+                className="hero-bg-img"
+                style={{ width:"100%", height:"100%", objectFit:"cover", display:"block" }}
+              />
+            </picture>
           ))}
           <div style={{ position:"absolute", inset:0, background:"linear-gradient(to bottom, var(--bg-primary) 0%, rgba(0,0,0,0.25) 40%, var(--bg-primary) 100%)" }} />
         </>
@@ -319,6 +343,13 @@ export default function HeroSection({ profile, locale, heroBgImages = [] }: { pr
           __html: `
         @keyframes bounceDown { 0%,100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(6px); } }
         @keyframes scrollDot  { 0%,100% { opacity: 1; transform: translateY(0); } 50% { opacity: 0.3; transform: translateY(8px); } }
+        .hero-bg-img { object-position: center 25%; }
+        @media (max-width: 900px) {
+          .hero-bg-img { object-position: center 18%; }
+        }
+        @media (max-width: 600px) {
+          .hero-bg-img { object-position: center 12%; }
+        }
         @media (max-width: 900px) {
           .hero-grid { grid-template-columns: 1fr !important; text-align: center; gap: 2rem !important; }
           .hero-photo-col { order: -1; }
