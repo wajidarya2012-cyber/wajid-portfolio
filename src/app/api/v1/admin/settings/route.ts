@@ -32,6 +32,7 @@ const ALLOWED_KEYS = new Set([
   "legal_privacy_url",
   "legal_terms_url",
   "skills_section_config",
+  "experience_section_config",
 ]);
 
 export async function POST(request: NextRequest) {

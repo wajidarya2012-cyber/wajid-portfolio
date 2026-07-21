@@ -460,6 +460,19 @@ model Experience {
   /// Technology/tool tags for this role
   technologies    String[]
 
+  /// Bullet-point achievements/responsibilities — separate from the prose description
+  achievements    String[] @default([])
+
+  /// Company/organization logo (Cloudinary)
+  logoUrl         String?
+  logoPublicId    String?
+
+  /// Full-time, Part-time, Contract, Internship, Freelance, etc. (free text — no fixed enum)
+  employmentType  String?
+
+  featured        Boolean  @default(false)
+  visible         Boolean  @default(true)
+
   startDate       DateTime
   endDate         DateTime?
 

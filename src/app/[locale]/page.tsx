@@ -52,7 +52,7 @@ const [profile, skillCats, experience, education, certifications, journeySlides,
       },
       orderBy: [{ featured:"desc" }, { sortOrder:"asc" }],
     }).catch(() => []),
-    prisma.siteSettings.findMany({ where: { key: { in: ["contact_working_hours", "hero_bg_images", "skills_section_config"] } } }).catch(() => []),
+    prisma.siteSettings.findMany({ where: { key: { in: ["contact_working_hours", "hero_bg_images", "skills_section_config", "experience_section_config"] } } }).catch(() => []),
   ]);
   const workingHours = siteSettings.find(s => s.key === "contact_working_hours")?.value;
   const heroBgImagesRaw = siteSettings.find(s => s.key === "hero_bg_images")?.value;
@@ -60,13 +60,15 @@ const [profile, skillCats, experience, education, certifications, journeySlides,
   try { const parsed = heroBgImagesRaw ? JSON.parse(heroBgImagesRaw) : []; if (Array.isArray(parsed)) heroBgImages = parsed.filter(u => typeof u === "string"); } catch {}
   let skillsConfig: import("@/components/public/SkillsSection").SkillsSectionConfig = {};
   try { const raw = siteSettings.find(s => s.key === "skills_section_config")?.value; if (raw) skillsConfig = JSON.parse(raw); } catch {}
+  let experienceConfig: import("@/components/public/ExperienceSection").ExperienceSectionConfig = {};
+  try { const raw = siteSettings.find(s => s.key === "experience_section_config")?.value; if (raw) experienceConfig = JSON.parse(raw); } catch {}
 
-  // Middle homepage sections support a configurable display order (currently only
-  // Skills exposes an override) — default order matches the original fixed sequence.
+  // Middle homepage sections support a configurable display order (currently Skills and
+  // Experience expose an override) — default order matches the original fixed sequence.
   const middleSections = [
     { key:"about",          order:0,                          node:<AboutSection      profile={profile}           locale={safeLocale} /> },
     { key:"skills",         order:skillsConfig.order ?? 1,     node:<SkillsSection     categories={skillCats}      locale={safeLocale} config={skillsConfig} /> },
-    { key:"experience",     order:2,                          node:<ExperienceSection experience={experience}     locale={safeLocale} /> },
+    { key:"experience",     order:experienceConfig.order ?? 2,     node:<ExperienceSection experience={experience}     locale={safeLocale} config={experienceConfig} /> },
     { key:"education",      order:3,                          node:<EducationSection  education={education}       locale={safeLocale} /> },
     { key:"certifications", order:4,                          node:<CertSection       certifications={certifications} locale={safeLocale} /> },
     { key:"journey",        order:5,                          node:<JourneySection    slides={journeySlides}      locale={safeLocale} /> },
