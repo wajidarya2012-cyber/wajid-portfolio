@@ -167,19 +167,35 @@ export default function HeroSection({ profile, locale, heroBgSlides = [] }: { pr
       {showBg && (
         <>
           {slides.map((slide, i) => (
-            <picture key={slide.desktopUrl + i} style={{ position:"absolute", inset:0, opacity: i === bgIndex ? 0.32 : 0, transition:"opacity 1.4s ease" }}>
-              {slide.mobileUrl && <source media="(max-width: 640px)" srcSet={slide.mobileUrl} />}
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={slide.desktopUrl}
-                alt=""
-                aria-hidden="true"
-                loading={i === 0 ? "eager" : "lazy"}
-                decoding="async"
-                className="hero-bg-img"
-                style={{ width:"100%", height:"100%", objectFit:"cover", display:"block" }}
-              />
-            </picture>
+            <div key={slide.desktopUrl + i} className="hero-bg-slide" style={{ position:"absolute", inset:0, opacity: i === bgIndex ? 0.32 : 0, transition:"opacity 1.4s ease" }}>
+              {/* Blurred full-bleed backdrop — fills any letterbox gap left by the contained image on mobile.
+                  Fully hidden behind the sharp image on desktop (cover fit leaves no gap), so desktop is unaffected. */}
+              <picture>
+                {slide.mobileUrl && <source media="(max-width: 640px)" srcSet={slide.mobileUrl} />}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={slide.desktopUrl}
+                  alt=""
+                  aria-hidden="true"
+                  loading="lazy"
+                  decoding="async"
+                  className="hero-bg-backdrop"
+                />
+              </picture>
+              {/* Sharp foreground — full-bleed cover on desktop (unchanged), fully visible/uncropped on mobile. */}
+              <picture>
+                {slide.mobileUrl && <source media="(max-width: 640px)" srcSet={slide.mobileUrl} />}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={slide.desktopUrl}
+                  alt=""
+                  aria-hidden="true"
+                  loading={i === 0 ? "eager" : "lazy"}
+                  decoding="async"
+                  className="hero-bg-img"
+                />
+              </picture>
+            </div>
           ))}
           <div style={{ position:"absolute", inset:0, background:"linear-gradient(to bottom, var(--bg-primary) 0%, rgba(0,0,0,0.25) 40%, var(--bg-primary) 100%)" }} />
         </>
@@ -343,12 +359,25 @@ export default function HeroSection({ profile, locale, heroBgSlides = [] }: { pr
           __html: `
         @keyframes bounceDown { 0%,100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(6px); } }
         @keyframes scrollDot  { 0%,100% { opacity: 1; transform: translateY(0); } 50% { opacity: 0.3; transform: translateY(8px); } }
-        .hero-bg-img { object-position: center 25%; }
+        .hero-bg-slide { }
+        .hero-bg-img, .hero-bg-backdrop {
+          position: absolute; inset: 0; width: 100%; height: 100%; display: block;
+        }
+        .hero-bg-img { object-fit: cover; object-position: center 25%; }
+        .hero-bg-backdrop {
+          object-fit: cover; object-position: center 25%;
+          filter: blur(32px) brightness(0.85) saturate(1.1);
+          transform: scale(1.15);
+        }
         @media (max-width: 900px) {
           .hero-bg-img { object-position: center 18%; }
+          .hero-bg-backdrop { object-position: center 18%; }
         }
-        @media (max-width: 600px) {
-          .hero-bg-img { object-position: center 12%; }
+        /* Below this breakpoint the source image's aspect ratio no longer reasonably matches
+           a full-height mobile viewport — switch the sharp image to "contain" (no cropping)
+           and let the blurred backdrop fill the resulting letterbox gaps. */
+        @media (max-width: 640px) {
+          .hero-bg-img { object-fit: contain; object-position: center center; }
         }
         @media (max-width: 900px) {
           .hero-grid { grid-template-columns: 1fr !important; text-align: center; gap: 2rem !important; }
