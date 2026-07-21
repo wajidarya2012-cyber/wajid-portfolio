@@ -106,7 +106,7 @@ export default function AboutSection({ profile, locale }: { profile: Profile|nul
                   "Computer Science graduate with strong experience in IT Operations, Database Management, Networking, System Administration, and Software Development across multiple organizations in Afghanistan, building technology solutions that create real value."}
               </p>
 
-              {show("showSignature") && p.signatureUrl && (
+              {show("showSignature") && Boolean(p.signatureUrl) && (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={p.signatureUrl as string} alt="Signature" style={{ height:"48px", width:"auto", marginTop:"1.25rem", objectFit:"contain", opacity:0.9 }} />
               )}
