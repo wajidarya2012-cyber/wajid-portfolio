@@ -13,8 +13,10 @@ export default async function ProfilePage() {
     const parsed = heroBgSetting?.value ? JSON.parse(heroBgSetting.value) : [];
     if (Array.isArray(parsed)) {
       heroBgImages = parsed
-        .map((entry: unknown) => typeof entry === "string" ? { desktopUrl: entry } : entry)
-        .filter((s: { desktopUrl?: unknown }) => s && typeof s.desktopUrl === "string");
+        .map((entry: unknown): Record<string, unknown> =>
+          typeof entry === "string" ? { desktopUrl: entry } : (entry as Record<string, unknown>) ?? {})
+        .filter((s: Record<string, unknown>): s is { desktopUrl: string; [key: string]: unknown } =>
+          typeof s.desktopUrl === "string");
     }
   } catch {}
 

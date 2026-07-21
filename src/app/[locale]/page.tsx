@@ -61,8 +61,12 @@ const [profile, skillCats, experience, education, certifications, journeySlides,
     const parsed = heroBgImagesRaw ? JSON.parse(heroBgImagesRaw) : [];
     if (Array.isArray(parsed)) {
       heroBgSlides = parsed
-        .map((entry: unknown) => typeof entry === "string" ? { desktopUrl: entry } : entry)
-        .filter((s: { desktopUrl?: unknown }) => s && typeof s.desktopUrl === "string");
+        heroBgSlides = parsed
+        .map((entry: unknown): Record<string, unknown> =>
+          typeof entry === "string" ? { desktopUrl: entry } : (entry as Record<string, unknown>) ?? {})
+        .filter((s: Record<string, unknown>): s is import("@/components/public/HeroSection").HeroBgSlide =>
+          typeof s.desktopUrl === "string");
+        
     }
   } catch {}
   let skillsConfig: import("@/components/public/SkillsSection").SkillsSectionConfig = {};
