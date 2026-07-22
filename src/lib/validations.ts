@@ -35,10 +35,15 @@ export const projectCategorySchema = z.object({
   name_en:   z.string().min(2),
   name_ps:   z.string().min(1),
   name_fa:   z.string().min(1),
+  description_en: z.string().optional(),
+  description_ps: z.string().optional(),
+  description_fa: z.string().optional(),
   slug:      z.string().min(2).regex(/^[a-z0-9-]+$/, "Lowercase letters, numbers and hyphens only"),
   color:     z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Must be a valid hex color"),
   icon:      z.string().min(1),
   sortOrder: z.number().int().min(0).optional(),
+  visible:   z.boolean().optional(),
+  featured:  z.boolean().optional(),
 });
 
 // ── Project ────────────────────────────────────────────────────────────────
@@ -54,7 +59,7 @@ export const projectSchema = z.object({
   challenge_ps:   z.string().optional(),
   challenge_fa:   z.string().optional(),
   technologies:   z.array(z.string()).min(1),
-  categoryId:     z.string().uuid().optional().nullable(),
+  categoryId:     z.preprocess((v) => (v === "" ? null : v), z.string().uuid().optional().nullable()),
   status:         z.enum(["ACTIVE", "ARCHIVED", "DRAFT"]).default("ACTIVE"),
   featured:       z.boolean().default(false),
   sortOrder:      z.number().int().min(0).optional(),

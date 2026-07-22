@@ -8,6 +8,7 @@ const NAV = [
   { label:"Dashboard",      href:"/admin/dashboard",      icon:"📊" },
   { label:"Profile",        href:"/admin/profile",        icon:"👤" },
   { label:"Projects",       href:"/admin/projects",       icon:"🗂"  },
+  { label:"Project Categories", href:"/admin/project-categories", icon:"🏷️" },
   { label:"Skills",         href:"/admin/skills",         icon:"🔧" },
   { label:"Experience",     href:"/admin/experience",     icon:"💼" },
   { label:"Education",      href:"/admin/education",      icon:"🎓" },

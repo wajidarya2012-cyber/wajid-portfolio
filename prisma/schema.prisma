@@ -250,6 +250,10 @@ model ProjectCategory {
   name_ps   String
   name_fa   String
 
+  description_en String?
+  description_ps String?
+  description_fa String?
+
   /// URL-safe identifier, e.g. "healthcare"
   slug      String   @unique
 
@@ -260,6 +264,8 @@ model ProjectCategory {
   icon      String   @default("folder")
 
   sortOrder Int      @default(0)
+  visible   Boolean  @default(true)
+  featured  Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

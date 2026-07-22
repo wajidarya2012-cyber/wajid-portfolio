@@ -2,6 +2,7 @@
 import { useState, useRef }  from "react";
 import { useRouter } from "next/navigation";
 import type { Profile } from "@/types";
+import { TRANSLATE_LANGUAGES } from "@/lib/translateLanguages";
 
 export default function SettingsForm({ settingsMap, profile }: { settingsMap: Record<string,string>; profile: Profile|null }) {
   const router = useRouter();
@@ -103,6 +104,43 @@ export default function SettingsForm({ settingsMap, profile }: { settingsMap: Re
     const data = await res.json();
     setFooterSaving(false);
     setFooterMsg(data.success ? { type:"success", text:"Footer settings saved!" } : { type:"error", text:"Failed to save." });
+    if (data.success) router.refresh();
+  }
+
+  // Website Translation (Google Translate widget for 100+ non-native languages)
+  const [translate, setTranslate] = useState(() => {
+    let saved: Record<string, unknown> = {};
+    try { saved = settingsMap["translate_widget_config"] ? JSON.parse(settingsMap["translate_widget_config"]) : {}; } catch {}
+    return {
+      enabled: (saved.enabled as boolean) ?? false,
+      showSelector: (saved.showSelector as boolean) ?? true,
+      position: (saved.position as string) ?? "bottom-right",
+      alignment: (saved.alignment as string) ?? "right",
+      languages: (saved.languages as string[]) ?? TRANSLATE_LANGUAGES.map(l=>l.code),
+      defaultLanguage: (saved.defaultLanguage as string) ?? "",
+      label_en: (saved.label_en as string) ?? "Translate to...",
+      label_ps: (saved.label_ps as string) ?? "",
+      label_fa: (saved.label_fa as string) ?? "",
+    };
+  });
+  const [translateSaving, setTranslateSaving] = useState(false);
+  const [translateMsg, setTranslateMsg] = useState<{type:"success"|"error";text:string}|null>(null);
+
+  function toggleTranslateLanguage(code: string) {
+    setTranslate(p => ({
+      ...p,
+      languages: p.languages.includes(code) ? p.languages.filter(c=>c!==code) : [...p.languages, code],
+    }));
+  }
+  async function saveTranslate() {
+    setTranslateSaving(true); setTranslateMsg(null);
+    const res  = await fetch("/api/v1/admin/settings", {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ translate_widget_config: JSON.stringify(translate) }),
+    });
+    const data = await res.json();
+    setTranslateSaving(false);
+    setTranslateMsg(data.success ? { type:"success", text:"Translation settings saved!" } : { type:"error", text:"Failed to save." });
     if (data.success) router.refresh();
   }
   const [pwd, setPwd]   = useState({ currentPassword:"", newPassword:"", confirmPassword:"" });
@@ -429,6 +467,79 @@ export default function SettingsForm({ settingsMap, profile }: { settingsMap: Re
         </div>
         {footerMsg && <div className={footerMsg.type==="success"?"alert-success":"alert-error"}>{footerMsg.type==="success"?"✅":"❌"} {footerMsg.text}</div>}
         <button className="btn-primary" style={{ alignSelf:"flex-start" }} onClick={saveFooter} disabled={footerSaving}>{footerSaving?"Saving…":"Save Footer Settings"}</button>
+      </div>
+
+      {/* Website Translation */}
+      <div className="admin-card" style={{ display:"flex", flexDirection:"column", gap:"0.875rem" }}>
+        <h3 style={{ fontWeight:700, fontSize:"0.95rem" }}>🌐 Website Translation</h3>
+        <p style={{ fontSize:"0.8rem", color:"var(--text-muted)" }}>
+          Adds an optional "Translate to…" selector for 100+ additional languages, powered by Google Translate.
+          English, Pashto, and Dari always keep using the site&apos;s own native translations.
+        </p>
+        <div style={{ display:"flex", gap:"1.5rem" }}>
+          <label style={{ display:"flex", alignItems:"center", gap:"0.5rem", fontSize:"0.85rem", cursor:"pointer" }}>
+            <input type="checkbox" checked={translate.enabled} onChange={e=>setTranslate(p=>({...p,enabled:e.target.checked}))} /> Enable translation feature
+          </label>
+          <label style={{ display:"flex", alignItems:"center", gap:"0.5rem", fontSize:"0.85rem", cursor:"pointer" }}>
+            <input type="checkbox" checked={translate.showSelector} onChange={e=>setTranslate(p=>({...p,showSelector:e.target.checked}))} /> Show selector widget
+          </label>
+        </div>
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"0.75rem" }}>
+          <div>
+            <label style={lbl}>Widget Position</label>
+            <select value={translate.position} onChange={e=>setTranslate(p=>({...p,position:e.target.value}))} style={inp}>
+              <option value="bottom-right">Bottom Right</option>
+              <option value="bottom-left">Bottom Left</option>
+              <option value="top-right">Top Right</option>
+              <option value="top-left">Top Left</option>
+            </select>
+          </div>
+          <div>
+            <label style={lbl}>Alignment</label>
+            <select value={translate.alignment} onChange={e=>setTranslate(p=>({...p,alignment:e.target.value}))} style={inp}>
+              <option value="right">Right</option>
+              <option value="left">Left</option>
+            </select>
+          </div>
+        </div>
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:"0.75rem" }}>
+          <div>
+            <label style={lbl}>&quot;Translate to…&quot; Label (EN)</label>
+            <input value={translate.label_en} onChange={e=>setTranslate(p=>({...p,label_en:e.target.value}))} style={inp} />
+          </div>
+          <div>
+            <label style={lbl}>Label (پښتو)</label>
+            <input value={translate.label_ps} onChange={e=>setTranslate(p=>({...p,label_ps:e.target.value}))} style={{...inp,direction:"rtl"}} placeholder="ژباړه کول..." />
+          </div>
+          <div>
+            <label style={lbl}>Label (دری)</label>
+            <input value={translate.label_fa} onChange={e=>setTranslate(p=>({...p,label_fa:e.target.value}))} style={{...inp,direction:"rtl"}} placeholder="ترجمه به..." />
+          </div>
+        </div>
+        <div>
+          <label style={lbl}>Default Language (optional — leave as Original to show native content until the visitor chooses)</label>
+          <select value={translate.defaultLanguage} onChange={e=>setTranslate(p=>({...p,defaultLanguage:e.target.value}))} style={{...inp, maxWidth:"280px"}}>
+            <option value="">Original (no auto-translate)</option>
+            {TRANSLATE_LANGUAGES.map(l => <option key={l.code} value={l.code}>{l.name}</option>)}
+          </select>
+        </div>
+        <div>
+          <label style={lbl}>Available Languages ({translate.languages.length} selected)</label>
+          <div style={{ display:"flex", gap:"0.5rem", marginBottom:"0.5rem" }}>
+            <button type="button" className="btn-ghost" style={{ fontSize:"0.75rem" }} onClick={()=>setTranslate(p=>({...p,languages:TRANSLATE_LANGUAGES.map(l=>l.code)}))}>Select All</button>
+            <button type="button" className="btn-ghost" style={{ fontSize:"0.75rem" }} onClick={()=>setTranslate(p=>({...p,languages:[]}))}>Clear All</button>
+          </div>
+          <div style={{ maxHeight:"220px", overflowY:"auto", display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(150px,1fr))", gap:"0.4rem", padding:"0.75rem", background:"var(--bg-secondary)", borderRadius:"8px", border:"1px solid var(--border)" }}>
+            {TRANSLATE_LANGUAGES.map(l => (
+              <label key={l.code} style={{ display:"flex", alignItems:"center", gap:"0.4rem", fontSize:"0.78rem", color:"var(--text-secondary)", cursor:"pointer" }}>
+                <input type="checkbox" checked={translate.languages.includes(l.code)} onChange={()=>toggleTranslateLanguage(l.code)} />
+                {l.name}
+              </label>
+            ))}
+          </div>
+        </div>
+        {translateMsg && <div className={translateMsg.type==="success"?"alert-success":"alert-error"}>{translateMsg.type==="success"?"✅":"❌"} {translateMsg.text}</div>}
+        <button className="btn-primary" style={{ alignSelf:"flex-start" }} onClick={saveTranslate} disabled={translateSaving}>{translateSaving?"Saving…":"Save Translation Settings"}</button>
       </div>
 
       {/* Change Admin Email */}

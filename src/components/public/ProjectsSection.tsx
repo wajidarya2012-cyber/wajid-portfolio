@@ -45,7 +45,11 @@ export default function ProjectsSection({ projects, locale }: { projects: Projec
 
   useEffect(() => { setLightboxIndex(null); }, [selected]);
 
-  const cats    = ["all", ...Array.from(new Set(projects.map(p => p.category?.slug ?? "general")))];
+  const cats    = ["all", ...Array.from(new Set(
+    projects
+      .filter(p => (p.category as unknown as { visible?: boolean } | null)?.visible !== false)
+      .map(p => p.category?.slug ?? "general")
+  ))];
   const filtered = active === "all" ? projects : projects.filter(p => p.category?.slug === active);
 
   return (
@@ -80,7 +84,7 @@ export default function ProjectsSection({ projects, locale }: { projects: Projec
           <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(min(100%,280px),1fr))", gap:"1.25rem" }}>
             {filtered.map((project, idx) => {
               const slug  = project.category?.slug ?? "general";
-              const thumb = project.images[0];
+              const thumb = project.images.find(img => img.isThumbnail) ?? project.images[0];
               return (
                 <article key={project.id} className="glass-card reveal" onClick={() => setSelected(project)}
                   style={{ borderRadius:"16px", overflow:"hidden", cursor:"pointer", transition:"all 0.3s", transitionDelay:`${idx*0.06}s`, minWidth:0, display:"flex", flexDirection:"column" }}

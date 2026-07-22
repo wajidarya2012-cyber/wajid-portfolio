@@ -1,0 +1,23 @@
+import { prisma } from "@/lib/prisma";
+import ProjectCategoriesFullManager from "./ProjectCategoriesFullManager";
+
+export const metadata = { title: "Project Categories | Admin" };
+
+export default async function ProjectCategoriesPage() {
+  const categories = await prisma.projectCategory.findMany({
+    include: { _count: { select: { projects: true } } },
+    orderBy: { sortOrder: "asc" },
+  });
+
+  return (
+    <div style={{ maxWidth: "1000px" }}>
+      <div style={{ marginBottom: "2rem" }}>
+        <h1 style={{ fontFamily: "var(--font-syne)", fontSize: "1.5rem", fontWeight: 800, marginBottom: "0.25rem" }}>Project Categories</h1>
+        <p style={{ fontSize: "0.875rem", color: "var(--text-muted)" }}>
+          Manage the categories used to organize and filter projects on the public site.
+        </p>
+      </div>
+      <ProjectCategoriesFullManager initialCategories={categories} />
+    </div>
+  );
+}
