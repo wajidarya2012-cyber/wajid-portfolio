@@ -45,6 +45,10 @@ export default function ProfileForm({ profile, heroBgImages }: { profile: Profil
     githubUrl:    profile?.githubUrl    ?? "",
     twitterUrl:   profile?.twitterUrl   ?? "",
     websiteUrl:   profile?.websiteUrl   ?? "",
+    whatsappUrl:  (profile as unknown as Record<string,string>)?.whatsappUrl  ?? "",
+    instagramUrl: (profile as unknown as Record<string,string>)?.instagramUrl ?? "",
+    youtubeUrl:   (profile as unknown as Record<string,string>)?.youtubeUrl   ?? "",
+    tiktokUrl:    (profile as unknown as Record<string,string>)?.tiktokUrl    ?? "",
     photoUrl:     profile?.photoUrl     ?? "",
     photoPublicId:profile?.photoPublicId?? "",
     cvUrl:        profile?.cvUrl        ?? "",
@@ -128,7 +132,7 @@ export default function ProfileForm({ profile, heroBgImages }: { profile: Profil
   );
   const DEFAULT_VISIBILITY = {
     showGreeting:true, showSubtitle:true, showAvailabilityBadge:true, showProfileBadge:true,
-    showStats:true, showSocialLinks:true, showTechTags:true, showScrollIndicator:true, showBackground:true,
+    showStats:true, showSocialLinks:true, showTechTags:true, showScrollIndicator:true, showBackground:true, showCvButton:true,
   };
   const [heroVisibility, setHeroVisibility] = useState<Record<string, boolean>>({
     ...DEFAULT_VISIBILITY,
@@ -142,6 +146,16 @@ export default function ProfileForm({ profile, heroBgImages }: { profile: Profil
   const [aboutVisibility, setAboutVisibility] = useState<Record<string, boolean>>({
     ...ABOUT_DEFAULT_VISIBILITY,
     ...(((profile as unknown as Record<string,unknown>)?.aboutVisibility as Record<string,boolean>) ?? {}),
+  });
+
+  const SOCIAL_DEFAULT_VISIBILITY = {
+    showLinkedin:true, showGithub:true, showTwitter:true, showWhatsapp:true,
+    showInstagram:true, showYoutube:true, showTiktok:true, showWebsite:true,
+    showEmail:true, showPhone:true,
+  };
+  const [socialVisibility, setSocialVisibility] = useState<Record<string, boolean>>({
+    ...SOCIAL_DEFAULT_VISIBILITY,
+    ...(((profile as unknown as Record<string,unknown>)?.socialLinksVisibility as Record<string,boolean>) ?? {}),
   });
   const [signatureUploading, setSignatureUploading] = useState(false);
 
@@ -258,6 +272,7 @@ export default function ProfileForm({ profile, heroBgImages }: { profile: Profil
         heroTechTags: heroTechTagsPayload.length ? heroTechTagsPayload : null,
         heroVisibility,
         aboutVisibility,
+        socialLinksVisibility: socialVisibility,
       }),
     });
     const data = await res.json();
@@ -440,6 +455,10 @@ export default function ProfileForm({ profile, heroBgImages }: { profile: Profil
             { key:"githubUrl",   label:"GitHub URL",   ph:"https://github.com/..." },
             { key:"twitterUrl",  label:"Twitter URL",  ph:"https://twitter.com/..." },
             { key:"websiteUrl",  label:"Website URL",  ph:"https://yoursite.com" },
+            { key:"whatsappUrl",  label:"WhatsApp URL",  ph:"https://wa.me/93XXXXXXXXX" },
+            { key:"instagramUrl", label:"Instagram URL", ph:"https://instagram.com/..." },
+            { key:"youtubeUrl",   label:"YouTube URL",   ph:"https://youtube.com/@..." },
+            { key:"tiktokUrl",    label:"TikTok URL",    ph:"https://tiktok.com/@..." },
           ].map(({ key, label, ph }) => (
             <div key={key}>
               <label style={labelStyle}>{label}</label>
@@ -447,6 +466,34 @@ export default function ProfileForm({ profile, heroBgImages }: { profile: Profil
                 onChange={e => set(key, e.target.value)}
                 placeholder={ph} style={inputStyle} />
             </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Social Links — Show/Hide */}
+      <div className="admin-card">
+        <h3 style={{ fontWeight:700, fontSize:"0.95rem", marginBottom:"0.25rem" }}>Social Links — Show / Hide</h3>
+        <p style={{ fontSize:"0.8rem", color:"var(--text-muted)", marginBottom:"1rem" }}>
+          Independently show or hide each platform in the Hero and Footer social icons — a blank URL is always hidden regardless of this toggle.
+        </p>
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"0.6rem" }}>
+          {[
+            { key:"showLinkedin",  label:"LinkedIn" },
+            { key:"showGithub",    label:"GitHub" },
+            { key:"showTwitter",   label:"Twitter" },
+            { key:"showWhatsapp",  label:"WhatsApp" },
+            { key:"showInstagram", label:"Instagram" },
+            { key:"showYoutube",   label:"YouTube" },
+            { key:"showTiktok",    label:"TikTok" },
+            { key:"showWebsite",   label:"Website" },
+            { key:"showEmail",     label:"Email" },
+            { key:"showPhone",     label:"Phone" },
+          ].map(({ key, label }) => (
+            <label key={key} style={{ display:"flex", alignItems:"center", gap:"0.5rem", fontSize:"0.82rem", color:"var(--text-secondary)", cursor:"pointer" }}>
+              <input type="checkbox" checked={socialVisibility[key] !== false}
+                onChange={e => setSocialVisibility(prev => ({ ...prev, [key]: e.target.checked }))} />
+              {label}
+            </label>
           ))}
         </div>
       </div>
@@ -564,6 +611,7 @@ export default function ProfileForm({ profile, heroBgImages }: { profile: Profil
             { key:"showTechTags",           label:"Tech tag badges" },
             { key:"showScrollIndicator",    label:"Scroll indicator" },
             { key:"showBackground",         label:"Background image / slideshow" },
+            { key:"showCvButton",           label:"CV download button" },
           ].map(({ key, label }) => (
             <label key={key} style={{ display:"flex", alignItems:"center", gap:"0.5rem", fontSize:"0.82rem", color:"var(--text-secondary)", cursor:"pointer" }}>
               <input type="checkbox" checked={heroVisibility[key] !== false}

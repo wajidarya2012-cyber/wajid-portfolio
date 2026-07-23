@@ -20,6 +20,7 @@ const WRITABLE_FIELDS = [
   "photoUrl", "photoPublicId",
   "cvUrl", "cvPublicId",
   "linkedinUrl", "githubUrl", "twitterUrl", "websiteUrl",
+  "whatsappUrl", "instagramUrl", "youtubeUrl", "tiktokUrl", "socialLinksVisibility",
   "availableText_en", "availableText_ps", "availableText_fa",
   "heroGreeting_en", "heroGreeting_ps", "heroGreeting_fa",
   "heroCtaPrimaryText_en", "heroCtaPrimaryText_ps", "heroCtaPrimaryText_fa", "heroCtaPrimaryUrl",

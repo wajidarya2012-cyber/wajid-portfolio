@@ -5,6 +5,7 @@ import Image                  from "next/image";
 import { useTranslations }    from "next-intl";
 import type { Profile }       from "@/types";
 import AnalyticsTracker       from "./AnalyticsTracker";
+import SocialIcon             from "@/components/shared/SocialIcon";
 
 const G = "linear-gradient(135deg,#4f46e5 0%,#06b6d4 100%)";
 
@@ -39,6 +40,7 @@ export default function HeroSection({ profile, locale, heroBgSlides = [] }: { pr
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const typeRef   = useRef<HTMLSpanElement>(null);
   const [bgIndex, setBgIndex] = useState(0);
+  const [showNoCv, setShowNoCv] = useState(false);
 
   const p = (profile ?? {}) as unknown as Record<string, unknown>;
 
@@ -146,13 +148,19 @@ export default function HeroSection({ profile, locale, heroBgSlides = [] }: { pr
   const ctaSecondaryIsExternal = !!customSecondary || !!profile?.cvUrl;
 
   // Social links — built from existing Profile contact/social fields, empty ones hidden automatically.
+  const socialVis = (p.socialLinksVisibility as Record<string, boolean> | null) ?? {};
+  const showSocial = (key: string) => socialVis[key] !== false;
   const socialLinks = [
-    profile?.linkedinUrl && { label:"LinkedIn", icon:"in",  href: profile.linkedinUrl },
-    profile?.githubUrl   && { label:"GitHub",   icon:"gh",  href: profile.githubUrl },
-    profile?.twitterUrl  && { label:"Twitter",  icon:"tw",  href: profile.twitterUrl },
-    profile?.websiteUrl  && { label:"Website",  icon:"www", href: profile.websiteUrl },
-    profile?.email        && { label:"Email",    icon:"@",   href: `mailto:${profile.email}` },
-    profile?.phone         && { label:"Phone",    icon:"📞",  href: `tel:${profile.phone}` },
+    showSocial("showLinkedin")   && profile?.linkedinUrl   && { label:"LinkedIn",  icon:"linkedin",  href: profile.linkedinUrl },
+    showSocial("showGithub")     && profile?.githubUrl     && { label:"GitHub",    icon:"github",    href: profile.githubUrl },
+    showSocial("showTwitter")    && profile?.twitterUrl    && { label:"Twitter",   icon:"twitter",   href: profile.twitterUrl },
+    showSocial("showWhatsapp")   && (p.whatsappUrl as string) && { label:"WhatsApp",  icon:"whatsapp",  href: p.whatsappUrl as string },
+    showSocial("showInstagram")  && (p.instagramUrl as string) && { label:"Instagram", icon:"instagram", href: p.instagramUrl as string },
+    showSocial("showYoutube")    && (p.youtubeUrl as string)   && { label:"YouTube",   icon:"youtube",   href: p.youtubeUrl as string },
+    showSocial("showTiktok")     && (p.tiktokUrl as string)    && { label:"TikTok",    icon:"tiktok",    href: p.tiktokUrl as string },
+    showSocial("showWebsite")    && profile?.websiteUrl    && { label:"Website",   icon:"website", href: profile.websiteUrl },
+    showSocial("showEmail")      && profile?.email          && { label:"Email",     icon:"email",   href: `mailto:${profile.email}` },
+    showSocial("showPhone")      && profile?.phone           && { label:"Phone",     icon:"phone",   href: `tel:${profile.phone}` },
   ].filter(Boolean) as { label:string; icon:string; href:string }[];
 
   const techTags = (Array.isArray(p.heroTechTags) && (p.heroTechTags as string[]).length > 0)
@@ -255,9 +263,30 @@ export default function HeroSection({ profile, locale, heroBgSlides = [] }: { pr
             {/* CTA buttons */}
             <div style={{ display:"flex", flexWrap:"wrap", gap:"0.875rem", marginBottom:"2.25rem" }}>
               <a href={ctaPrimaryUrl} className="btn-primary">✉ {ctaPrimaryText}</a>
-              <a href={ctaSecondaryUrl} target={ctaSecondaryIsExternal ? "_blank" : "_self"} rel="noopener noreferrer" className="btn-secondary">
-                ↓ {ctaSecondaryText}
-              </a>
+              {show("showCvButton") && (
+                <div style={{ position:"relative" }}>
+                  <a
+                    href={ctaSecondaryUrl}
+                    target={ctaSecondaryIsExternal ? "_blank" : "_self"}
+                    rel="noopener noreferrer"
+                    className="btn-secondary"
+                    onClick={e => {
+                      if (!customSecondary && !profile?.cvUrl) {
+                        e.preventDefault();
+                        setShowNoCv(true);
+                        setTimeout(() => setShowNoCv(false), 2500);
+                      }
+                    }}
+                  >
+                    ↓ {ctaSecondaryText}
+                  </a>
+                  {showNoCv && (
+                    <div style={{ position:"absolute", top:"calc(100% + 0.5rem)", left:"50%", transform:"translateX(-50%)", whiteSpace:"nowrap", background:"var(--bg-card)", border:"1px solid var(--border)", borderRadius:"8px", padding:"0.45rem 0.85rem", fontSize:"0.75rem", color:"var(--text-primary)", boxShadow:"0 8px 24px rgba(0,0,0,0.25)", backdropFilter:"blur(10px)", zIndex:5, animation:"fadeIn 0.2s ease" }}>
+                      No CV uploaded yet.
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Social links */}
@@ -268,7 +297,7 @@ export default function HeroSection({ profile, locale, heroBgSlides = [] }: { pr
                     style={{ width:"40px", height:"40px", borderRadius:"50%", border:"1px solid var(--border)", background:"var(--bg-card)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"0.75rem", fontWeight:700, color:"var(--text-secondary)", textDecoration:"none", transition:"all 0.2s", backdropFilter:"blur(10px)" }}
                     onMouseEnter={e=>{ const el=e.currentTarget as HTMLElement; el.style.borderColor="#4f46e5"; el.style.color="#818cf8"; el.style.transform="translateY(-3px)"; el.style.boxShadow="0 6px 20px rgba(79,70,229,0.3)"; }}
                     onMouseLeave={e=>{ const el=e.currentTarget as HTMLElement; el.style.borderColor="var(--border)"; el.style.color="var(--text-secondary)"; el.style.transform="none"; el.style.boxShadow="none"; }}>
-                    {icon}
+                    <SocialIcon platform={icon} size={16} />
                   </a>
                 ))}
               </div>

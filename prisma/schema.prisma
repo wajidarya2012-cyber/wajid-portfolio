@@ -126,6 +126,15 @@ model Profile {
   githubUrl   String?
   twitterUrl  String?
   websiteUrl  String?
+  whatsappUrl  String?
+  instagramUrl String?
+  youtubeUrl   String?
+  tiktokUrl    String?
+
+  /// Show/hide toggles per social platform, e.g. { showLinkedin, showGithub, showTwitter,
+  /// showWhatsapp, showInstagram, showYoutube, showTiktok, showWebsite, showEmail, showPhone }.
+  /// Missing keys default to visible (true) — an empty/unset URL is always hidden regardless.
+  socialLinksVisibility Json?
 
   // Hero availability badge (trilingual)
   availableText_en String? @default("Available for Opportunities")

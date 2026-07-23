@@ -4,6 +4,7 @@ import Link               from "next/link";
 import { useTranslations } from "next-intl";
 import type { Profile }    from "@/types";
 import { buildNavItems, type NavItemConfig } from "@/lib/navConfig";
+import SocialIcon         from "@/components/shared/SocialIcon";
 
 const G = "linear-gradient(135deg,#4f46e5,#06b6d4)";
 
@@ -41,12 +42,18 @@ export default function Footer({
   }
 
   const p = (profile ?? {}) as Record<string, unknown>;
+  const socialVis = (p.socialLinksVisibility as Record<string, boolean> | null) ?? {};
+  const showSocial = (key: string) => socialVis[key] !== false;
   const SOCIALS = [
-    p.linkedinUrl && { label:"LinkedIn", icon:"in", href: p.linkedinUrl as string },
-    p.githubUrl   && { label:"GitHub",   icon:"gh", href: p.githubUrl   as string },
-    p.twitterUrl  && { label:"Twitter",  icon:"tw", href: p.twitterUrl  as string },
-    p.websiteUrl  && { label:"Website",  icon:"www", href: p.websiteUrl as string },
-    p.email       && { label:"Email",    icon:"@",   href: `mailto:${p.email}` },
+    showSocial("showLinkedin")  && p.linkedinUrl  && { label:"LinkedIn",  icon:"linkedin",  href: p.linkedinUrl as string },
+    showSocial("showGithub")    && p.githubUrl    && { label:"GitHub",    icon:"github",    href: p.githubUrl   as string },
+    showSocial("showTwitter")   && p.twitterUrl   && { label:"Twitter",   icon:"twitter",   href: p.twitterUrl  as string },
+    showSocial("showWhatsapp")  && p.whatsappUrl  && { label:"WhatsApp",  icon:"whatsapp",  href: p.whatsappUrl as string },
+    showSocial("showInstagram") && p.instagramUrl && { label:"Instagram", icon:"instagram", href: p.instagramUrl as string },
+    showSocial("showYoutube")   && p.youtubeUrl   && { label:"YouTube",   icon:"youtube",   href: p.youtubeUrl as string },
+    showSocial("showTiktok")    && p.tiktokUrl    && { label:"TikTok",    icon:"tiktok",    href: p.tiktokUrl as string },
+    showSocial("showWebsite")   && p.websiteUrl   && { label:"Website",   icon:"website", href: p.websiteUrl as string },
+    showSocial("showEmail")     && p.email         && { label:"Email",     icon:"email",   href: `mailto:${p.email}` },
   ].filter(Boolean) as { label:string; icon:string; href:string }[];
 
   const vis = {
@@ -100,7 +107,7 @@ export default function Footer({
                     style={{ width:"36px", height:"36px", borderRadius:"50%", border:"1px solid var(--border)", background:"var(--bg-card)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"0.72rem", fontWeight:700, color:"var(--text-secondary)", textDecoration:"none", transition:"all 0.2s", flexShrink:0 }}
                     onMouseEnter={e=>{ const el=e.currentTarget as HTMLElement; el.style.borderColor="#4f46e5"; el.style.color="#818cf8"; el.style.transform="translateY(-2px)"; }}
                     onMouseLeave={e=>{ const el=e.currentTarget as HTMLElement; el.style.borderColor="var(--border)"; el.style.color="var(--text-secondary)"; el.style.transform="none"; }}>
-                    {icon}
+                    <SocialIcon platform={icon} size={15} />
                   </a>
                 ))}
               </div>

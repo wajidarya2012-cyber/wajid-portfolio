@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslations }   from "next-intl";
 import type { Profile }       from "@/types";
 
@@ -15,6 +15,7 @@ export default function AboutSection({ profile, locale }: { profile: Profile|nul
   const th  = useTranslations("hero");
   const ts  = useTranslations("stats");
   const ref = useRef<HTMLDivElement>(null);
+  const [showNoCv, setShowNoCv] = useState(false);
 
   useEffect(() => {
     const observer = new IntersectionObserver((entries) => {
@@ -111,11 +112,30 @@ export default function AboutSection({ profile, locale }: { profile: Profile|nul
                 <img src={p.signatureUrl as string} alt="Signature" style={{ height:"48px", width:"auto", marginTop:"1.25rem", objectFit:"contain", opacity:0.9 }} />
               )}
 
-              {show("showCvButton") && profile?.cvUrl && (
-                <a href={`${profile.cvUrl}?fl_attachment=CV`} target="_blank" rel="noopener noreferrer" className="btn-secondary"
-                  style={{ display:"inline-flex", marginTop:"1.25rem", fontSize:"0.82rem" }}>
-                  ↓ {cvBtnText}
-                </a>
+              {show("showCvButton") && (
+                <div style={{ position:"relative", display:"inline-block", marginTop:"1.25rem" }}>
+                  <a
+                    href={profile?.cvUrl ? `${profile.cvUrl}?fl_attachment=CV` : undefined}
+                    target={profile?.cvUrl ? "_blank" : undefined}
+                    rel="noopener noreferrer"
+                    className="btn-secondary"
+                    style={{ display:"inline-flex", fontSize:"0.82rem", cursor:"pointer" }}
+                    onClick={e => {
+                      if (!profile?.cvUrl) {
+                        e.preventDefault();
+                        setShowNoCv(true);
+                        setTimeout(() => setShowNoCv(false), 2500);
+                      }
+                    }}
+                  >
+                    ↓ {cvBtnText}
+                  </a>
+                  {showNoCv && (
+                    <div style={{ position:"absolute", top:"calc(100% + 0.5rem)", left:"50%", transform:"translateX(-50%)", whiteSpace:"nowrap", background:"var(--bg-card)", border:"1px solid var(--border)", borderRadius:"8px", padding:"0.45rem 0.85rem", fontSize:"0.75rem", color:"var(--text-primary)", boxShadow:"0 8px 24px rgba(0,0,0,0.25)", backdropFilter:"blur(10px)", zIndex:5 }}>
+                      No CV uploaded yet.
+                    </div>
+                  )}
+                </div>
               )}
             </div>
 
