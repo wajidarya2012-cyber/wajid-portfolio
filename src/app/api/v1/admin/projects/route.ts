@@ -36,6 +36,7 @@ export async function GET(request: NextRequest) {
 
 interface FeatureInput { id?: string; en: string; ps: string; fa: string; }
 interface ImageInput   { url: string; publicId: string; isThumbnail: boolean; caption: string; }
+interface LinkInput    { id?: string; label_en: string; label_ps: string; label_fa: string; url: string; type: string; }
 
 export async function POST(request: NextRequest) {
   const { user, error } = await requireAdmin(request);
@@ -51,6 +52,7 @@ export async function POST(request: NextRequest) {
   // and must be written separately via nested Prisma create.
   const features: FeatureInput[] = Array.isArray(body.features) ? body.features : [];
   const images:   ImageInput[]   = Array.isArray(body.images)   ? body.images   : [];
+  const links:    LinkInput[]    = Array.isArray(body.links)    ? body.links    : [];
 
   try {
     const project = await prisma.project.create({
@@ -67,6 +69,11 @@ export async function POST(request: NextRequest) {
             isThumbnail: img.isThumbnail, caption: img.caption || null,
             sortOrder: i,
           })),
+        },
+        links: {
+          create: links
+            .filter(l => l.url?.trim())
+            .map(l => ({ label_en: l.label_en || l.type, label_ps: l.label_ps || l.label_en || l.type, label_fa: l.label_fa || l.label_en || l.type, url: l.url, type: l.type || "demo" })),
         },
       },
       include: { category: true, images: true, features: true, links: true },

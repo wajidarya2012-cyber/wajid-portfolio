@@ -16,6 +16,7 @@ const LOCALES = [
 ] as const;
 
 const STATUS_OPTIONS = ["ACTIVE", "DRAFT", "ARCHIVED"];
+const LINK_TYPES = ["demo", "github", "documentation", "download", "video"] as const;
 
 interface UploadedImage { url: string; publicId: string; isThumbnail: boolean; caption: string }
 
@@ -40,7 +41,13 @@ export default function ProjectForm({
   const [images, setImages]               = useState<UploadedImage[]>(
     project?.images.map(i => ({ url: i.url, publicId: i.publicId, isThumbnail: i.isThumbnail, caption: i.caption ?? "" })) ?? []
   );
+  const [links, setLinks]                 = useState(
+    project?.links.map(l => ({ id: l.id, label_en: l.label_en, label_ps: l.label_ps, label_fa: l.label_fa, url: l.url, type: l.type })) ?? []
+  );
   const [uploading, setUploading]         = useState(false);
+  const [seoOpen, setSeoOpen]             = useState(false);
+
+  const p = project as unknown as Record<string, unknown> | undefined;
 
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<ProjectInput>({
     resolver: zodResolver(projectSchema),
@@ -54,7 +61,13 @@ export default function ProjectForm({
       status: project.status,
       featured: project.featured,
       sortOrder: project.sortOrder,
-    } : { status: "ACTIVE", featured: false },
+      visible: (p?.visible as boolean) ?? true,
+      showOnHomepage: (p?.showOnHomepage as boolean) ?? true,
+      clientName: (p?.clientName as string) ?? "",
+      location: (p?.location as string) ?? "",
+      seoTitle_en: (p?.seoTitle_en as string) ?? "", seoTitle_ps: (p?.seoTitle_ps as string) ?? "", seoTitle_fa: (p?.seoTitle_fa as string) ?? "",
+      seoDescription_en: (p?.seoDescription_en as string) ?? "", seoDescription_ps: (p?.seoDescription_ps as string) ?? "", seoDescription_fa: (p?.seoDescription_fa as string) ?? "",
+    } : { status: "ACTIVE", featured: false, visible: true, showOnHomepage: true },
   });
 
   // Auto-generate slug from title_en
@@ -82,6 +95,16 @@ export default function ProjectForm({
     maxSize: 5 * 1024 * 1024,
   });
 
+  function moveImage(i: number, dir: -1 | 1) {
+    setImages(prev => {
+      const next = [...prev];
+      const j = i + dir;
+      if (j < 0 || j >= next.length) return prev;
+      [next[i], next[j]] = [next[j], next[i]];
+      return next;
+    });
+  }
+
   // ── Technologies ───────────────────────────────────────────────────────
   function addTech() {
     const t = techInput.trim();
@@ -105,12 +128,22 @@ export default function ProjectForm({
   }
   function removeFeature(i: number)         { setFeatures(prev => prev.filter((_, idx) => idx !== i)); }
 
+  // ── Links ──────────────────────────────────────────────────────────────
+  function addLink() { setLinks(prev => [...prev, { id:"", label_en:"", label_ps:"", label_fa:"", url:"", type:"demo" }]); }
+  function updateLink(i: number, k: string, v: string) {
+    setLinks(prev => prev.map((l, idx) => idx === i ? { ...l, [k]: v } : l));
+  }
+  function removeLink(i: number) { setLinks(prev => prev.filter((_, idx) => idx !== i)); }
+
   // ── Submit ─────────────────────────────────────────────────────────────
   async function onSubmit(data: ProjectInput) {
     setSaving(true);
     setError("");
     try {
-      const payload = { ...data, technologies, features, images };
+      const normalizedEndDate = data.endDate && !data.endDate.includes("T")
+        ? new Date(`${data.endDate}T00:00:00.000Z`).toISOString()
+        : data.endDate;
+      const payload = { ...data, endDate: normalizedEndDate, technologies, features, images, links };
       const url     = isEdit ? `/api/v1/admin/projects/${project!.id}` : "/api/v1/admin/projects";
       const method  = isEdit ? "PUT" : "POST";
       const res     = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
@@ -198,10 +231,34 @@ export default function ProjectForm({
             <input {...register("sortOrder", { valueAsNumber: true })} type="number" className="input-field" />
           </div>
         </div>
-        <label className="flex items-center gap-2 cursor-pointer">
-          <input {...register("featured")} type="checkbox" className="w-4 h-4 accent-primary-600 rounded" />
-          <span className="text-sm">Feature this project on homepage</span>
-        </label>
+        <div className="grid sm:grid-cols-3 gap-4">
+          <div>
+            <label className="block text-xs mb-1.5" style={{ color: "var(--text-secondary)" }}>Client / Organization</label>
+            <input {...register("clientName")} placeholder="Optional" className="input-field" />
+          </div>
+          <div>
+            <label className="block text-xs mb-1.5" style={{ color: "var(--text-secondary)" }}>Location</label>
+            <input {...register("location")} placeholder="Optional" className="input-field" />
+          </div>
+          <div>
+            <label className="block text-xs mb-1.5" style={{ color: "var(--text-secondary)" }}>Completion Date</label>
+            <input {...register("endDate")} type="date" className="input-field" />
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-5">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input {...register("featured")} type="checkbox" className="w-4 h-4 accent-primary-600 rounded" />
+            <span className="text-sm">Feature this project on homepage</span>
+          </label>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input {...register("visible")} type="checkbox" className="w-4 h-4 accent-primary-600 rounded" />
+            <span className="text-sm">Visible on public site</span>
+          </label>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input {...register("showOnHomepage")} type="checkbox" className="w-4 h-4 accent-primary-600 rounded" />
+            <span className="text-sm">Show in homepage Projects section</span>
+          </label>
+        </div>
       </div>
 
       {/* Technologies */}
@@ -250,6 +307,33 @@ export default function ProjectForm({
         </div>
       </div>
 
+      {/* Links */}
+      <div className="glass-card rounded-2xl p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-display font-bold">Project Links</h2>
+          <button type="button" onClick={addLink} className="text-xs px-3 py-1.5 rounded-lg border hover:border-primary-500 hover:text-white transition-all" style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}>
+            + Add Link
+          </button>
+        </div>
+        <div className="space-y-3">
+          {links.map((l, i) => (
+            <div key={i} className="grid sm:grid-cols-5 gap-2 items-start">
+              <select value={l.type} onChange={e => updateLink(i, "type", e.target.value)} className="input-field text-xs">
+                {LINK_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+              </select>
+              <input value={l.label_en} onChange={e => updateLink(i, "label_en", e.target.value)} placeholder="Label (EN)" className="input-field text-xs" />
+              <input value={l.label_ps} onChange={e => updateLink(i, "label_ps", e.target.value)} placeholder="پښتو" className="input-field text-xs" dir="rtl" />
+              <input value={l.label_fa} onChange={e => updateLink(i, "label_fa", e.target.value)} placeholder="دری" className="input-field text-xs" dir="rtl" />
+              <div className="flex gap-2">
+                <input value={l.url} onChange={e => updateLink(i, "url", e.target.value)} placeholder="https://..." className="input-field text-xs flex-1" />
+                <button type="button" onClick={() => removeLink(i)} className="text-red-400 hover:text-red-300 px-2 shrink-0">×</button>
+              </div>
+            </div>
+          ))}
+          {links.length === 0 && <p className="text-xs" style={{ color: "var(--text-muted)" }}>No links added yet.</p>}
+        </div>
+      </div>
+
       {/* Image upload */}
       <div className="glass-card rounded-2xl p-6">
         <h2 className="font-display font-bold mb-4">Project Images</h2>
@@ -273,7 +357,11 @@ export default function ProjectForm({
               <div key={i} className="relative group rounded-xl overflow-hidden border" style={{ borderColor: "var(--border)" }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={img.url} alt="" className="w-full aspect-video object-cover" />
-                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 p-2">
+                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1.5 p-2">
+                  <div className="flex gap-1 w-full">
+                    <button type="button" onClick={() => moveImage(i, -1)} disabled={i === 0} className="text-[10px] px-2 py-1 rounded bg-white/20 text-white flex-1 disabled:opacity-30">◀</button>
+                    <button type="button" onClick={() => moveImage(i, 1)} disabled={i === images.length - 1} className="text-[10px] px-2 py-1 rounded bg-white/20 text-white flex-1 disabled:opacity-30">▶</button>
+                  </div>
                   <button
                     type="button"
                     onClick={() => setImages(prev => prev.map((x, xi) => ({ ...x, isThumbnail: xi === i })))}
@@ -294,6 +382,42 @@ export default function ProjectForm({
                 )}
               </div>
             ))}
+          </div>
+        )}
+      </div>
+
+      {/* SEO */}
+      <div className="glass-card rounded-2xl p-6">
+        <button type="button" onClick={() => setSeoOpen(o => !o)} className="flex items-center justify-between w-full">
+          <h2 className="font-display font-bold">SEO Settings (optional)</h2>
+          <span className="text-xs" style={{ color: "var(--text-muted)" }}>{seoOpen ? "Hide ▲" : "Show ▼"}</span>
+        </button>
+        {seoOpen && (
+          <div className="grid sm:grid-cols-3 gap-3 mt-4">
+            <div>
+              <label className="block text-xs mb-1.5" style={{ color: "var(--text-secondary)" }}>SEO Title (EN)</label>
+              <input {...register("seoTitle_en")} placeholder="Falls back to project title" className="input-field text-xs" />
+            </div>
+            <div>
+              <label className="block text-xs mb-1.5" style={{ color: "var(--text-secondary)" }}>SEO Title (پښتو)</label>
+              <input {...register("seoTitle_ps")} className="input-field text-xs" dir="rtl" />
+            </div>
+            <div>
+              <label className="block text-xs mb-1.5" style={{ color: "var(--text-secondary)" }}>SEO Title (دری)</label>
+              <input {...register("seoTitle_fa")} className="input-field text-xs" dir="rtl" />
+            </div>
+            <div className="sm:col-span-3">
+              <label className="block text-xs mb-1.5" style={{ color: "var(--text-secondary)" }}>SEO Description (EN)</label>
+              <textarea {...register("seoDescription_en")} rows={2} placeholder="Falls back to project description" className="input-field text-xs resize-none" />
+            </div>
+            <div>
+              <label className="block text-xs mb-1.5" style={{ color: "var(--text-secondary)" }}>SEO Description (پښتو)</label>
+              <textarea {...register("seoDescription_ps")} rows={2} className="input-field text-xs resize-none" dir="rtl" />
+            </div>
+            <div>
+              <label className="block text-xs mb-1.5" style={{ color: "var(--text-secondary)" }}>SEO Description (دری)</label>
+              <textarea {...register("seoDescription_fa")} rows={2} className="input-field text-xs resize-none" dir="rtl" />
+            </div>
           </div>
         )}
       </div>

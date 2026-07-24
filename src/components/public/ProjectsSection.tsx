@@ -25,9 +25,15 @@ const THUMB_EMOJI: Record<string,string> = {
 export default function ProjectsSection({ projects, locale }: { projects: ProjectWithRelations[]; locale: string }) {
   const tl                      = useTranslations("projects");
   const [active, setActive]     = useState("all");
+  const [sort, setSort]         = useState("newest");
   const [selected, setSelected] = useState<ProjectWithRelations|null>(null);
   const [lightboxIndex, setLightboxIndex] = useState<number|null>(null);
   const ref                     = useRef<HTMLDivElement>(null);
+
+  const visibleProjects = projects.filter(p => {
+    const rec = p as unknown as { visible?: boolean; showOnHomepage?: boolean };
+    return rec.visible !== false && rec.showOnHomepage !== false;
+  });
 
   useEffect(() => {
     const observer = new IntersectionObserver((entries) => {
@@ -46,11 +52,21 @@ export default function ProjectsSection({ projects, locale }: { projects: Projec
   useEffect(() => { setLightboxIndex(null); }, [selected]);
 
   const cats    = ["all", ...Array.from(new Set(
-    projects
+    visibleProjects
       .filter(p => (p.category as unknown as { visible?: boolean } | null)?.visible !== false)
       .map(p => p.category?.slug ?? "general")
   ))];
-  const filtered = active === "all" ? projects : projects.filter(p => p.category?.slug === active);
+  const categoryFiltered = active === "all" ? visibleProjects : visibleProjects.filter(p => p.category?.slug === active);
+  const filtered = [...categoryFiltered].sort((a, b) => {
+    switch (sort) {
+      case "oldest":     return (a.createdAt ? new Date(a.createdAt).getTime() : 0) - (b.createdAt ? new Date(b.createdAt).getTime() : 0);
+      case "mostViewed": return b.viewCount - a.viewCount;
+      case "az":         return pick(a as Record<string,unknown>,"title",locale).localeCompare(pick(b as Record<string,unknown>,"title",locale));
+      case "featured":   return (b.featured ? 1 : 0) - (a.featured ? 1 : 0);
+      case "newest":
+      default:           return (b.createdAt ? new Date(b.createdAt).getTime() : 0) - (a.createdAt ? new Date(a.createdAt).getTime() : 0);
+    }
+  });
 
   return (
     <>
@@ -66,18 +82,28 @@ export default function ProjectsSection({ projects, locale }: { projects: Projec
             {tl("desc")}
           </p>
 
-          {/* Filter */}
-          <div className="reveal" style={{ display:"flex", flexWrap:"wrap", gap:"0.5rem", marginBottom:"2.5rem" }}>
-            {cats.map(cat => (
-              <button key={cat} onClick={() => setActive(cat)}
-                style={{ padding:"0.4rem 1.1rem", borderRadius:"9999px", fontSize:"0.8rem", fontWeight:600, cursor:"pointer", transition:"all 0.2s", border:"1px solid",
-                  borderColor: active===cat ? "#4f46e5" : "var(--border)",
-                  background:  active===cat ? "#4f46e5" : "var(--bg-card)",
-                  color:       active===cat ? "#fff"    : "var(--text-secondary)",
-                }}>
-                {cat === "all" ? tl("filters.all") : cat.charAt(0).toUpperCase()+cat.slice(1)}
-              </button>
-            ))}
+          {/* Filter + Sort */}
+          <div className="reveal" style={{ display:"flex", flexWrap:"wrap", gap:"0.75rem", marginBottom:"2.5rem", alignItems:"center", justifyContent:"space-between" }}>
+            <div style={{ display:"flex", flexWrap:"wrap", gap:"0.5rem" }}>
+              {cats.map(cat => (
+                <button key={cat} onClick={() => setActive(cat)}
+                  style={{ padding:"0.4rem 1.1rem", borderRadius:"9999px", fontSize:"0.8rem", fontWeight:600, cursor:"pointer", transition:"all 0.2s", border:"1px solid",
+                    borderColor: active===cat ? "#4f46e5" : "var(--border)",
+                    background:  active===cat ? "#4f46e5" : "var(--bg-card)",
+                    color:       active===cat ? "#fff"    : "var(--text-secondary)",
+                  }}>
+                  {cat === "all" ? tl("filters.all") : cat.charAt(0).toUpperCase()+cat.slice(1)}
+                </button>
+              ))}
+            </div>
+            <select value={sort} onChange={e => setSort(e.target.value)}
+              style={{ padding:"0.45rem 0.9rem", borderRadius:"9999px", fontSize:"0.78rem", fontWeight:600, border:"1px solid var(--border)", background:"var(--bg-card)", color:"var(--text-secondary)", cursor:"pointer" }}>
+              <option value="newest">Newest First</option>
+              <option value="oldest">Oldest First</option>
+              <option value="mostViewed">Most Viewed</option>
+              <option value="featured">Featured First</option>
+              <option value="az">A–Z</option>
+            </select>
           </div>
 
           {/* Grid */}
@@ -175,6 +201,9 @@ export default function ProjectsSection({ projects, locale }: { projects: Projec
             </div>
 
             <div style={{ padding:"1.5rem" }}>
+              <a href={`/${locale}/projects/${selected.slug}`} className="btn-secondary" style={{ fontSize:"0.78rem", padding:"0.45rem 1rem", display:"inline-flex", marginBottom:"1.25rem" }}>
+                View Full Page ↗
+              </a>
               {/* Technologies */}
               <div style={{ display:"flex", flexWrap:"wrap", gap:"0.4rem", marginBottom:"1.25rem" }}>
                 {selected.technologies.map(t => <span key={t} className="tag-badge">{t}</span>)}

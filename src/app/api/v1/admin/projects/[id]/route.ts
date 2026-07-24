@@ -20,6 +20,7 @@ export async function GET(request: NextRequest, { params }: Params) {
 
 interface FeatureInput { id?: string; en: string; ps: string; fa: string; }
 interface ImageInput   { url: string; publicId: string; isThumbnail: boolean; caption: string; }
+interface LinkInput    { id?: string; label_en: string; label_ps: string; label_fa: string; url: string; type: string; }
 
 export async function PUT(request: NextRequest, { params }: Params) {
   const { user, error } = await requireAdmin(request);
@@ -36,9 +37,10 @@ export async function PUT(request: NextRequest, { params }: Params) {
 
   const features: FeatureInput[] = Array.isArray(body.features) ? body.features : [];
   const images:   ImageInput[]   = Array.isArray(body.images)   ? body.images   : [];
+  const links:    LinkInput[]    = Array.isArray(body.links)    ? body.links    : [];
 
   try {
-    // Replace features & images via nested deleteMany+create in a single
+    // Replace features, images & links via nested deleteMany+create in a single
     // update mutation — avoids an interactive $transaction, which is
     // unreliable over pooled (pgbouncer) connections like Neon.
     const project = await prisma.project.update({
@@ -59,6 +61,12 @@ export async function PUT(request: NextRequest, { params }: Params) {
             sortOrder: i,
           })),
         },
+        links: {
+          deleteMany: {},
+          create: links
+            .filter(l => l?.url?.trim())
+            .map(l => ({ label_en: l.label_en || l.type, label_ps: l.label_ps || l.label_en || l.type, label_fa: l.label_fa || l.label_en || l.type, url: l.url, type: l.type || "demo" })),
+        },
       },
       include: { category: true, images: true, features: true, links: true },
     });
@@ -72,6 +80,33 @@ export async function PUT(request: NextRequest, { params }: Params) {
     console.error("Project update error:", e);
     return NextResponse.json({ success: false, error: "Failed to update project." }, { status: 500 });
   }
+}
+
+const QUICK_PATCH_FIELDS = ["sortOrder", "visible", "showOnHomepage", "featured", "status"] as const;
+
+export async function PATCH(request: NextRequest, { params }: Params) {
+  const { user, error } = await requireAdmin(request);
+  if (error) return error;
+
+  const body = await request.json().catch(() => null);
+  if (!body || typeof body !== "object") {
+    return NextResponse.json({ success: false, error: "Invalid request body" }, { status: 400 });
+  }
+
+  const data: Record<string, unknown> = {};
+  for (const key of QUICK_PATCH_FIELDS) {
+    if (key in body) data[key] = body[key];
+  }
+  if (Object.keys(data).length === 0) {
+    return NextResponse.json({ success: false, error: "No valid fields to update" }, { status: 400 });
+  }
+
+  const existing = await prisma.project.findUnique({ where: { id: params.id } });
+  if (!existing) return NextResponse.json({ success: false, error: "Not found" }, { status: 404 });
+
+  const project = await prisma.project.update({ where: { id: params.id }, data });
+  await logActivity(user!.id, "UPDATE", "Project", `Updated project: ${project.title_en}`, project.id, request);
+  return NextResponse.json({ success: true, data: project });
 }
 
 export async function DELETE(request: NextRequest, { params }: Params) {

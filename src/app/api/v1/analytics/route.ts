@@ -42,6 +42,13 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    if (parsed.data.event === "PROJECT_VIEW" && parsed.data.projectId) {
+      await prisma.project.update({
+        where: { id: parsed.data.projectId },
+        data:  { viewCount: { increment: 1 } },
+      }).catch(() => {});
+    }
+
     return NextResponse.json({ success: true }, { status: 201 });
   } catch {
     return NextResponse.json({ success: false }, { status: 500 });

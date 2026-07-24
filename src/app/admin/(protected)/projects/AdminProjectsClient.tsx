@@ -24,12 +24,41 @@ export default function AdminProjectsClient({
   const [search, setSearch] = useState("");
   const [catFilter, setCat] = useState("all");
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [busyId, setBusyId] = useState<string | null>(null);
 
-  const filtered = projects.filter((p) => {
+  const sorted = [...projects].sort((a, b) => a.sortOrder - b.sortOrder);
+  const filtered = sorted.filter((p) => {
     const matchSearch = p.title_en.toLowerCase().includes(search.toLowerCase());
     const matchCat    = catFilter === "all" || p.categoryId === catFilter;
     return matchSearch && matchCat;
   });
+
+  async function patch(id: string, data: Record<string, unknown>) {
+    setBusyId(id);
+    await fetch(`/api/v1/admin/projects/${id}`, {
+      method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data),
+    });
+    setBusyId(null);
+    router.refresh();
+  }
+
+  async function toggleField(p: ProjectRow, field: "featured" | "visible" | "showOnHomepage") {
+    await patch(p.id, { [field]: !p[field] });
+  }
+
+  async function move(id: string, dir: -1 | 1) {
+    const idx = sorted.findIndex(p => p.id === id);
+    const swapIdx = idx + dir;
+    if (swapIdx < 0 || swapIdx >= sorted.length) return;
+    const a = sorted[idx], b = sorted[swapIdx];
+    setBusyId(id);
+    await Promise.all([
+      fetch(`/api/v1/admin/projects/${a.id}`, { method:"PATCH", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ sortOrder: b.sortOrder }) }),
+      fetch(`/api/v1/admin/projects/${b.id}`, { method:"PATCH", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ sortOrder: a.sortOrder }) }),
+    ]);
+    setBusyId(null);
+    router.refresh();
+  }
 
   async function handleDelete(id: string, title: string) {
     if (!confirm(`Delete "${title}"? This cannot be undone.`)) return;
@@ -69,7 +98,7 @@ export default function AdminProjectsClient({
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b text-left" style={{ borderColor: "var(--border)" }}>
-              {["Project", "Category", "Status", "Views", "Featured", "Actions"].map((h) => (
+              {["Order", "Project", "Category", "Status", "Views", "Featured", "Visible", "Homepage", "Actions"].map((h) => (
                 <th key={h} className="px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>
                   {h}
                 </th>
@@ -77,8 +106,14 @@ export default function AdminProjectsClient({
             </tr>
           </thead>
           <tbody>
-            {filtered.map((p) => (
+            {filtered.map((p, idx) => (
               <tr key={p.id} className="border-b hover:bg-white/[0.03] transition-colors" style={{ borderColor: "var(--border)" }}>
+                <td className="px-4 py-3">
+                  <div className="flex flex-col gap-0.5">
+                    <button onClick={() => move(p.id, -1)} disabled={idx === 0 || busyId === p.id} className="text-xs leading-none px-1 disabled:opacity-30" style={{ color: "var(--text-secondary)" }}>▲</button>
+                    <button onClick={() => move(p.id, 1)} disabled={idx === filtered.length - 1 || busyId === p.id} className="text-xs leading-none px-1 disabled:opacity-30" style={{ color: "var(--text-secondary)" }}>▼</button>
+                  </div>
+                </td>
                 <td className="px-4 py-3 font-medium max-w-[200px]">
                   <p className="truncate">{p.title_en}</p>
                   <p className="text-xs font-code mt-0.5 truncate" style={{ color: "var(--text-muted)" }}>/{p.slug}</p>
@@ -94,7 +129,23 @@ export default function AdminProjectsClient({
                   </span>
                 </td>
                 <td className="px-4 py-3 font-code text-xs text-accent-500">{p.viewCount}</td>
-                <td className="px-4 py-3 text-center">{p.featured ? "⭐" : "—"}</td>
+                <td className="px-4 py-3 text-center">
+                  <button onClick={() => toggleField(p, "featured")} disabled={busyId === p.id} title="Toggle featured">
+                    {p.featured ? "⭐" : "☆"}
+                  </button>
+                </td>
+                <td className="px-4 py-3 text-center">
+                  <button onClick={() => toggleField(p, "visible")} disabled={busyId === p.id} title="Toggle visible"
+                    className="text-xs px-2 py-1 rounded-full border" style={{ borderColor:"var(--border)", color: p.visible ? "#34d399" : "var(--text-muted)" }}>
+                    {p.visible ? "Shown" : "Hidden"}
+                  </button>
+                </td>
+                <td className="px-4 py-3 text-center">
+                  <button onClick={() => toggleField(p, "showOnHomepage")} disabled={busyId === p.id} title="Toggle homepage display"
+                    className="text-xs px-2 py-1 rounded-full border" style={{ borderColor:"var(--border)", color: p.showOnHomepage ? "#818cf8" : "var(--text-muted)" }}>
+                    {p.showOnHomepage ? "On" : "Off"}
+                  </button>
+                </td>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2">
                     <Link
@@ -116,7 +167,7 @@ export default function AdminProjectsClient({
               </tr>
             ))}
             {filtered.length === 0 && (
-              <tr><td colSpan={6} className="px-4 py-12 text-center text-sm" style={{ color: "var(--text-muted)" }}>No projects found.</td></tr>
+              <tr><td colSpan={9} className="px-4 py-12 text-center text-sm" style={{ color: "var(--text-muted)" }}>No projects found.</td></tr>
             )}
           </tbody>
         </table>

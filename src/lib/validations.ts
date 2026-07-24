@@ -63,8 +63,18 @@ export const projectSchema = z.object({
   status:         z.enum(["ACTIVE", "ARCHIVED", "DRAFT"]).default("ACTIVE"),
   featured:       z.boolean().default(false),
   sortOrder:      z.number().int().min(0).optional(),
-  startDate:      z.string().datetime().optional().nullable(),
-  endDate:        z.string().datetime().optional().nullable(),
+  startDate:      z.string().refine(v => !v || !isNaN(Date.parse(v)), "Invalid date").optional().nullable(),
+  endDate:        z.string().refine(v => !v || !isNaN(Date.parse(v)), "Invalid date").optional().nullable(),
+  visible:        z.boolean().optional(),
+  showOnHomepage: z.boolean().optional(),
+  clientName:     z.string().optional().nullable(),
+  location:       z.string().optional().nullable(),
+  seoTitle_en:       z.string().optional().nullable(),
+  seoTitle_ps:       z.string().optional().nullable(),
+  seoTitle_fa:       z.string().optional().nullable(),
+  seoDescription_en: z.string().optional().nullable(),
+  seoDescription_ps: z.string().optional().nullable(),
+  seoDescription_fa: z.string().optional().nullable(),
 });
 
 // ── Project Feature ────────────────────────────────────────────────────────
