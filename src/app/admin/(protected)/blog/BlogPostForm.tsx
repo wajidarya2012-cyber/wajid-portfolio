@@ -16,12 +16,22 @@ const EMPTY = {
   tags:[] as string[],
 };
 
+type FormState = typeof EMPTY;
+
+// The 5 trilingual text fields, indexed by locale — kept out of `featured`/`tags`/`status`
+// so a single cast can't silently paper over a real type mismatch (see CLAUDE.md §9).
+type LocaleTextField = "title" | "content" | "excerpt" | "metaTitle" | "metaDesc";
+type Locale = "en" | "ps" | "fa";
+function localeKey(field: LocaleTextField, locale: Locale): `${LocaleTextField}_${Locale}` {
+  return `${field}_${locale}`;
+}
+
 function toSlug(s:string) { return s.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,""); }
 
 export default function BlogPostForm({ post }: { post?: BlogPost }) {
   const router = useRouter();
-  const [tab, setTab]       = useState<"en"|"ps"|"fa">("en");
-  const [form, setForm]     = useState(post ? {
+  const [tab, setTab]       = useState<Locale>("en");
+  const [form, setForm]     = useState<FormState>(post ? {
     title_en:post.title_en, title_ps:post.title_ps, title_fa:post.title_fa,
     slug:post.slug, content_en:post.content_en, content_ps:post.content_ps, content_fa:post.content_fa,
     excerpt_en:post.excerpt_en??"", excerpt_ps:post.excerpt_ps??"", excerpt_fa:post.excerpt_fa??"",
@@ -29,8 +39,8 @@ export default function BlogPostForm({ post }: { post?: BlogPost }) {
     metaDesc_en:post.metaDesc_en??"", metaDesc_ps:post.metaDesc_ps??"", metaDesc_fa:post.metaDesc_fa??"",
     coverImage:post.coverImage??"", coverPublicId:post.coverPublicId??"", featuredVideoUrl:post.featuredVideoUrl??"",
     status:post.status as "DRAFT"|"PUBLISHED"|"ARCHIVED",
-    featured:(post as unknown as Record<string,boolean>).featured ?? false,
-    tags:(post as unknown as Record<string,string[]>).tags ?? [],
+    featured:post.featured,
+    tags:post.tags,
   } : EMPTY);
   const [tagInput, setTagInput]   = useState("");
   const [saving, setSaving]       = useState(false);
@@ -176,31 +186,31 @@ export default function BlogPostForm({ post }: { post?: BlogPost }) {
         <div key={key} className="admin-card" style={{ display:"flex", flexDirection:"column", gap:"0.875rem" }}>
           <div>
             <label style={lbl}>Title *</label>
-            <input value={(form as Record<string,string>)[`title_${key}`]}
+            <input value={form[localeKey("title",key)]}
               onChange={e=>{ set(`title_${key}`,e.target.value); if(key==="en"&&!post) set("slug",toSlug(e.target.value)); }}
               style={{ ...inp, fontSize:"1rem", fontWeight:600, direction:dir as "ltr"|"rtl" }} />
           </div>
           <div>
             <label style={lbl}>Content *</label>
-            <textarea value={(form as Record<string,string>)[`content_${key}`]}
+            <textarea value={form[localeKey("content",key)]}
               onChange={e=>set(`content_${key}`,e.target.value)}
               rows={14} style={{ ...inp, resize:"vertical", direction:dir as "ltr"|"rtl", lineHeight:1.7 }}
               placeholder="Write your article content here. HTML is supported." />
           </div>
           <div>
             <label style={lbl}>Excerpt (summary)</label>
-            <textarea value={(form as Record<string,string>)[`excerpt_${key}`]}
+            <textarea value={form[localeKey("excerpt",key)]}
               onChange={e=>set(`excerpt_${key}`,e.target.value)}
               rows={2} style={{ ...inp, resize:"vertical", direction:dir as "ltr"|"rtl" }} />
           </div>
           <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"0.75rem", paddingTop:"0.5rem", borderTop:"1px solid var(--border)" }}>
             <div>
               <label style={lbl}>SEO Meta Title</label>
-              <input value={(form as Record<string,string>)[`metaTitle_${key}`]} onChange={e=>set(`metaTitle_${key}`,e.target.value)} style={inp} />
+              <input value={form[localeKey("metaTitle",key)]} onChange={e=>set(`metaTitle_${key}`,e.target.value)} style={inp} />
             </div>
             <div>
               <label style={lbl}>SEO Meta Description</label>
-              <input value={(form as Record<string,string>)[`metaDesc_${key}`]} onChange={e=>set(`metaDesc_${key}`,e.target.value)} style={inp} />
+              <input value={form[localeKey("metaDesc",key)]} onChange={e=>set(`metaDesc_${key}`,e.target.value)} style={inp} />
             </div>
           </div>
         </div>

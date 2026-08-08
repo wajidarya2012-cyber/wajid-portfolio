@@ -17,6 +17,14 @@ const EMPTY = {
   sortOrder:0,
 };
 
+// Honors/Courses are trilingual string[] fields — index via a typed key instead of
+// `as Record<string,string[]>` on the whole (mixed-type) form state (see CLAUDE.md §9).
+type LocaleArrayField = "honors" | "courses";
+type Locale = "en" | "ps" | "fa";
+function localeArrayKey(field: LocaleArrayField, locale: Locale): `${LocaleArrayField}_${Locale}` {
+  return `${field}_${locale}`;
+}
+
 interface SectionConfig {
   title_en?:string; title_ps?:string; title_fa?:string;
   subtitle_en?:string; subtitle_ps?:string; subtitle_fa?:string;
@@ -296,8 +304,8 @@ export default function EducationManager({ initialData, initialSectionConfig }: 
                   <button className="btn-ghost" style={{ fontSize:"0.8rem" }} onClick={addHonor}>Add</button>
                 </div>
                 <div style={{ display:"flex", flexWrap:"wrap", gap:"0.4rem" }}>
-                  {(form as Record<string,string[]>)[`honors_${key}`].map((h,i)=>(
-                    <span key={i} className="tag-badge" style={{ cursor:"pointer" }} onClick={()=>setForm(p=>({...p,[`honors_${key}`]:(p as unknown as Record<string,string[]>)[`honors_${key}`].filter((_,idx)=>idx!==i)}))}>{h} ✕</span>
+                  {form[localeArrayKey("honors",key)].map((h,i)=>(
+                    <span key={i} className="tag-badge" style={{ cursor:"pointer" }} onClick={()=>setForm(p=>({...p,[`honors_${key}`]:p[localeArrayKey("honors",key)].filter((_,idx)=>idx!==i)}))}>{h} ✕</span>
                   ))}
                 </div>
               </div>
@@ -309,8 +317,8 @@ export default function EducationManager({ initialData, initialSectionConfig }: 
                   <button className="btn-ghost" style={{ fontSize:"0.8rem" }} onClick={addCourse}>Add</button>
                 </div>
                 <div style={{ display:"flex", flexWrap:"wrap", gap:"0.4rem" }}>
-                  {(form as Record<string,string[]>)[`courses_${key}`].map((c,i)=>(
-                    <span key={i} className="tag-badge" style={{ cursor:"pointer" }} onClick={()=>setForm(p=>({...p,[`courses_${key}`]:(p as unknown as Record<string,string[]>)[`courses_${key}`].filter((_,idx)=>idx!==i)}))}>{c} ✕</span>
+                  {form[localeArrayKey("courses",key)].map((c,i)=>(
+                    <span key={i} className="tag-badge" style={{ cursor:"pointer" }} onClick={()=>setForm(p=>({...p,[`courses_${key}`]:p[localeArrayKey("courses",key)].filter((_,idx)=>idx!==i)}))}>{c} ✕</span>
                   ))}
                 </div>
               </div>
