@@ -4,7 +4,7 @@ import { useEffect } from "react";
 
 interface Props {
   page:       string;
-  event:      "PAGE_VIEW" | "PROJECT_VIEW" | "CV_DOWNLOAD" | "CONTACT_SUBMIT" | "BLOG_VIEW";
+  event:      "PAGE_VIEW" | "PROJECT_VIEW" | "CV_DOWNLOAD" | "CONTACT_SUBMIT" | "BLOG_VIEW" | "GALLERY_VIEW";
   projectId?: string;
 }
 

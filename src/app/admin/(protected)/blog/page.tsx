@@ -23,6 +23,7 @@ export default async function BlogPage() {
             <tr>
               <th>Title</th>
               <th>Status</th>
+              <th>Featured</th>
               <th>Views</th>
               <th>Date</th>
               <th>Actions</th>
@@ -34,8 +35,14 @@ export default async function BlogPage() {
                 <td>
                   <p style={{ fontWeight:600, fontSize:"0.875rem" }}>{post.title_en}</p>
                   <p style={{ fontSize:"0.72rem", color:"var(--text-muted)", fontFamily:"var(--font-fira)" }}>/{post.slug}</p>
+                  {post.tags.length > 0 && (
+                    <div style={{ display:"flex", flexWrap:"wrap", gap:"0.3rem", marginTop:"0.35rem" }}>
+                      {post.tags.slice(0,3).map(t => <span key={t} className="tag-badge" style={{ fontSize:"0.62rem" }}>{t}</span>)}
+                    </div>
+                  )}
                 </td>
                 <td><span className={STATUS_STYLE[post.status]||"tag-badge"}>{post.status}</span></td>
+                <td style={{ textAlign:"center" }}>{post.featured ? "⭐" : ""}</td>
                 <td style={{ fontFamily:"var(--font-fira)", color:"#06b6d4", fontSize:"0.82rem" }}>{post.viewCount}</td>
                 <td style={{ fontSize:"0.8rem", color:"var(--text-muted)" }}>{new Date(post.createdAt).toLocaleDateString()}</td>
                 <td>
@@ -47,7 +54,7 @@ export default async function BlogPage() {
               </tr>
             ))}
             {posts.length===0&&(
-              <tr><td colSpan={5} style={{ textAlign:"center", padding:"3rem", color:"var(--text-muted)" }}>No blog posts yet.</td></tr>
+              <tr><td colSpan={6} style={{ textAlign:"center", padding:"3rem", color:"var(--text-muted)" }}>No blog posts yet.</td></tr>
             )}
           </tbody>
         </table>

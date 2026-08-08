@@ -12,6 +12,8 @@ const EMPTY = {
   metaDesc_en:"", metaDesc_ps:"", metaDesc_fa:"",
   coverImage:"", coverPublicId:"", featuredVideoUrl:"",
   status:"DRAFT" as "DRAFT"|"PUBLISHED"|"ARCHIVED",
+  featured:false,
+  tags:[] as string[],
 };
 
 function toSlug(s:string) { return s.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,""); }
@@ -27,7 +29,10 @@ export default function BlogPostForm({ post }: { post?: BlogPost }) {
     metaDesc_en:post.metaDesc_en??"", metaDesc_ps:post.metaDesc_ps??"", metaDesc_fa:post.metaDesc_fa??"",
     coverImage:post.coverImage??"", coverPublicId:post.coverPublicId??"", featuredVideoUrl:post.featuredVideoUrl??"",
     status:post.status as "DRAFT"|"PUBLISHED"|"ARCHIVED",
+    featured:(post as unknown as Record<string,boolean>).featured ?? false,
+    tags:(post as unknown as Record<string,string[]>).tags ?? [],
   } : EMPTY);
+  const [tagInput, setTagInput]   = useState("");
   const [saving, setSaving]       = useState(false);
   const [uploading, setUploading] = useState(false);
   const [msg, setMsg]             = useState<{type:"success"|"error";text:string}|null>(null);
@@ -48,6 +53,13 @@ export default function BlogPostForm({ post }: { post?: BlogPost }) {
   }
 
   function set(k:string,v:string) { setForm(p=>({...p,[k]:v})); }
+
+  function addTag() {
+    const t = tagInput.trim();
+    if (t && !form.tags.includes(t)) setForm(p => ({ ...p, tags: [...p.tags, t] }));
+    setTagInput("");
+  }
+  function removeTag(t: string) { setForm(p => ({ ...p, tags: p.tags.filter(x => x !== t) })); }
 
   async function save() {
     setSaving(true); setMsg(null);
@@ -79,8 +91,7 @@ export default function BlogPostForm({ post }: { post?: BlogPost }) {
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:"1.25rem" }}>
       {/* Status & Slug row */}
-      {/* Status & Slug row */}
-      <div className="admin-card" style={{ display:"grid", gridTemplateColumns:"1fr 160px", gap:"1rem", alignItems:"end" }}>
+      <div className="admin-card" style={{ display:"grid", gridTemplateColumns:"1fr 160px auto", gap:"1rem", alignItems:"end" }}>
         <div>
           <label style={lbl}>URL Slug *</label>
           <input value={form.slug} onChange={e=>set("slug",toSlug(e.target.value))} placeholder="my-blog-post" style={{ ...inp, fontFamily:"var(--font-fira)" }} />
@@ -93,6 +104,27 @@ export default function BlogPostForm({ post }: { post?: BlogPost }) {
             <option value="PUBLISHED">Published</option>
             <option value="ARCHIVED">Archived</option>
           </select>
+        </div>
+        <label style={{ display:"flex", alignItems:"center", gap:"0.5rem", cursor:"pointer", paddingBottom:"0.65rem", whiteSpace:"nowrap" }}>
+          <input type="checkbox" checked={form.featured} onChange={e=>setForm(p=>({...p,featured:e.target.checked}))} />
+          <span style={{ fontSize:"0.85rem" }}>Featured</span>
+        </label>
+      </div>
+
+      {/* Tags */}
+      <div className="admin-card" style={{ display:"flex", flexDirection:"column", gap:"0.75rem" }}>
+        <label style={lbl}>Tags</label>
+        <div style={{ display:"flex", gap:"0.5rem" }}>
+          <input value={tagInput} onChange={e=>setTagInput(e.target.value)}
+            onKeyDown={e=>{ if (e.key==="Enter") { e.preventDefault(); addTag(); } }}
+            placeholder="e.g. Networking, Tutorial" style={{ ...inp, flex:1 }} />
+          <button type="button" className="btn-secondary" style={{ fontSize:"0.8rem" }} onClick={addTag}>Add</button>
+        </div>
+        <div style={{ display:"flex", flexWrap:"wrap", gap:"0.4rem" }}>
+          {form.tags.map(t => (
+            <span key={t} className="tag-badge" style={{ cursor:"pointer" }} onClick={() => removeTag(t)}>{t} ✕</span>
+          ))}
+          {form.tags.length === 0 && <p style={{ fontSize:"0.78rem", color:"var(--text-muted)" }}>No tags yet.</p>}
         </div>
       </div>
 

@@ -113,10 +113,10 @@ export default function ProfileForm({ profile, heroBgImages }: { profile: Profil
 
   const [coreValues, setCoreValues] = useState<{ icon:string; title_en:string; title_ps:string; title_fa:string; desc_en:string; desc_ps:string; desc_fa:string }[]>(
     (profile?.coreValues as { icon:string; title_en:string; title_ps:string; title_fa:string; desc_en:string; desc_ps:string; desc_fa:string }[] | null) ?? [
-      { icon:"💡", title_en:"Innovation",     title_ps:"", title_fa:"", desc_en:"Solving complex problems with creative digital solutions", desc_ps:"", desc_fa:"" },
-      { icon:"🛡️", title_en:"Reliability",    title_ps:"", title_fa:"", desc_en:"Building systems organizations can depend on",              desc_ps:"", desc_fa:"" },
-      { icon:"🤝", title_en:"Collaboration",  title_ps:"", title_fa:"", desc_en:"Working effectively with teams and stakeholders",           desc_ps:"", desc_fa:"" },
-      { icon:"📈", title_en:"Growth",         title_ps:"", title_fa:"", desc_en:"Continuously learning and evolving with technology",        desc_ps:"", desc_fa:"" },
+      { icon:"💡", title_en:"Innovation",    title_ps:"نوښت",       title_fa:"نوآوری",         desc_en:"Solving complex problems with creative digital solutions", desc_ps:"د ډیجیټل حلونو له لارې پیچلو ستونزو حل کول",                desc_fa:"حل مشکلات پیچیده با راه‌حل‌های دیجیتال خلاقانه" },
+      { icon:"🛡️", title_en:"Reliability",   title_ps:"د اعتماد وړ", title_fa:"قابلیت اطمینان", desc_en:"Building systems organizations can depend on",              desc_ps:"داسې سیستمونه جوړول چې موسسې پرې ولاړې وي",                 desc_fa:"ساخت سیستم‌هایی که سازمان‌ها می‌توانند به آن‌ها اعتماد کنند" },
+      { icon:"🤝", title_en:"Collaboration", title_ps:"همکاري",      title_fa:"همکاری",         desc_en:"Working effectively with teams and stakeholders",           desc_ps:"د ټیمونو او ذینفعانو سره مؤثره کار کول",                    desc_fa:"کار مؤثر با تیم‌ها و ذینفعان" },
+      { icon:"📈", title_en:"Growth",        title_ps:"وده",         title_fa:"رشد",            desc_en:"Continuously learning and evolving with technology",        desc_ps:"د ټیکنالوژۍ سره ویاړل او وده کول",                          desc_fa:"یادگیری مستمر و تکامل با فناوری" },
     ]
   );
 
@@ -643,13 +643,25 @@ export default function ProfileForm({ profile, heroBgImages }: { profile: Profil
 
       {/* Core Values */}
       <div className="admin-card">
-        <h3 style={{ fontWeight:700, fontSize:"0.95rem", marginBottom:"1rem" }}>About Section — Core Values</h3>
-        <div style={{ display:"flex", flexDirection:"column", gap:"1rem" }}>
+        <h3 style={{ fontWeight:700, fontSize:"0.95rem", marginBottom:"0.25rem" }}>About Section — Core Values</h3>
+        <p style={{ fontSize:"0.8rem", color:"var(--text-muted)", marginBottom:"1rem" }}>
+          Leave پښتو / دری blank to fall back to the English text on the public site.
+        </p>
+        <div style={{ display:"flex", flexDirection:"column", gap:"0.875rem" }}>
           {coreValues.map((v, idx) => (
-            <div key={idx} style={{ display:"grid", gridTemplateColumns:"60px 1fr 2fr", gap:"0.75rem", alignItems:"start", padding:"0.75rem", background:"var(--bg-secondary)", borderRadius:"8px" }}>
-              <input value={v.icon} onChange={e => setValueField(idx, "icon", e.target.value)} style={{ ...inputStyle, textAlign:"center" }} />
-              <input value={v.title_en} onChange={e => setValueField(idx, "title_en", e.target.value)} placeholder="Title" style={inputStyle} />
-              <input value={v.desc_en} onChange={e => setValueField(idx, "desc_en", e.target.value)} placeholder="Description" style={inputStyle} />
+            <div key={idx} style={{ padding:"0.875rem", background:"var(--bg-secondary)", borderRadius:"8px", display:"flex", flexDirection:"column", gap:"0.5rem" }}>
+              <div style={{ display:"grid", gridTemplateColumns:"60px 1fr 1fr 1fr", gap:"0.5rem" }}>
+                <input value={v.icon} onChange={e => setValueField(idx, "icon", e.target.value)} style={{ ...inputStyle, textAlign:"center" }} />
+                <input value={v.title_en} onChange={e => setValueField(idx, "title_en", e.target.value)} placeholder="Title (EN)" style={inputStyle} />
+                <input value={v.title_ps} onChange={e => setValueField(idx, "title_ps", e.target.value)} placeholder="سرلیک (پښتو)" style={{ ...inputStyle, direction:"rtl" }} />
+                <input value={v.title_fa} onChange={e => setValueField(idx, "title_fa", e.target.value)} placeholder="عنوان (دری)" style={{ ...inputStyle, direction:"rtl" }} />
+              </div>
+              <div style={{ display:"grid", gridTemplateColumns:"60px 1fr 1fr 1fr", gap:"0.5rem" }}>
+                <div />
+                <input value={v.desc_en} onChange={e => setValueField(idx, "desc_en", e.target.value)} placeholder="Description (EN)" style={inputStyle} />
+                <input value={v.desc_ps} onChange={e => setValueField(idx, "desc_ps", e.target.value)} placeholder="توضیحات (پښتو)" style={{ ...inputStyle, direction:"rtl" }} />
+                <input value={v.desc_fa} onChange={e => setValueField(idx, "desc_fa", e.target.value)} placeholder="توضیحات (دری)" style={{ ...inputStyle, direction:"rtl" }} />
+              </div>
             </div>
           ))}
         </div>

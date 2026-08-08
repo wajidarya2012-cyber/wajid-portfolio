@@ -65,6 +65,7 @@ export default function ProjectForm({
       showOnHomepage: (p?.showOnHomepage as boolean) ?? true,
       clientName: (p?.clientName as string) ?? "",
       location: (p?.location as string) ?? "",
+      endDate: p?.endDate ? new Date(p.endDate as string).toISOString().slice(0, 10) : "",
       seoTitle_en: (p?.seoTitle_en as string) ?? "", seoTitle_ps: (p?.seoTitle_ps as string) ?? "", seoTitle_fa: (p?.seoTitle_fa as string) ?? "",
       seoDescription_en: (p?.seoDescription_en as string) ?? "", seoDescription_ps: (p?.seoDescription_ps as string) ?? "", seoDescription_fa: (p?.seoDescription_fa as string) ?? "",
     } : { status: "ACTIVE", featured: false, visible: true, showOnHomepage: true },

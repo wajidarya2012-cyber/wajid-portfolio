@@ -1,3 +1,14 @@
 node_modules/
 .next/
 .env
+# Private project documentation
+/docs/
+CLAUDE.md
+
+# Local build cache
+*.tsbuildinfo
+
+# Internal development scripts
+phase*.ps1
+apply-*.ps1
+scripts/

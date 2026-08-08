@@ -24,6 +24,8 @@
   "about": {
     "eyebrow": "زما د اړه",
     "title": "زما د اړه",
+    "titleHighlight": "اړه",
+    "noCvUploaded": "تر اوسه CV اپلوډ شوی نه دی.",
     "quickFacts": "چټک حقایق",
     "values": {
       "innovation": "نوښت",
@@ -47,28 +49,50 @@
   "skills": {
     "eyebrow": "تخنیکي مهارتونه",
     "title": "مهارتونه او ټیکنالوژي",
+    "titleHighlight": "ټیکنالوژي",
+    "featured": "ځانګړی",
     "desc": "د کلونو کلو د ریښتیني پروژو له لارې جوړ شوي پراخ تخنیکي مهارتونه."
   },
   "experience": {
     "eyebrow": "د کار تاریخچه",
     "title": "د کار تجربه",
-    "present": "اوس"
+    "titleHighlight": "تجربه",
+    "present": "اوس",
+    "featured": "ځانګړی",
+    "noEntries": "تر اوسه د کار تجربه نشته."
   },
   "education": {
     "eyebrow": "علمي شالید",
-    "title": "زده‌کړه او روزنه"
+    "title": "زده‌کړه او وړتیاوې",
+    "titleHighlight": "وړتیاوې",
+    "present": "اوس",
+    "gpa": "GPA",
+    "featured": "ځانګړی",
+    "noEntries": "تر اوسه د زده‌کړې ثبت نشته."
   },
   "certifications": {
     "eyebrow": "اسناد",
-    "title": "سندونه او روزنې"
+    "title": "سندونه او روزنې",
+    "titleHighlight": "روزنې",
+    "viewDetails": "توضیحات وګورئ",
+    "viewCredential": "سند وګورئ",
+    "noDetails": "نور توضیحات نشته.",
+    "noEntries": "تر اوسه سندونه نشته."
   },
   "journey": {
     "eyebrow": "زما لار",
-    "title": "مسلکي سفر"
+    "title": "مسلکي سفر",
+    "titleHighlight": "سفر",
+    "noEntries": "تر اوسه د سفر پړاوونه نشته.",
+    "milestoneAlt": "د مسلکي سفر انځور",
+    "prevSlide": "پخوانی سلاید",
+    "nextSlide": "راتلونکی سلاید",
+    "goToSlide": "سلاید ته لاړ شئ"
   },
   "projects": {
     "eyebrow": "پورټفولیو",
     "title": "سافټویر پروژي",
+    "titleHighlight": "پروژي",
     "desc": "د صحي، دولتي، ترانسپورت او امنیت برخو کې د ریښتیني ستونزو د حل لپاره جوړ شوي سیستمونه.",
     "filters": {
       "all": "ټول",
@@ -77,11 +101,22 @@
       "transport": "ترانسپورت",
       "security": "امنیت"
     },
+    "sort": {
+      "newest": "نوي لومړي",
+      "oldest": "زاړه لومړي",
+      "mostViewed": "ډیر لیدل شوي",
+      "featured": "ځانګړي لومړي",
+      "az": "A–Z"
+    },
     "viewDetails": "توضیحات وګورئ",
+    "viewFullPage": "بشپړ مخ وګورئ",
     "features": "مهم ځانګړتیاوې",
     "technologies": "کارول شوي ټیکنالوژي",
     "challenge": "حل شوي ستونزه",
-    "gallery": "د پروژې ګالري"
+    "gallery": "د پروژې ګالري",
+    "featuredBadge": "ځانګړی",
+    "openImage": "انځور خلاص کړئ",
+    "noResults": "په دې کټګورۍ کې پروژه نشته."
   },
   "stats": {
     "years": "کلونه تجربه",
@@ -92,6 +127,7 @@
   "contact": {
     "eyebrow": "اړیکه",
     "title": "اړیکه ونیسئ",
+    "titleHighlight": "اړیکه",
     "subtitle": "راځئ سره کار وکړو",
     "desc": "که چیرې تاسو پروژه، د کار فرصت یا یوازې اړیکه غواړئ — زما انباکس خلاص دی.",
     "email": "بریښنالیک",
@@ -107,7 +143,12 @@
       "send": "پیغام واستوئ",
       "sending": "لیږل کیږي...",
       "success": "پیغام ولیږل شو! ژر به درسره اړیکه ونیسم.",
-      "error": "کومه ستونزه پیښه شوه. بیا هڅه وکړئ."
+      "error": "کومه ستونزه پیښه شوه. بیا هڅه وکړئ.",
+      "namePlaceholder": "ستاسو بشپړ نوم",
+      "emailPlaceholder": "your@email.com",
+      "phonePlaceholder": "+93 XXX XXX XXXX",
+      "subjectPlaceholder": "د پروژې پوښتنه، همکاري، د دندې فرصت…",
+      "messagePlaceholder": "زما سره د خپلې پروژې، مهال‌ویش او بودیجې په اړه معلومات شریک کړئ…"
     }
   },
   "blog": {
@@ -118,8 +159,12 @@
     "backToBlog": "بلاګ ته ستنیدل"
   },
   "gallery": {
-    "eyebrow": "د انځورونو ګالري",
-    "title": "ګالري",
+    "eyebrow": "شیبې",
+    "title": "د انځورونو ګالري",
+    "titleHighlight": "ګالري",
+    "viewFullGallery": "بشپړه ګالري وګورئ",
+    "noPhotosYet": "تر اوسه انځورونه نشته. ډیر ژر بیرته راشئ.",
+    "defaultDescription": "د پروژو، پیښو او مهمو پړاوونو د انځورونو ټولګه.",
     "categories": {
       "all": "ټول",
       "professional": "مسلکي",

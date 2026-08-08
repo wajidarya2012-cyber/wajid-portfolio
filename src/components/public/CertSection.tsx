@@ -3,9 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslations }              from "next-intl";
 import type { Certification }           from "@/types";
+import { splitTitle }                   from "@/lib/utils";
 
 function pick(obj: Record<string,unknown>, field: string, locale: string): string {
-  return ((obj[`${field}_${locale}`] ?? obj[`${field}_en`] ?? "") as string);
+  const val = obj[`${field}_${locale}`] as string | undefined;
+  return (val && val.trim() !== "" ? val : (obj[`${field}_en`] as string)) ?? "";
 }
 
 export default function CertSection({ certifications, locale }: { certifications:Certification[]; locale:string }) {
@@ -26,12 +28,16 @@ export default function CertSection({ certifications, locale }: { certifications
     return () => { document.body.style.overflow = ""; };
   }, [selected]);
 
+  const titleParts = splitTitle(tl("title"), tl("titleHighlight"));
+
   return (
     <>
       <section id="certifications" style={{ padding:"5.5rem 0", background:"var(--bg-secondary)" }}>
         <div className="section-container" ref={ref}>
           <span className="section-eyebrow reveal">{tl("eyebrow")}</span>
-          <h2 className="section-title reveal reveal-delay-1">Certifications &amp; <span style={{ background:"linear-gradient(135deg,#4f46e5,#06b6d4)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>Trainings</span></h2>
+          <h2 className="section-title reveal reveal-delay-1">
+            {titleParts ? <>{titleParts.before}<span style={{ background:"linear-gradient(135deg,#4f46e5,#06b6d4)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>{titleParts.match}</span>{titleParts.after}</> : tl("title")}
+          </h2>
           <div className="divider reveal reveal-delay-2" style={{ marginBottom:"2.5rem" }} />
 
           <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,200px),1fr))", gap:"1.25rem" }}>
@@ -57,12 +63,12 @@ export default function CertSection({ certifications, locale }: { certifications
                   </p>
                 )}
                 <span style={{ display:"inline-flex", alignItems:"center", gap:"0.25rem", fontSize:"0.75rem", color:"#06b6d4", fontWeight:600, marginTop:"auto", paddingTop:"0.5rem" }}>
-                  View Details →
+                  {tl("viewDetails")} →
                 </span>
               </div>
             ))}
             {certifications.length===0 && (
-              <p style={{ color:"var(--text-muted)", fontSize:"0.875rem" }}>No certifications yet.</p>
+              <p style={{ color:"var(--text-muted)", fontSize:"0.875rem" }}>{tl("noEntries")}</p>
             )}
           </div>
         </div>
@@ -106,14 +112,14 @@ export default function CertSection({ certifications, locale }: { certifications
                 </p>
               ) : (
                 <p style={{ fontSize:"0.82rem", color:"var(--text-muted)", fontStyle:"italic", marginBottom:"1.5rem" }}>
-                  No additional details provided.
+                  {tl("noDetails")}
                 </p>
               )}
 
               {selected.credentialUrl && (
                 <a href={selected.credentialUrl} target="_blank" rel="noopener noreferrer" className="btn-primary"
                   style={{ fontSize:"0.85rem", justifyContent:"center" }}>
-                  View Credential ↗
+                  {tl("viewCredential")} ↗
                 </a>
               )}
             </div>

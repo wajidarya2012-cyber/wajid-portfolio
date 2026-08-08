@@ -3,11 +3,13 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslations }   from "next-intl";
 import type { Profile }       from "@/types";
+import { splitTitle }         from "@/lib/utils";
 
 const G = "linear-gradient(135deg,#4f46e5,#06b6d4)";
 
 function pick(obj: Record<string,unknown>, field: string, locale: string): string {
-  return ((obj[`${field}_${locale}`] ?? obj[`${field}_en`] ?? "") as string);
+  const val = obj[`${field}_${locale}`] as string | undefined;
+  return (val && val.trim() !== "" ? val : (obj[`${field}_en`] as string)) ?? "";
 }
 
 export default function AboutSection({ profile, locale }: { profile: Profile|null; locale:string }) {
@@ -32,11 +34,13 @@ export default function AboutSection({ profile, locale }: { profile: Profile|nul
   const show = (key: string) => visibility[key] !== false;
 
   type CoreValue = { icon:string; title_en:string; title_ps:string; title_fa:string; desc_en:string; desc_ps:string; desc_fa:string };
+  // Default cards shown until the admin sets custom Core Values (Profile → About Section).
+  // Trilingual out of the box — mirrors the same values already translated in public/locales/*.json.
   const DEFAULT_VALUES: CoreValue[] = [
-    { icon:"💡", title_en:"Innovation",    title_ps:"", title_fa:"", desc_en:"Solving complex problems with creative digital solutions", desc_ps:"", desc_fa:"" },
-    { icon:"🛡️", title_en:"Reliability",   title_ps:"", title_fa:"", desc_en:"Building systems organizations can depend on",              desc_ps:"", desc_fa:"" },
-    { icon:"🤝", title_en:"Collaboration", title_ps:"", title_fa:"", desc_en:"Working effectively with teams and stakeholders",           desc_ps:"", desc_fa:"" },
-    { icon:"📈", title_en:"Growth",        title_ps:"", title_fa:"", desc_en:"Continuously learning and evolving with technology",        desc_ps:"", desc_fa:"" },
+    { icon:"💡", title_en:"Innovation",    title_ps:"نوښت",       title_fa:"نوآوری",          desc_en:"Solving complex problems with creative digital solutions", desc_ps:"د ډیجیټل حلونو له لارې پیچلو ستونزو حل کول",                 desc_fa:"حل مشکلات پیچیده با راه‌حل‌های دیجیتال خلاقانه" },
+    { icon:"🛡️", title_en:"Reliability",   title_ps:"د اعتماد وړ", title_fa:"قابلیت اطمینان",  desc_en:"Building systems organizations can depend on",              desc_ps:"داسې سیستمونه جوړول چې موسسې پرې ولاړې وي",                  desc_fa:"ساخت سیستم‌هایی که سازمان‌ها می‌توانند به آن‌ها اعتماد کنند" },
+    { icon:"🤝", title_en:"Collaboration", title_ps:"همکاري",      title_fa:"همکاری",          desc_en:"Working effectively with teams and stakeholders",           desc_ps:"د ټیمونو او ذینفعانو سره مؤثره کار کول",                     desc_fa:"کار مؤثر با تیم‌ها و ذینفعان" },
+    { icon:"📈", title_en:"Growth",        title_ps:"وده",         title_fa:"رشد",             desc_en:"Continuously learning and evolving with technology",        desc_ps:"د ټیکنالوژۍ سره ویاړل او وده کول",                           desc_fa:"یادگیری مستمر و تکامل با فناوری" },
   ];
   const VALUES = ((profile?.coreValues as CoreValue[] | null) ?? DEFAULT_VALUES);
 
@@ -52,6 +56,7 @@ export default function AboutSection({ profile, locale }: { profile: Profile|nul
   // Section title/subtitle — optional overrides, trilingual, fall back to translations.
   const customTitle = pick(p, "aboutTitle", locale);
   const subtitle     = pick(p, "aboutSubtitle", locale);
+  const titleParts   = splitTitle(tl("title"), tl("titleHighlight"));
 
   // Optional CV button (reuses the existing cvUrl — no duplicate storage).
   const cvBtnText = pick(p, "aboutCvBtnText", locale) || th("cvBtn");
@@ -77,7 +82,9 @@ export default function AboutSection({ profile, locale }: { profile: Profile|nul
         {customTitle ? (
           <h2 className="section-title reveal reveal-delay-1">{customTitle}</h2>
         ) : (
-          <h2 className="section-title reveal reveal-delay-1">About <span style={{ background:G, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>Me</span></h2>
+          <h2 className="section-title reveal reveal-delay-1">
+            {titleParts ? <>{titleParts.before}<span style={{ background:G, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>{titleParts.match}</span>{titleParts.after}</> : tl("title")}
+          </h2>
         )}
         {show("showSubtitle") && subtitle && (
           <p className="reveal reveal-delay-1" style={{ fontSize:"clamp(0.95rem,1.8vw,1.1rem)", color:"var(--text-secondary)", marginTop:"-0.5rem", marginBottom:"0.5rem", fontWeight:500 }}>
@@ -132,7 +139,7 @@ export default function AboutSection({ profile, locale }: { profile: Profile|nul
                   </a>
                   {showNoCv && (
                     <div style={{ position:"absolute", top:"calc(100% + 0.5rem)", left:"50%", transform:"translateX(-50%)", whiteSpace:"nowrap", background:"var(--bg-card)", border:"1px solid var(--border)", borderRadius:"8px", padding:"0.45rem 0.85rem", fontSize:"0.75rem", color:"var(--text-primary)", boxShadow:"0 8px 24px rgba(0,0,0,0.25)", backdropFilter:"blur(10px)", zIndex:5 }}>
-                      No CV uploaded yet.
+                      {tl("noCvUploaded")}
                     </div>
                   )}
                 </div>

@@ -8,8 +8,6 @@ import { useTheme }                    from "./ThemeProvider";
 import { locales }                     from "@/i18n";
 import { buildNavItems, type NavItemConfig } from "@/lib/navConfig";
 
-const SECTION_IDS = ["about","skills","experience","certifications","projects","contact"];
-
 const LOCALE_LABELS: Record<string,string> = { en:"EN", ps:"پښتو", fa:"دری" };
 
 function resolveHref(href: string, locale: string, pathname: string): string {
@@ -17,7 +15,7 @@ function resolveHref(href: string, locale: string, pathname: string): string {
   return pathname === `/${locale}` ? href : `/${locale}${href}`;
 }
 
-export default function Navbar({ locale, brandName = "W.Arya", brandTagline = "IT Manager & Developer", logoUrl, navConfig }: { locale: string; brandName?: string; brandTagline?: string; logoUrl?: string; navConfig?: NavItemConfig[] }) {
+export default function Navbar({ locale, brandName = "W.Arya", brandTagline = "IT Manager & Developer", logoUrl, navConfig, sectionOrder }: { locale: string; brandName?: string; brandTagline?: string; logoUrl?: string; navConfig?: NavItemConfig[]; sectionOrder?: Record<string, number> }) {
   const t                          = useTranslations("nav");
   const { theme, toggleTheme }     = useTheme();
   const pathname                   = usePathname();
@@ -28,7 +26,12 @@ export default function Navbar({ locale, brandName = "W.Arya", brandTagline = "I
   const clickLockRef = useRef<string | null>(null);
   const clickLockTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const navItems = buildNavItems(navConfig, locale, t);
+  // Nav order/visibility already reflects the real homepage section order (see
+  // buildNavItems's `sectionOrder` param) — deriving the highlighted-section id list from
+  // the same visible, ordered nav items (rather than a separate hardcoded id array) keeps
+  // active-section tracking from drifting out of sync when sections are reordered/hidden.
+  const navItems = buildNavItems(navConfig, locale, t, sectionOrder);
+  const anchorIds = navItems.filter(item => item.href.startsWith("#")).map(item => item.key);
 
   useEffect(() => {
     const onScrollBg = () => setScrolled(window.scrollY > 30);
@@ -52,12 +55,13 @@ export default function Navbar({ locale, brandName = "W.Arya", brandTagline = "I
       if (bestId) setActiveHash(`#${bestId}`);
     }, { threshold: [0, 0.15, 0.3, 0.5, 0.75, 1], rootMargin: "-80px 0px -40% 0px" });
 
-    SECTION_IDS.forEach(id => {
+    anchorIds.forEach(id => {
       const el = document.getElementById(id);
       if (el) observer.observe(el);
     });
 
     return () => { window.removeEventListener("scroll", onScrollBg); observer.disconnect(); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function handleNavClick(href: string) {
@@ -81,16 +85,25 @@ export default function Navbar({ locale, brandName = "W.Arya", brandTagline = "I
     position:"fixed", top:0, left:0, right:0, zIndex:500,
     height:"64px", display:"flex", alignItems:"center",
     transition:"background 0.35s ease, box-shadow 0.35s ease, border-color 0.35s ease",
-    background: scrolled ? "rgba(6,11,24,0.97)" : "rgba(6,11,24,0.55)",
-    backdropFilter: "blur(24px)",
-    WebkitBackdropFilter: "blur(24px)",
-    borderBottom: `1px solid ${scrolled ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.04)"}`,
-    boxShadow: scrolled ? "0 2px 20px rgba(0,0,0,0.35)" : "none",
+    background: scrolled ? "var(--nav-bg-scrolled)" : "var(--nav-bg)",
+    backdropFilter: "blur(24px) saturate(150%)",
+    WebkitBackdropFilter: "blur(24px) saturate(150%)",
+    borderBottom: scrolled ? "1px solid var(--border)" : "1px solid transparent",
+    boxShadow: scrolled
+      ? `var(--nav-shadow), inset 0 1px 0 var(--nav-highlight)`
+      : `inset 0 1px 0 var(--nav-highlight)`,
   };
 
   return (
     <>
       <nav style={navStyle} role="navigation" aria-label="Main navigation">
+        {/* Subtle brand-gradient hairline along the bottom edge — reinforces depth without being a distinct animated element */}
+        <div aria-hidden style={{
+          position:"absolute", left:0, right:0, bottom:0, height:"1px", pointerEvents:"none",
+          background:"linear-gradient(90deg, transparent 0%, rgba(79,70,229,0.5) 30%, rgba(6,182,212,0.5) 70%, transparent 100%)",
+          opacity: scrolled ? 0.9 : 0.35,
+          transition:"opacity 0.35s ease",
+        }} />
         <div className="section-container" style={{ display:"flex", alignItems:"center", justifyContent:"space-between", width:"100%", height:"100%" }}>
 
           {/* Logo */}
@@ -103,7 +116,7 @@ export default function Navbar({ locale, brandName = "W.Arya", brandTagline = "I
               <span style={{ fontFamily:"var(--font-syne)", fontWeight:800, fontSize:"1.2rem", background:"linear-gradient(135deg,#4f46e5,#06b6d4)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>
                 {brandName}
               </span>
-              <span style={{ fontSize:"0.58rem", color:"rgba(255,255,255,0.5)", fontFamily:"var(--font-fira)", letterSpacing:"0.05em" }}>
+              <span style={{ fontSize:"0.58rem", color:"var(--text-muted)", fontFamily:"var(--font-fira)", letterSpacing:"0.05em" }}>
                 {brandTagline}
               </span>
             </span>
@@ -120,11 +133,11 @@ export default function Navbar({ locale, brandName = "W.Arya", brandTagline = "I
                     target={newTab ? "_blank" : undefined}
                     rel={newTab ? "noopener noreferrer" : undefined}
                     style={{ textDecoration:"none", fontSize:"0.82rem", fontWeight:600, transition:"color 0.2s, opacity 0.2s", position:"relative", paddingBottom:"4px",
-                      color: isActive ? "#fff" : "rgba(255,255,255,0.8)",
+                      color: isActive ? "var(--text-primary)" : "var(--text-secondary)",
                       opacity: isActive ? 1 : 0.85,
                     }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "#fff"; (e.currentTarget as HTMLElement).style.opacity = "1"; }}
-                    onMouseLeave={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.8)"; (e.currentTarget as HTMLElement).style.opacity = "0.85"; } }}>
+                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "var(--text-primary)"; (e.currentTarget as HTMLElement).style.opacity = "1"; }}
+                    onMouseLeave={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.color = "var(--text-secondary)"; (e.currentTarget as HTMLElement).style.opacity = "0.85"; } }}>
                     {label}
                     <span style={{ position:"absolute", bottom:0, left:0, right:0, height:"2px", borderRadius:"2px", background:"linear-gradient(135deg,#4f46e5,#06b6d4)", transform:isActive?"scaleX(1)":"scaleX(0)", transformOrigin:"left", transition:"transform 0.25s ease" }} />
                   </a>
@@ -137,17 +150,17 @@ export default function Navbar({ locale, brandName = "W.Arya", brandTagline = "I
           <div style={{ display:"flex", alignItems:"center", gap:"0.625rem" }}>
             {/* Locale */}
             <select value={locale} onChange={e=>switchLocale(e.target.value)} aria-label="Language"
-              style={{ fontSize:"0.75rem", fontWeight:600, padding:"0.32rem 1.6rem 0.32rem 0.65rem", borderRadius:"9999px", border:"1px solid rgba(255,255,255,0.1)", background:"rgba(255,255,255,0.06)", color:"var(--text-secondary)", cursor:"pointer", outline:"none", appearance:"none", backgroundImage:`url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2364748b'/%3E%3C/svg%3E")`, backgroundRepeat:"no-repeat", backgroundPosition:"right 0.5rem center" }}>
+              style={{ fontSize:"0.75rem", fontWeight:600, padding:"0.32rem 1.6rem 0.32rem 0.65rem", borderRadius:"9999px", border:"1px solid var(--border)", background:"var(--bg-card)", color:"var(--text-secondary)", cursor:"pointer", outline:"none", appearance:"none", backgroundImage:`url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2364748b'/%3E%3C/svg%3E")`, backgroundRepeat:"no-repeat", backgroundPosition:"right 0.5rem center" }}>
               {locales.map(l => (
-                <option key={l} value={l} style={{ background:"#0a0f1e", color:"white" }}>{LOCALE_LABELS[l]}</option>
+                <option key={l} value={l} style={{ background:"var(--bg-secondary)", color:"var(--text-primary)" }}>{LOCALE_LABELS[l]}</option>
               ))}
             </select>
 
             {/* Theme */}
             <button onClick={toggleTheme} aria-label={`Switch to ${theme==="dark"?"light":"dark"} mode`}
-              style={{ width:"36px", height:"36px", borderRadius:"50%", border:"1px solid rgba(255,255,255,0.1)", background:"rgba(255,255,255,0.06)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"0.9rem", transition:"all 0.2s" }}
+              style={{ width:"36px", height:"36px", borderRadius:"50%", border:"1px solid var(--border)", background:"var(--bg-card)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"0.9rem", transition:"all 0.2s" }}
               onMouseEnter={e=>{ (e.currentTarget as HTMLElement).style.borderColor="rgba(79,70,229,0.5)"; }}
-              onMouseLeave={e=>{ (e.currentTarget as HTMLElement).style.borderColor="rgba(255,255,255,0.1)"; }}>
+              onMouseLeave={e=>{ (e.currentTarget as HTMLElement).style.borderColor="var(--border)"; }}>
               {theme==="dark" ? "🌙" : "☀️"}
             </button>
 
@@ -170,15 +183,15 @@ export default function Navbar({ locale, brandName = "W.Arya", brandTagline = "I
       )}
 
       {/* Mobile menu panel */}
-      <div style={{ position:"fixed", top:"64px", left:0, right:0, zIndex:499, background:"rgba(6,11,24,0.98)", backdropFilter:"blur(24px)", WebkitBackdropFilter:"blur(24px)", borderBottom:"1px solid rgba(255,255,255,0.08)", padding:"1.25rem 1.5rem 2rem", display:"flex", flexDirection:"column", gap:"0.25rem", transform:menuOpen?"translateY(0)":"translateY(-110%)", transition:"transform 0.3s cubic-bezier(0.4,0,0.2,1)", pointerEvents:menuOpen?"all":"none" }} className="mobile-menu-panel">
+      <div style={{ position:"fixed", top:"64px", left:0, right:0, zIndex:499, background:"var(--nav-bg-scrolled)", backdropFilter:"blur(24px)", WebkitBackdropFilter:"blur(24px)", borderBottom:"1px solid var(--border)", padding:"1.25rem 1.5rem 2rem", display:"flex", flexDirection:"column", gap:"0.25rem", transform:menuOpen?"translateY(0)":"translateY(-110%)", transition:"transform 0.3s cubic-bezier(0.4,0,0.2,1)", pointerEvents:menuOpen?"all":"none" }} className="mobile-menu-panel">
         {navItems.map(({ key, href, label, newTab }) => (
           <a key={key} href={resolveHref(href, locale, pathname)}
             onClick={()=>{ handleNavClick(href); setMenuOpen(false); }}
             target={newTab ? "_blank" : undefined}
             rel={newTab ? "noopener noreferrer" : undefined}
-            style={{ fontSize:"1rem", fontWeight:600, color:"rgba(255,255,255,0.75)", textDecoration:"none", padding:"0.875rem 0", borderBottom:"1px solid rgba(255,255,255,0.06)", transition:"color 0.2s" }}
-            onMouseEnter={e=>{ (e.currentTarget as HTMLElement).style.color="#fff"; }}
-            onMouseLeave={e=>{ (e.currentTarget as HTMLElement).style.color="rgba(255,255,255,0.75)"; }}>
+            style={{ fontSize:"1rem", fontWeight:600, color:"var(--text-secondary)", textDecoration:"none", padding:"0.875rem 0", borderBottom:"1px solid var(--border)", transition:"color 0.2s" }}
+            onMouseEnter={e=>{ (e.currentTarget as HTMLElement).style.color="var(--text-primary)"; }}
+            onMouseLeave={e=>{ (e.currentTarget as HTMLElement).style.color="var(--text-secondary)"; }}>
             {label}
           </a>
         ))}

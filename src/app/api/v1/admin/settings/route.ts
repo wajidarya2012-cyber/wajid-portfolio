@@ -34,6 +34,9 @@ const ALLOWED_KEYS = new Set([
   "skills_section_config",
   "experience_section_config",
   "translate_widget_config",
+  "gallery_albums",
+  "gallery_section_config",
+  "education_section_config",
 ]);
 
 export async function POST(request: NextRequest) {

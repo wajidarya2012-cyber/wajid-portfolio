@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Experience } from "@/types";
+import { reorder } from "@/lib/reorder";
 
 const EMPTY = {
   role_en:"", role_ps:"", role_fa:"",
@@ -10,6 +11,8 @@ const EMPTY = {
   description_en:"", description_ps:"", description_fa:"",
   technologies:[] as string[],
   achievements:[] as string[],
+  achievements_ps:[] as string[],
+  achievements_fa:[] as string[],
   logoUrl:"", logoPublicId:"",
   employmentType:"",
   featured:false, visible:true,
@@ -40,6 +43,10 @@ export default function ExperienceManager({ initialData, initialSectionConfig }:
   const [msg, setMsg]         = useState<string|null>(null);
   const [tab, setTab]         = useState<"en"|"ps"|"fa">("en");
 
+  const [search, setSearch]           = useState("");
+  const [typeFilter, setTypeFilter]   = useState("all");
+  const [listSort, setListSort]       = useState("order");
+
   const [section, setSection] = useState<SectionConfig>({
     title_en:"", title_ps:"", title_fa:"", subtitle_en:"", subtitle_ps:"", subtitle_fa:"",
     description_en:"", description_ps:"", description_fa:"",
@@ -51,7 +58,7 @@ export default function ExperienceManager({ initialData, initialSectionConfig }:
   const [bgUploading, setBgUploading] = useState(false);
 
   function startNew() {
-    setForm({ ...EMPTY, sortOrder: items.length });
+    setForm({ ...EMPTY, sortOrder: items.length ? Math.max(...items.map(i=>i.sortOrder))+1 : 0 });
     setEditing("new");
     setTab("en");
   }
@@ -64,6 +71,8 @@ export default function ExperienceManager({ initialData, initialSectionConfig }:
       description_en: item.description_en, description_ps: item.description_ps, description_fa: item.description_fa,
       technologies: item.technologies,
       achievements: (e.achievements as string[]) ?? [],
+      achievements_ps: (e.achievements_ps as string[]) ?? [],
+      achievements_fa: (e.achievements_fa as string[]) ?? [],
       logoUrl: (e.logoUrl as string) ?? "", logoPublicId: (e.logoPublicId as string) ?? "",
       employmentType: (e.employmentType as string) ?? "",
       featured: (e.featured as boolean) ?? false, visible: (e.visible as boolean) ?? true,
@@ -122,16 +131,20 @@ export default function ExperienceManager({ initialData, initialSectionConfig }:
   }
 
   async function moveItem(id: string, dir: -1 | 1) {
-    const sorted = [...items].sort((a,b) => a.sortOrder - b.sortOrder);
-    const idx = sorted.findIndex(i => i.id === id);
-    const swapIdx = idx + dir;
-    if (swapIdx < 0 || swapIdx >= sorted.length) return;
-    const a = sorted[idx], b = sorted[swapIdx];
-    await Promise.all([
-      fetch(`/api/v1/admin/experience/${a.id}`, { method:"PUT", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ ...a, startDate:new Date(a.startDate).toISOString(), endDate:a.endDate?new Date(a.endDate).toISOString():null, sortOrder:b.sortOrder }) }),
-      fetch(`/api/v1/admin/experience/${b.id}`, { method:"PUT", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ ...b, startDate:new Date(b.startDate).toISOString(), endDate:b.endDate?new Date(b.endDate).toISOString():null, sortOrder:a.sortOrder }) }),
-    ]);
-    router.refresh();
+    const result = reorder(items, "sortOrder", i => i.id === id, dir);
+    if (!result) return;
+    const prev = items;
+    setItems(result.list); // optimistic — reflect the new order immediately
+    try {
+      await Promise.all(result.changed.map(item => fetch(`/api/v1/admin/experience/${item.id}`, {
+        method:"PUT", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({ ...item, startDate:new Date(item.startDate).toISOString(), endDate:item.endDate?new Date(item.endDate).toISOString():null }),
+      })));
+      router.refresh();
+    } catch {
+      setItems(prev);
+      setMsg("Error: Failed to reorder.");
+    }
   }
 
   async function toggleFlag(item: Experience, field: "visible"|"featured") {
@@ -151,7 +164,9 @@ export default function ExperienceManager({ initialData, initialSectionConfig }:
   }
   function addAchievement() {
     const a = achInput.trim();
-    if (a) setForm(p=>({...p,achievements:[...p.achievements,a]}));
+    if (!a) return;
+    const key = tab === "en" ? "achievements" : tab === "ps" ? "achievements_ps" : "achievements_fa";
+    setForm(p=>({...p,[key]:[...p[key],a]}));
     setAchInput("");
   }
 
@@ -369,18 +384,24 @@ export default function ExperienceManager({ initialData, initialSectionConfig }:
           </div>
 
           <div style={{ marginTop:"0.875rem" }}>
-            <label style={lbl}>Achievements / Responsibilities</label>
+            <label style={lbl}>Achievements / Responsibilities ({tab.toUpperCase()})</label>
+            <p style={{ fontSize:"0.72rem", color:"var(--text-muted)", marginBottom:"0.5rem" }}>
+              Switch the locale tab above to add achievements per language. پښتو/دری fall back to English on the public site when left empty.
+            </p>
             <div style={{ display:"flex", gap:"0.5rem", marginBottom:"0.5rem" }}>
               <input value={achInput} onChange={e=>setAchInput(e.target.value)}
                 onKeyDown={e=>{if(e.key==="Enter"){e.preventDefault();addAchievement();}}}
-                placeholder="Add achievement or responsibility…" style={{ ...inp, flex:1 }} />
+                placeholder="Add achievement or responsibility…" style={{ ...inp, flex:1, direction: tab==="en"?"ltr":"rtl" }} />
               <button className="btn-ghost" style={{ fontSize:"0.8rem", flexShrink:0 }} onClick={addAchievement}>Add</button>
             </div>
             <div style={{ display:"flex", flexDirection:"column", gap:"0.4rem" }}>
-              {form.achievements.map((a,i)=>(
-                <div key={i} style={{ display:"flex", alignItems:"center", gap:"0.5rem", fontSize:"0.8rem", color:"var(--text-secondary)", background:"var(--bg-secondary)", borderRadius:"6px", padding:"0.4rem 0.6rem" }}>
+              {(tab==="en"?form.achievements:tab==="ps"?form.achievements_ps:form.achievements_fa).map((a,i)=>(
+                <div key={i} style={{ display:"flex", alignItems:"center", gap:"0.5rem", fontSize:"0.8rem", color:"var(--text-secondary)", background:"var(--bg-secondary)", borderRadius:"6px", padding:"0.4rem 0.6rem", direction: tab==="en"?"ltr":"rtl" }}>
                   <span style={{ flex:1 }}>{a}</span>
-                  <button onClick={()=>setForm(p=>({...p,achievements:p.achievements.filter((_,idx)=>idx!==i)}))}
+                  <button onClick={()=>{
+                      const key = tab==="en"?"achievements":tab==="ps"?"achievements_ps":"achievements_fa";
+                      setForm(p=>({...p,[key]:p[key].filter((_,idx)=>idx!==i)}));
+                    }}
                     style={{ background:"none", border:"none", cursor:"pointer", color:"var(--text-muted)" }}>✕</button>
                 </div>
               ))}
@@ -394,8 +415,52 @@ export default function ExperienceManager({ initialData, initialSectionConfig }:
         </div>
       )}
 
+      {/* Search, filter, sort */}
+      <div className="admin-card" style={{ display:"flex", gap:"0.75rem", flexWrap:"wrap", alignItems:"center" }}>
+        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search role or organization…" style={{ ...inp, flex:"1 1 200px", maxWidth:"280px" }} />
+        <select value={typeFilter} onChange={e=>setTypeFilter(e.target.value)} style={{ ...inp, width:"170px" }}>
+          <option value="all">All Employment Types</option>
+          {EMPLOYMENT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+        </select>
+        <select value={listSort} onChange={e=>setListSort(e.target.value)} style={{ ...inp, width:"170px" }}>
+          <option value="order">Sort: Display Order</option>
+          <option value="newest">Sort: Newest Start Date</option>
+          <option value="oldest">Sort: Oldest Start Date</option>
+          <option value="featured">Sort: Featured First</option>
+        </select>
+        <span style={{ fontSize:"0.75rem", color:"var(--text-muted)", marginLeft:"auto" }}>
+          {items.filter(i => (typeFilter==="all"||(i as unknown as Record<string,unknown>).employmentType===typeFilter) && (i.role_en.toLowerCase().includes(search.toLowerCase())||i.organization_en.toLowerCase().includes(search.toLowerCase()))).length} of {items.length}
+        </span>
+      </div>
+
       {/* List */}
-      {[...items].sort((a,b)=>a.sortOrder-b.sortOrder).map((item, idx, arr) => {
+      {(() => {
+        const filteredList = items.filter(item => {
+          const e = item as unknown as Record<string, unknown>;
+          const matchesType = typeFilter === "all" || e.employmentType === typeFilter;
+          const q = search.trim().toLowerCase();
+          const matchesSearch = !q || item.role_en.toLowerCase().includes(q) || item.organization_en.toLowerCase().includes(q);
+          return matchesType && matchesSearch;
+        });
+        const displayList = [...filteredList].sort((a, b) => {
+          const ea = a as unknown as Record<string, unknown>, eb = b as unknown as Record<string, unknown>;
+          switch (listSort) {
+            case "newest":   return new Date(b.startDate).getTime() - new Date(a.startDate).getTime();
+            case "oldest":   return new Date(a.startDate).getTime() - new Date(b.startDate).getTime();
+            case "featured": return ((eb.featured as boolean) ? 1 : 0) - ((ea.featured as boolean) ? 1 : 0);
+            case "order":
+            default:         return a.sortOrder - b.sortOrder;
+          }
+        });
+        if (displayList.length === 0 && items.length > 0) {
+          return (
+            <div className="admin-card" style={{ textAlign:"center", padding:"3rem", color:"var(--text-muted)" }}>
+              No experience entries match your search/filter.
+            </div>
+          );
+        }
+        if (displayList.length === 0) return null;
+        return displayList.map((item, idx, arr) => {
         const e = item as unknown as Record<string, unknown>;
         return (
           <div key={item.id} className="admin-card" style={{ display:"flex", gap:"1rem", alignItems:"flex-start" }}>
@@ -428,7 +493,8 @@ export default function ExperienceManager({ initialData, initialSectionConfig }:
             </div>
           </div>
         );
-      })}
+        });
+      })()}
       {items.length === 0 && !editing && (
         <div className="admin-card" style={{ textAlign:"center", padding:"3rem", color:"var(--text-muted)" }}>
           No experience entries yet. Click &quot;Add Experience&quot; to get started.

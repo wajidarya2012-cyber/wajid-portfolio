@@ -3,11 +3,13 @@
 import { useEffect, useRef } from "react";
 import { useTranslations }   from "next-intl";
 import type { SkillCategoryWithSkills } from "@/types";
+import { splitTitle }        from "@/lib/utils";
 
 const G = "linear-gradient(135deg,#4f46e5,#06b6d4)";
 
 function pick(obj: Record<string,unknown>, field: string, locale: string): string {
-  return ((obj[`${field}_${locale}`] ?? obj[`${field}_en`] ?? "") as string);
+  const val = obj[`${field}_${locale}`] as string | undefined;
+  return (val && val.trim() !== "" ? val : (obj[`${field}_en`] as string)) ?? "";
 }
 
 export type SkillsSectionConfig = {
@@ -59,6 +61,7 @@ export default function SkillsSection({ categories, locale, config }: { categori
   const customTitle       = config ? pick(config as unknown as Record<string,unknown>, "title", locale) : "";
   const subtitle           = config ? pick(config as unknown as Record<string,unknown>, "subtitle", locale) : "";
   const customDescription = config ? pick(config as unknown as Record<string,unknown>, "description", locale) : "";
+  const titleParts = splitTitle(tl("title"), tl("titleHighlight"));
   const layout = config?.layout ?? "grid";
   const bg     = config?.background ?? "default";
 
@@ -84,10 +87,7 @@ export default function SkillsSection({ categories, locale, config }: { categori
           <h2 className="section-title reveal reveal-delay-1">{customTitle}</h2>
         ) : (
           <h2 className="section-title reveal reveal-delay-1">
-            Skills &amp;{" "}
-            <span style={{ background:G, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>
-              Technologies
-            </span>
+            {titleParts ? <>{titleParts.before}<span style={{ background:G, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>{titleParts.match}</span>{titleParts.after}</> : tl("title")}
           </h2>
         )}
         {subtitle && (
@@ -122,7 +122,7 @@ export default function SkillsSection({ categories, locale, config }: { categori
                         <span style={{ fontSize:"0.8rem", color:"var(--text-secondary)", wordBreak:"break-word", minWidth:0, flex:1, display:"flex", alignItems:"center", gap:"0.35rem" }}>
                           {skill.icon && <span>{skill.icon}</span>}
                           {pick(skill as Record<string,unknown>, "name", locale)}
-                          {skill.featured && <span title="Featured" style={{ fontSize:"0.65rem" }}>⭐</span>}
+                          {skill.featured && <span title={tl("featured")} style={{ fontSize:"0.65rem" }}>⭐</span>}
                         </span>
                         <span style={{ fontFamily:"var(--font-fira)", fontSize:"0.7rem", color:"#06b6d4", flexShrink:0 }}>
                           {skill.percentage}%

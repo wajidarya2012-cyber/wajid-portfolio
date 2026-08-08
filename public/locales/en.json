@@ -24,6 +24,8 @@
   "about": {
     "eyebrow": "Get to Know Me",
     "title": "About Me",
+    "titleHighlight": "Me",
+    "noCvUploaded": "No CV uploaded yet.",
     "quickFacts": "Quick Facts",
     "values": {
       "innovation": "Innovation",
@@ -47,28 +49,50 @@
   "skills": {
     "eyebrow": "Technical Expertise",
     "title": "Skills & Technologies",
+    "titleHighlight": "Technologies",
+    "featured": "Featured",
     "desc": "A broad technical skillset built through years of real-world deployments and project delivery."
   },
   "experience": {
     "eyebrow": "Work History",
     "title": "Work Experience",
-    "present": "Present"
+    "titleHighlight": "Experience",
+    "present": "Present",
+    "featured": "Featured",
+    "noEntries": "No experience entries yet."
   },
   "education": {
     "eyebrow": "Academic Background",
-    "title": "Education & Training"
+    "title": "Education & Qualifications",
+    "titleHighlight": "Qualifications",
+    "present": "Present",
+    "gpa": "GPA",
+    "featured": "Featured",
+    "noEntries": "No education entries yet."
   },
   "certifications": {
     "eyebrow": "Credentials",
-    "title": "Certifications & Trainings"
+    "title": "Certifications & Trainings",
+    "titleHighlight": "Trainings",
+    "viewDetails": "View Details",
+    "viewCredential": "View Credential",
+    "noDetails": "No additional details provided.",
+    "noEntries": "No certifications yet."
   },
   "journey": {
     "eyebrow": "My Path",
-    "title": "Professional Journey"
+    "title": "Professional Journey",
+    "titleHighlight": "Journey",
+    "noEntries": "No journey milestones yet.",
+    "milestoneAlt": "Journey milestone",
+    "prevSlide": "Previous slide",
+    "nextSlide": "Next slide",
+    "goToSlide": "Go to slide"
   },
   "projects": {
     "eyebrow": "Portfolio",
     "title": "Software Projects",
+    "titleHighlight": "Projects",
     "desc": "Real-world systems built to solve critical challenges.",
     "filters": {
       "all": "All",
@@ -77,11 +101,22 @@
       "transport": "Transport",
       "security": "Security"
     },
+    "sort": {
+      "newest": "Newest First",
+      "oldest": "Oldest First",
+      "mostViewed": "Most Viewed",
+      "featured": "Featured First",
+      "az": "A–Z"
+    },
     "viewDetails": "View Details",
+    "viewFullPage": "View Full Page",
     "features": "Key Features",
     "technologies": "Technologies Used",
     "challenge": "Challenge Solved",
-    "gallery": "Project Gallery"
+    "gallery": "Project Gallery",
+    "featuredBadge": "Featured",
+    "openImage": "Open image",
+    "noResults": "No projects in this category."
   },
   "stats": {
     "years": "Years of Experience",
@@ -92,6 +127,7 @@
   "contact": {
     "eyebrow": "Get In Touch",
     "title": "Contact Me",
+    "titleHighlight": "Me",
     "subtitle": "Let's Work Together",
     "desc": "Whether you have a project, job opportunity, or just want to connect — my inbox is open.",
     "email": "Email",
@@ -107,7 +143,12 @@
       "send": "Send Message",
       "sending": "Sending...",
       "success": "Message sent! I'll get back to you soon.",
-      "error": "Something went wrong. Please try again."
+      "error": "Something went wrong. Please try again.",
+      "namePlaceholder": "Your full name",
+      "emailPlaceholder": "your@email.com",
+      "phonePlaceholder": "+93 XXX XXX XXXX",
+      "subjectPlaceholder": "Project inquiry, collaboration, job opportunity…",
+      "messagePlaceholder": "Tell me about your project, timeline, and budget…"
     }
   },
   "blog": {
@@ -118,8 +159,12 @@
     "backToBlog": "Back to Blog"
   },
   "gallery": {
-    "eyebrow": "Photo Gallery",
-    "title": "Gallery",
+    "eyebrow": "Moments",
+    "title": "Photo Gallery",
+    "titleHighlight": "Gallery",
+    "viewFullGallery": "View Full Gallery",
+    "noPhotosYet": "No photos yet. Check back soon.",
+    "defaultDescription": "A collection of photos from projects, events, and milestones.",
     "categories": {
       "all": "All",
       "professional": "Professional",

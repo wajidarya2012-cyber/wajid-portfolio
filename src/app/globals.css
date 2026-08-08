@@ -28,6 +28,11 @@
   --shadow-glow-sm: 0 0 20px rgba(79,70,229,0.12);
   --gradient:       linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%);
   --gradient-card:  linear-gradient(135deg, rgba(79,70,229,0.08) 0%, rgba(6,182,212,0.04) 100%);
+  /* Fixed navbar glass background — subtle brand-tinted gradient + depth cues per theme */
+  --nav-bg:           linear-gradient(180deg, rgba(255,255,255,0.68) 0%, rgba(236,240,255,0.55) 100%);
+  --nav-bg-scrolled:  linear-gradient(180deg, rgba(255,255,255,0.94) 0%, rgba(240,244,255,0.90) 100%);
+  --nav-highlight:    rgba(255,255,255,0.65);
+  --nav-shadow:       0 8px 30px rgba(79,70,229,0.10), 0 1px 2px rgba(15,23,42,0.04);
   --radius:         16px;
   --radius-sm:      8px;
   --radius-xs:      6px;
@@ -48,6 +53,10 @@
   --shadow-glow:    0 0 50px rgba(79,70,229,0.3);
   --shadow-glow-sm: 0 0 25px rgba(79,70,229,0.18);
   --gradient-card:  linear-gradient(135deg, rgba(79,70,229,0.12) 0%, rgba(6,182,212,0.06) 100%);
+  --nav-bg:           linear-gradient(180deg, rgba(13,19,36,0.66) 0%, rgba(6,11,24,0.52) 100%);
+  --nav-bg-scrolled:  linear-gradient(180deg, rgba(13,19,36,0.98) 0%, rgba(6,11,24,0.95) 100%);
+  --nav-highlight:    rgba(255,255,255,0.07);
+  --nav-shadow:       0 8px 30px rgba(0,0,0,0.45), 0 1px 2px rgba(0,0,0,0.3);
 }
 
 /* ═══════════════════════════════════════════════

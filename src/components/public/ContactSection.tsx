@@ -5,6 +5,7 @@ import { useTranslations }              from "next-intl";
 import { useForm }                      from "react-hook-form";
 import { zodResolver }                  from "@hookform/resolvers/zod";
 import { contactSchema, ContactInput }  from "@/lib/validations";
+import { splitTitle }                   from "@/lib/utils";
 
 export default function ContactSection({ profile, locale, workingHours }: { profile: any; locale: string; workingHours?: string }) {
   const tl                          = useTranslations("contact");
@@ -52,13 +53,14 @@ export default function ContactSection({ profile, locale, workingHours }: { prof
     ...(workingHours ? [{ icon:"🕐", label:tl("workingHours"), value: workingHours, href:"#" }] : []),
   ];
 
+  const titleParts = splitTitle(tl("title"), tl("titleHighlight"));
+
   return (
     <section id="contact" style={{ padding:"5.5rem 0", background:"var(--bg-primary)" }}>
       <div className="section-container" ref={ref}>
         <span className="section-eyebrow reveal">{tl("eyebrow")}</span>
         <h2 className="section-title reveal reveal-delay-1">
-          Contact{" "}
-          <span style={{ background:"linear-gradient(135deg,#4f46e5,#06b6d4)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>Me</span>
+          {titleParts ? <>{titleParts.before}<span style={{ background:"linear-gradient(135deg,#4f46e5,#06b6d4)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>{titleParts.match}</span>{titleParts.after}</> : tl("title")}
         </h2>
         <div className="divider reveal reveal-delay-2" style={{ marginBottom:"2.5rem" }} />
 
@@ -97,14 +99,14 @@ export default function ContactSection({ profile, locale, workingHours }: { prof
             <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,200px),1fr))", gap:"1rem" }}>
               <div>
                 <label style={lbl}>{tl("form.name")} *</label>
-                <input {...register("name")} placeholder="Your full name" style={inp}
+                <input {...register("name")} placeholder={tl("form.namePlaceholder")} style={inp}
                   onFocus={e=>{ (e.target as HTMLInputElement).style.borderColor="#4f46e5"; (e.target as HTMLInputElement).style.boxShadow="0 0 0 3px rgba(79,70,229,0.15)"; }}
                   onBlur={e=>{  (e.target as HTMLInputElement).style.borderColor="var(--border)"; (e.target as HTMLInputElement).style.boxShadow="none"; }} />
                 {errors.name && <p style={{ fontSize:"0.72rem", color:"#f87171", marginTop:"0.25rem" }}>{errors.name.message}</p>}
               </div>
               <div>
                 <label style={lbl}>{tl("form.email")} *</label>
-                <input {...register("email")} type="email" placeholder="your@email.com" style={inp}
+                <input {...register("email")} type="email" placeholder={tl("form.emailPlaceholder")} style={inp}
                   onFocus={e=>{ (e.target as HTMLInputElement).style.borderColor="#4f46e5"; (e.target as HTMLInputElement).style.boxShadow="0 0 0 3px rgba(79,70,229,0.15)"; }}
                   onBlur={e=>{  (e.target as HTMLInputElement).style.borderColor="var(--border)"; (e.target as HTMLInputElement).style.boxShadow="none"; }} />
                 {errors.email && <p style={{ fontSize:"0.72rem", color:"#f87171", marginTop:"0.25rem" }}>{errors.email.message}</p>}
@@ -113,12 +115,12 @@ export default function ContactSection({ profile, locale, workingHours }: { prof
 
             <div>
               <label style={lbl}>{tl("form.phone")}</label>
-              <input {...register("phone")} placeholder="+93 XXX XXX XXXX" style={inp} />
+              <input {...register("phone")} placeholder={tl("form.phonePlaceholder")} style={inp} />
             </div>
 
             <div>
               <label style={lbl}>{tl("form.subject")} *</label>
-              <input {...register("subject")} placeholder="Project inquiry, collaboration, job opportunity…" style={inp}
+              <input {...register("subject")} placeholder={tl("form.subjectPlaceholder")} style={inp}
                 onFocus={e=>{ (e.target as HTMLInputElement).style.borderColor="#4f46e5"; (e.target as HTMLInputElement).style.boxShadow="0 0 0 3px rgba(79,70,229,0.15)"; }}
                 onBlur={e=>{  (e.target as HTMLInputElement).style.borderColor="var(--border)"; (e.target as HTMLInputElement).style.boxShadow="none"; }} />
               {errors.subject && <p style={{ fontSize:"0.72rem", color:"#f87171", marginTop:"0.25rem" }}>{errors.subject.message}</p>}
@@ -126,7 +128,7 @@ export default function ContactSection({ profile, locale, workingHours }: { prof
 
             <div>
               <label style={lbl}>{tl("form.message")} *</label>
-              <textarea {...register("message")} rows={5} placeholder="Tell me about your project, timeline, and budget…" style={{ ...inp, resize:"vertical" }}
+              <textarea {...register("message")} rows={5} placeholder={tl("form.messagePlaceholder")} style={{ ...inp, resize:"vertical" }}
                 onFocus={e=>{ (e.target as HTMLTextAreaElement).style.borderColor="#4f46e5"; (e.target as HTMLTextAreaElement).style.boxShadow="0 0 0 3px rgba(79,70,229,0.15)"; }}
                 onBlur={e=>{  (e.target as HTMLTextAreaElement).style.borderColor="var(--border)"; (e.target as HTMLTextAreaElement).style.boxShadow="none"; }} />
               {errors.message && <p style={{ fontSize:"0.72rem", color:"#f87171", marginTop:"0.25rem" }}>{errors.message.message}</p>}

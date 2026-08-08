@@ -48,6 +48,7 @@ enum AnalyticsEvent {
   CV_DOWNLOAD
   CONTACT_SUBMIT
   BLOG_VIEW
+  GALLERY_VIEW
 }
 
 enum LogAction {
@@ -492,8 +493,12 @@ model Experience {
   /// Technology/tool tags for this role
   technologies    String[]
 
-  /// Bullet-point achievements/responsibilities — separate from the prose description
+  /// Bullet-point achievements/responsibilities — separate from the prose description.
+  /// This array is the English list (kept as-is for backward compatibility); ps/fa are
+  /// optional companions that fall back to this list when empty.
   achievements    String[] @default([])
+  achievements_ps String[] @default([])
+  achievements_fa String[] @default([])
 
   /// Company/organization logo (Cloudinary)
   logoUrl         String?
@@ -548,8 +553,26 @@ model Education {
   /// Grade point average (optional)
   gpa        String?
 
-  /// Emoji or Cloudinary URL for institution logo
+  /// Emoji fallback icon (used when no logoUrl is set)
   icon       String @default("🎓")
+
+  /// Institution logo (Cloudinary) — takes priority over the emoji icon when set
+  logoUrl      String?
+  logoPublicId String?
+
+  /// Honors/awards received — trilingual bullet lists
+  honors_en  String[] @default([])
+  honors_ps  String[] @default([])
+  honors_fa  String[] @default([])
+
+  /// Notable courses/specializations — trilingual bullet lists
+  courses_en String[] @default([])
+  courses_ps String[] @default([])
+  courses_fa String[] @default([])
+
+  featured   Boolean @default(false)
+  visible    Boolean @default(true)
+  isCurrent  Boolean @default(false)
 
   sortOrder  Int    @default(0)
   createdAt  DateTime @default(now())
@@ -660,6 +683,10 @@ model BlogPost {
   featuredVideoUrl String?
 
   status      BlogStatus @default(DRAFT)
+  featured    Boolean    @default(false)
+
+  /// Simple tag list for filtering/related-posts — no separate model needed
+  tags        String[]   @default([])
 
   /// Denormalised view count
   viewCount   Int        @default(0)
@@ -686,12 +713,32 @@ model GalleryItem {
   /// Cloudinary public_id
   publicId  String
 
+  title_en   String?
+  title_ps   String?
+  title_fa   String?
+
   caption_en String?
   caption_ps String?
   caption_fa String?
 
-  /// e.g. "professional" | "events" | "training" | "achievements"
+  altText_en String?
+  altText_ps String?
+  altText_fa String?
+
+  /// e.g. "professional" | "events" | "training" | "achievements" — matches the
+  /// slug of an album configured in SiteSettings("gallery_albums"); no separate
+  /// album table needed.
   category  String @default("general")
+
+  /// Simple tag list for filtering — no separate model needed
+  tags      String[] @default([])
+
+  featured       Boolean @default(false)
+  visible        Boolean @default(true)
+  showOnHomepage Boolean @default(true)
+
+  /// Denormalised view count — incremented on gallery/lightbox view events
+  viewCount Int @default(0)
 
   sortOrder Int    @default(0)
   createdAt DateTime @default(now())

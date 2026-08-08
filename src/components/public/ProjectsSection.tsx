@@ -5,11 +5,13 @@ import Image                            from "next/image";
 import { useTranslations }              from "next-intl";
 import type { ProjectWithRelations }    from "@/types";
 import ImageLightbox                    from "./ImageLightbox";
+import { splitTitle }                   from "@/lib/utils";
 
 const G = "linear-gradient(135deg,#4f46e5,#06b6d4)";
 
 function pick(obj: Record<string,unknown>, field: string, locale: string): string {
-  return ((obj[`${field}_${locale}`] ?? obj[`${field}_en`] ?? "") as string);
+  const val = obj[`${field}_${locale}`] as string | undefined;
+  return (val && val.trim() !== "" ? val : (obj[`${field}_en`] as string)) ?? "";
 }
 
 const THUMB_BG: Record<string,string> = {
@@ -68,14 +70,15 @@ export default function ProjectsSection({ projects, locale }: { projects: Projec
     }
   });
 
+  const titleParts = splitTitle(tl("title"), tl("titleHighlight"));
+
   return (
     <>
       <section id="projects" style={{ padding:"5.5rem 0", background:"var(--bg-primary)" }}>
         <div className="section-container" ref={ref}>
           <span className="section-eyebrow reveal">{tl("eyebrow")}</span>
           <h2 className="section-title reveal reveal-delay-1">
-            Software{" "}
-            <span style={{ background:G, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>Projects</span>
+            {titleParts ? <>{titleParts.before}<span style={{ background:G, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>{titleParts.match}</span>{titleParts.after}</> : tl("title")}
           </h2>
           <div className="divider reveal reveal-delay-2" />
           <p className="reveal reveal-delay-3" style={{ color:"var(--text-secondary)", fontSize:"0.95rem", marginBottom:"2rem", maxWidth:"520px" }}>
@@ -98,11 +101,11 @@ export default function ProjectsSection({ projects, locale }: { projects: Projec
             </div>
             <select value={sort} onChange={e => setSort(e.target.value)}
               style={{ padding:"0.45rem 0.9rem", borderRadius:"9999px", fontSize:"0.78rem", fontWeight:600, border:"1px solid var(--border)", background:"var(--bg-card)", color:"var(--text-secondary)", cursor:"pointer" }}>
-              <option value="newest">Newest First</option>
-              <option value="oldest">Oldest First</option>
-              <option value="mostViewed">Most Viewed</option>
-              <option value="featured">Featured First</option>
-              <option value="az">A–Z</option>
+              <option value="newest">{tl("sort.newest")}</option>
+              <option value="oldest">{tl("sort.oldest")}</option>
+              <option value="mostViewed">{tl("sort.mostViewed")}</option>
+              <option value="featured">{tl("sort.featured")}</option>
+              <option value="az">{tl("sort.az")}</option>
             </select>
           </div>
 
@@ -125,7 +128,7 @@ export default function ProjectsSection({ projects, locale }: { projects: Projec
                     }
                     {project.featured && (
                       <span style={{ position:"absolute", top:"0.75rem", right:"0.75rem", background:"rgba(79,70,229,0.88)", color:"white", fontSize:"0.62rem", fontWeight:700, padding:"0.2rem 0.6rem", borderRadius:"9999px", backdropFilter:"blur(8px)" }}>
-                        ⭐ Featured
+                        ⭐ {tl("featuredBadge")}
                       </span>
                     )}
                   </div>
@@ -167,7 +170,7 @@ export default function ProjectsSection({ projects, locale }: { projects: Projec
           {filtered.length === 0 && (
             <div style={{ textAlign:"center", padding:"4rem", color:"var(--text-muted)" }}>
               <p style={{ fontSize:"2rem", marginBottom:"0.75rem" }}>🔍</p>
-              <p>No projects in this category.</p>
+              <p>{tl("noResults")}</p>
             </div>
           )}
         </div>
@@ -202,7 +205,7 @@ export default function ProjectsSection({ projects, locale }: { projects: Projec
 
             <div style={{ padding:"1.5rem" }}>
               <a href={`/${locale}/projects/${selected.slug}`} className="btn-secondary" style={{ fontSize:"0.78rem", padding:"0.45rem 1rem", display:"inline-flex", marginBottom:"1.25rem" }}>
-                View Full Page ↗
+                {tl("viewFullPage")} ↗
               </a>
               {/* Technologies */}
               <div style={{ display:"flex", flexWrap:"wrap", gap:"0.4rem", marginBottom:"1.25rem" }}>
@@ -246,7 +249,7 @@ export default function ProjectsSection({ projects, locale }: { projects: Projec
                         key={img.id}
                         type="button"
                         onClick={() => setLightboxIndex(i)}
-                        aria-label="Open image"
+                        aria-label={tl("openImage")}
                         style={{ position:"relative", aspectRatio:"16/9", borderRadius:"10px", overflow:"hidden", border:"none", padding:0, cursor:"zoom-in" }}
                       >
                         <Image src={img.url} alt={img.caption??""} fill style={{ objectFit:"cover" }} />

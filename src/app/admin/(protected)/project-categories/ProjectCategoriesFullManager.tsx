@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { reorder } from "@/lib/reorder";
 
 interface Category {
   id: string;
@@ -50,7 +51,7 @@ export default function ProjectCategoriesFullManager({ initialCategories }: { in
   }, [cats, query]);
 
   function startNew() {
-    setForm({ ...EMPTY, sortOrder: cats.length });
+    setForm({ ...EMPTY, sortOrder: cats.length ? Math.max(...cats.map(c=>c.sortOrder))+1 : 0 });
     setSlugTouched(false);
     setEditing("new");
     setTab("en");
@@ -85,16 +86,19 @@ export default function ProjectCategoriesFullManager({ initialCategories }: { in
   }
 
   async function moveCategory(id: string, dir: -1 | 1) {
-    const sorted = [...cats].sort((a,b) => a.sortOrder - b.sortOrder);
-    const idx = sorted.findIndex(c => c.id === id);
-    const swapIdx = idx + dir;
-    if (swapIdx < 0 || swapIdx >= sorted.length) return;
-    const a = sorted[idx], b = sorted[swapIdx];
-    await Promise.all([
-      fetch(`/api/v1/admin/project-categories/${a.id}`, { method:"PATCH", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ sortOrder: b.sortOrder }) }),
-      fetch(`/api/v1/admin/project-categories/${b.id}`, { method:"PATCH", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ sortOrder: a.sortOrder }) }),
-    ]);
-    router.refresh();
+    const result = reorder(cats, "sortOrder", c => c.id === id, dir);
+    if (!result) return;
+    const prev = cats;
+    setCats(result.list); // optimistic — reflect the new order immediately
+    try {
+      await Promise.all(result.changed.map(cat => fetch(`/api/v1/admin/project-categories/${cat.id}`, {
+        method:"PATCH", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ sortOrder: cat.sortOrder }),
+      })));
+      router.refresh();
+    } catch {
+      setCats(prev);
+      setMsg({type:"error", text:"Failed to reorder."});
+    }
   }
 
   function requestDelete(cat: Category) {

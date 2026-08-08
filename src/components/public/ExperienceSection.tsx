@@ -3,11 +3,13 @@
 import { useEffect, useRef }  from "react";
 import { useTranslations }    from "next-intl";
 import type { Experience }    from "@/types";
+import { splitTitle }         from "@/lib/utils";
 
 const G = "linear-gradient(135deg,#4f46e5,#06b6d4)";
 
 function pick(obj: Record<string,unknown>, field: string, locale: string): string {
-  return ((obj[`${field}_${locale}`] ?? obj[`${field}_en`] ?? "") as string);
+  const val = obj[`${field}_${locale}`] as string | undefined;
+  return (val && val.trim() !== "" ? val : (obj[`${field}_en`] as string)) ?? "";
 }
 function fmtYear(date: Date|string): string {
   try { return new Date(date).getFullYear().toString(); } catch { return ""; }
@@ -50,6 +52,7 @@ export default function ExperienceSection({ experience, locale, config }: { expe
   const customTitle       = config ? pick(config as unknown as Record<string,unknown>, "title", locale) : "";
   const subtitle           = config ? pick(config as unknown as Record<string,unknown>, "subtitle", locale) : "";
   const customDescription = config ? pick(config as unknown as Record<string,unknown>, "description", locale) : "";
+  const titleParts = splitTitle(tl("title"), tl("titleHighlight"));
   const layout = config?.layout ?? "timeline";
   const bg     = config?.background ?? "default";
 
@@ -67,13 +70,19 @@ export default function ExperienceSection({ experience, locale, config }: { expe
             {e.employmentType as string}
           </span>
         ) : null}
-        {(e.achievements as string[] | undefined)?.length ? (
-          <ul style={{ margin:"0.6rem 0 0.9rem", paddingLeft:"1.1rem", display:"flex", flexDirection:"column", gap:"0.3rem" }}>
-            {(e.achievements as string[]).map((a, i) => (
-              <li key={i} style={{ fontSize:"0.82rem", color:"var(--text-secondary)", lineHeight:1.6 }}>{a}</li>
-            ))}
-          </ul>
-        ) : null}
+        {(() => {
+          const list = (safeLocale === "ps" ? (e.achievements_ps as string[] | undefined) :
+                        safeLocale === "fa" ? (e.achievements_fa as string[] | undefined) :
+                        undefined);
+          const achievements = (list && list.length > 0) ? list : (e.achievements as string[] | undefined);
+          return achievements && achievements.length > 0 ? (
+            <ul style={{ margin:"0.6rem 0 0.9rem", paddingLeft:"1.1rem", display:"flex", flexDirection:"column", gap:"0.3rem" }}>
+              {achievements.map((a, i) => (
+                <li key={i} style={{ fontSize:"0.82rem", color:"var(--text-secondary)", lineHeight:1.6 }}>{a}</li>
+              ))}
+            </ul>
+          ) : null;
+        })()}
       </>
     );
   }
@@ -93,7 +102,9 @@ export default function ExperienceSection({ experience, locale, config }: { expe
         {customTitle ? (
           <h2 className="section-title reveal reveal-delay-1">{customTitle}</h2>
         ) : (
-          <h2 className="section-title reveal reveal-delay-1">Work <span style={{ background:G, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>Experience</span></h2>
+          <h2 className="section-title reveal reveal-delay-1">
+            {titleParts ? <>{titleParts.before}<span style={{ background:G, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>{titleParts.match}</span>{titleParts.after}</> : tl("title")}
+          </h2>
         )}
         {subtitle && (
           <p className="reveal reveal-delay-1" style={{ fontSize:"clamp(0.95rem,1.8vw,1.1rem)", color:"var(--text-secondary)", fontWeight:500, marginTop:"-0.5rem", marginBottom:"0.5rem" }}>
@@ -125,7 +136,7 @@ export default function ExperienceSection({ experience, locale, config }: { expe
                           <img src={e.logoUrl as string} alt="" style={{ width:"32px", height:"32px", borderRadius:"8px", objectFit:"cover", flexShrink:0, background:"#fff" }} />
                         ) : null}
                         <h3 style={{ fontFamily:"var(--font-syne)", fontWeight:700, fontSize:"clamp(0.95rem,2vw,1.05rem)", wordBreak:"break-word", minWidth:0 }}>
-                          {pick(exp as Record<string,unknown>,"role",safeLocale)} {e.featured ? <span title="Featured" style={{ fontSize:"0.75rem" }}>⭐</span> : null}
+                          {pick(exp as Record<string,unknown>,"role",safeLocale)} {e.featured ? <span title={tl("featured")} style={{ fontSize:"0.75rem" }}>⭐</span> : null}
                         </h3>
                       </div>
                       <span style={{ fontFamily:"var(--font-fira)", fontSize:"0.7rem", padding:"0.22rem 0.75rem", borderRadius:"9999px", background:"rgba(79,70,229,0.1)", border:"1px solid rgba(79,70,229,0.25)", color:"#06b6d4", whiteSpace:"nowrap", flexShrink:0 }}>
@@ -149,7 +160,7 @@ export default function ExperienceSection({ experience, locale, config }: { expe
               );
             })}
             {items.length===0 && (
-              <p style={{ color:"var(--text-muted)", fontSize:"0.875rem", padding:"2rem 0.5rem" }}>No experience entries yet.</p>
+              <p style={{ color:"var(--text-muted)", fontSize:"0.875rem", padding:"2rem 0.5rem" }}>{tl("noEntries")}</p>
             )}
           </div>
         )}
@@ -188,7 +199,7 @@ export default function ExperienceSection({ experience, locale, config }: { expe
               );
             })}
             {items.length===0 && (
-              <p style={{ color:"var(--text-muted)", fontSize:"0.875rem" }}>No experience entries yet.</p>
+              <p style={{ color:"var(--text-muted)", fontSize:"0.875rem" }}>{tl("noEntries")}</p>
             )}
           </div>
         )}
@@ -217,7 +228,7 @@ export default function ExperienceSection({ experience, locale, config }: { expe
               );
             })}
             {items.length===0 && (
-              <p style={{ color:"var(--text-muted)", fontSize:"0.875rem" }}>No experience entries yet.</p>
+              <p style={{ color:"var(--text-muted)", fontSize:"0.875rem" }}>{tl("noEntries")}</p>
             )}
           </div>
         )}

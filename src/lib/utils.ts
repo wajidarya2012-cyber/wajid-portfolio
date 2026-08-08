@@ -30,7 +30,8 @@ export function getPagination(searchParams: URLSearchParams) {
 
 // ── Locale-aware field picker ──────────────────────────────────────────────
 // Given an object like { title_en, title_ps, title_fa } and locale "ps",
-// returns the value for that locale, falling back to "en".
+// returns the value for that locale, falling back to "en" when missing OR
+// when the localized value is an empty string (blank admin field).
 export function t<T extends Record<string, unknown>>(
   obj:    T,
   field:  string,
@@ -38,7 +39,23 @@ export function t<T extends Record<string, unknown>>(
 ): string {
   const key      = `${field}_${locale}` as keyof T;
   const fallback = `${field}_en`        as keyof T;
-  return (obj[key] ?? obj[fallback] ?? "") as string;
+  const val      = obj[key] as string | undefined;
+  return (val && val.trim() !== "" ? val : (obj[fallback] as string)) ?? "";
+}
+
+// ── Two-tone section title splitter ─────────────────────────────────────────
+// Given a full translated title ("Skills & Technologies") and the substring
+// that should render with the gradient accent ("Technologies"), returns the
+// three parts to render around it — or null if the substring isn't found
+// (caller should then render the full title plain, un-split).
+export function splitTitle(
+  full:      string,
+  highlight: string
+): { before: string; match: string; after: string } | null {
+  if (!highlight) return null;
+  const idx = full.indexOf(highlight);
+  if (idx === -1) return null;
+  return { before: full.slice(0, idx), match: highlight, after: full.slice(idx + highlight.length) };
 }
 
 // ── IP address extractor from Next.js request ──────────────────────────────
@@ -65,4 +82,11 @@ export function truncate(str: string, max = 160): string {
 // ── Range array (for pagination UI) ───────────────────────────────────────
 export function range(start: number, end: number): number[] {
   return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+}
+
+// ── Estimated reading time (derived at render time — no stored/duplicate field) ──
+export function readingTime(html: string): number {
+  const text = html.replace(/<[^>]*>/g, " ");
+  const words = text.trim().split(/\s+/).filter(Boolean).length;
+  return Math.max(1, Math.round(words / 200));
 }

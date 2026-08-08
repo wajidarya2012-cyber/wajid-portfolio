@@ -3,12 +3,14 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import type { JourneySlide } from "@/types";
+import { splitTitle }        from "@/lib/utils";
 
 const G = "linear-gradient(135deg,#4f46e5,#06b6d4)";
 const AUTOPLAY_MS = 5500;
 
 function pick(obj: Record<string, unknown>, field: string, locale: string): string {
-  return ((obj[`${field}_${locale}`] ?? obj[`${field}_en`] ?? "") as string);
+  const val = obj[`${field}_${locale}`] as string | undefined;
+  return (val && val.trim() !== "" ? val : (obj[`${field}_en`] as string)) ?? "";
 }
 
 export default function JourneySection({ slides, locale }: { slides: JourneySlide[]; locale: string }) {
@@ -38,6 +40,8 @@ export default function JourneySection({ slides, locale }: { slides: JourneySlid
   // Keep index valid if slide count changes
   useEffect(() => { if (index >= len && len > 0) setIndex(0); }, [len, index]);
 
+  const titleParts = splitTitle(tl("title"), tl("titleHighlight"));
+
   return (
     <section id="journey" style={{ padding:"5.5rem 0", background:"var(--bg-primary)" }}>
       <style dangerouslySetInnerHTML={{ __html: `
@@ -48,13 +52,12 @@ export default function JourneySection({ slides, locale }: { slides: JourneySlid
       <div className="section-container" ref={ref}>
         <span className="section-eyebrow reveal">{tl("eyebrow")}</span>
         <h2 className="section-title reveal reveal-delay-1">
-          Professional{" "}
-          <span style={{ background:G, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>Journey</span>
+          {titleParts ? <>{titleParts.before}<span style={{ background:G, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>{titleParts.match}</span>{titleParts.after}</> : tl("title")}
         </h2>
         <div className="divider reveal reveal-delay-2" style={{ marginBottom:"2.5rem" }} />
 
         {len === 0 ? (
-          <p style={{ color:"var(--text-muted)", fontSize:"0.875rem" }}>No journey milestones yet.</p>
+          <p style={{ color:"var(--text-muted)", fontSize:"0.875rem" }}>{tl("noEntries")}</p>
         ) : (
           <div
             className="glass-card reveal"
@@ -80,7 +83,7 @@ export default function JourneySection({ slides, locale }: { slides: JourneySlid
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={slide.imageUrl}
-                      alt={title || "Journey milestone"}
+                      alt={title || tl("milestoneAlt")}
                       loading="lazy"
                       decoding="async"
                       style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center 30%", display:"block" }}
@@ -108,7 +111,7 @@ export default function JourneySection({ slides, locale }: { slides: JourneySlid
                   <button
                     type="button"
                     onClick={prev}
-                    aria-label="Previous slide"
+                    aria-label={tl("prevSlide")}
                     style={{ position:"absolute", top:"50%", left:"0.75rem", transform:"translateY(-50%)", width:"38px", height:"38px", borderRadius:"50%", border:"1px solid rgba(255,255,255,0.3)", background:"rgba(0,0,0,0.35)", backdropFilter:"blur(6px)", color:"#fff", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"1.1rem", transition:"all 0.2s", zIndex:2 }}
                     onMouseEnter={e=>{ (e.currentTarget as HTMLElement).style.background="#4f46e5"; }}
                     onMouseLeave={e=>{ (e.currentTarget as HTMLElement).style.background="rgba(0,0,0,0.35)"; }}
@@ -118,7 +121,7 @@ export default function JourneySection({ slides, locale }: { slides: JourneySlid
                   <button
                     type="button"
                     onClick={next}
-                    aria-label="Next slide"
+                    aria-label={tl("nextSlide")}
                     style={{ position:"absolute", top:"50%", right:"0.75rem", transform:"translateY(-50%)", width:"38px", height:"38px", borderRadius:"50%", border:"1px solid rgba(255,255,255,0.3)", background:"rgba(0,0,0,0.35)", backdropFilter:"blur(6px)", color:"#fff", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"1.1rem", transition:"all 0.2s", zIndex:2 }}
                     onMouseEnter={e=>{ (e.currentTarget as HTMLElement).style.background="#4f46e5"; }}
                     onMouseLeave={e=>{ (e.currentTarget as HTMLElement).style.background="rgba(0,0,0,0.35)"; }}
@@ -138,7 +141,7 @@ export default function JourneySection({ slides, locale }: { slides: JourneySlid
                       key={slide.id}
                       type="button"
                       onClick={() => setIndex(i)}
-                      aria-label={`Go to slide: ${thumbTitle || i + 1}`}
+                      aria-label={`${tl("goToSlide")}: ${thumbTitle || i + 1}`}
                       style={{
                         position:"relative", width:"72px", height:"48px", borderRadius:"8px", overflow:"hidden", cursor:"pointer",
                         padding:0, border: i === index ? "2px solid #4f46e5" : "2px solid transparent",

@@ -24,6 +24,8 @@
   "about": {
     "eyebrow": "بیشتر بدانید",
     "title": "درباره من",
+    "titleHighlight": "من",
+    "noCvUploaded": "هنوز رزومه‌ای آپلود نشده است.",
     "quickFacts": "حقایق سریع",
     "values": {
       "innovation": "نوآوری",
@@ -47,28 +49,50 @@
   "skills": {
     "eyebrow": "تخصص فنی",
     "title": "مهارت‌ها و فناوری‌ها",
+    "titleHighlight": "فناوری‌ها",
+    "featured": "ویژه",
     "desc": "مجموعه‌ای گسترده از مهارت‌های فنی که از سال‌ها تجربه عملی ساخته شده است."
   },
   "experience": {
     "eyebrow": "سابقه کاری",
     "title": "تجربه کاری",
-    "present": "اکنون"
+    "titleHighlight": "تجربه",
+    "present": "اکنون",
+    "featured": "ویژه",
+    "noEntries": "هنوز تجربه‌ای ثبت نشده است."
   },
   "education": {
     "eyebrow": "پیشینه تحصیلی",
-    "title": "تحصیلات و آموزش"
+    "title": "تحصیلات و صلاحیت‌ها",
+    "titleHighlight": "صلاحیت‌ها",
+    "present": "اکنون",
+    "gpa": "GPA",
+    "featured": "ویژه",
+    "noEntries": "هنوز مدرک تحصیلی ثبت نشده است."
   },
   "certifications": {
     "eyebrow": "مدارک",
-    "title": "گواهی‌نامه‌ها و آموزش‌ها"
+    "title": "گواهی‌نامه‌ها و آموزش‌ها",
+    "titleHighlight": "آموزش‌ها",
+    "viewDetails": "مشاهده جزئیات",
+    "viewCredential": "مشاهده مدرک",
+    "noDetails": "جزئیات بیشتری ارائه نشده است.",
+    "noEntries": "هنوز گواهی‌نامه‌ای ثبت نشده است."
   },
   "journey": {
     "eyebrow": "مسیر من",
-    "title": "مسیر حرفه‌ای"
+    "title": "مسیر حرفه‌ای",
+    "titleHighlight": "مسیر",
+    "noEntries": "هنوز نقطه عطفی ثبت نشده است.",
+    "milestoneAlt": "تصویر مسیر حرفه‌ای",
+    "prevSlide": "اسلاید قبلی",
+    "nextSlide": "اسلاید بعدی",
+    "goToSlide": "رفتن به اسلاید"
   },
   "projects": {
     "eyebrow": "پورتفولیو",
     "title": "پروژه‌های نرم‌افزاری",
+    "titleHighlight": "پروژه‌های",
     "desc": "سیستم‌هایی که برای حل چالش‌های واقعی ساخته شده‌اند.",
     "filters": {
       "all": "همه",
@@ -77,11 +101,22 @@
       "transport": "حمل‌ونقل",
       "security": "امنیت"
     },
+    "sort": {
+      "newest": "جدیدترین",
+      "oldest": "قدیمی‌ترین",
+      "mostViewed": "پربازدیدترین",
+      "featured": "ویژه‌ها اول",
+      "az": "A–Z"
+    },
     "viewDetails": "مشاهده جزئیات",
+    "viewFullPage": "مشاهده صفحه کامل",
     "features": "ویژگی‌های اصلی",
     "technologies": "فناوری‌های استفاده شده",
     "challenge": "چالش حل شده",
-    "gallery": "گالری پروژه"
+    "gallery": "گالری پروژه",
+    "featuredBadge": "ویژه",
+    "openImage": "باز کردن تصویر",
+    "noResults": "پروژه‌ای در این دسته یافت نشد."
   },
   "stats": {
     "years": "سال تجربه",
@@ -92,6 +127,7 @@
   "contact": {
     "eyebrow": "ارتباط",
     "title": "تماس با من",
+    "titleHighlight": "من",
     "subtitle": "بیایید با هم کار کنیم",
     "desc": "چه پروژه، فرصت شغلی یا صرفاً ارتباط داشته باشید — صندوق پیام من باز است.",
     "email": "ایمیل",
@@ -107,7 +143,12 @@
       "send": "ارسال پیام",
       "sending": "در حال ارسال...",
       "success": "پیام ارسال شد! به زودی با شما تماس می‌گیرم.",
-      "error": "مشکلی پیش آمد. لطفاً دوباره امتحان کنید."
+      "error": "مشکلی پیش آمد. لطفاً دوباره امتحان کنید.",
+      "namePlaceholder": "نام کامل شما",
+      "emailPlaceholder": "your@email.com",
+      "phonePlaceholder": "+93 XXX XXX XXXX",
+      "subjectPlaceholder": "درخواست پروژه، همکاری، فرصت شغلی…",
+      "messagePlaceholder": "درباره پروژه، زمان‌بندی و بودجه خود بگویید…"
     }
   },
   "blog": {
@@ -118,8 +159,12 @@
     "backToBlog": "بازگشت به وبلاگ"
   },
   "gallery": {
-    "eyebrow": "گالری عکس",
-    "title": "گالری",
+    "eyebrow": "لحظات",
+    "title": "گالری عکس",
+    "titleHighlight": "گالری",
+    "viewFullGallery": "مشاهده گالری کامل",
+    "noPhotosYet": "هنوز عکسی وجود ندارد. به زودی دوباره سر بزنید.",
+    "defaultDescription": "مجموعه‌ای از عکس‌های پروژه‌ها، رویدادها و نقاط عطف.",
     "categories": {
       "all": "همه",
       "professional": "حرفه‌ای",

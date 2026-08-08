@@ -1,7 +1,20 @@
 import { prisma } from "@/lib/prisma";
-import BlogPostCard from "@/components/public/BlogPostCard";
+import type { Metadata } from "next";
+import BlogListClient from "./BlogListClient";
 
 const G = "linear-gradient(135deg,#4f46e5,#06b6d4)";
+
+export async function generateMetadata({ params: { locale } }: { params: { locale: string } }): Promise<Metadata> {
+  const s = await prisma.siteSettings.findMany({
+    where: { key: { in: ["seo_default_title", "seo_default_description", "brand_name"] } },
+  }).catch(() => []);
+  const map = Object.fromEntries(s.map(x => [x.key, x.value]));
+  const brand = map.brand_name || "Portfolio";
+  return {
+    title: `Blog | ${brand}`,
+    description: map.seo_default_description || "Thoughts on technology, software development, and IT management.",
+  };
+}
 
 export default async function BlogListPage({
   params: { locale },
@@ -10,7 +23,7 @@ export default async function BlogListPage({
 }) {
   const posts = await prisma.blogPost.findMany({
     where:   { status: "PUBLISHED" },
-    orderBy: { publishedAt: "desc" },
+    orderBy: [{ featured: "desc" }, { publishedAt: "desc" }],
   }).catch(() => []);
 
   return (
@@ -36,11 +49,7 @@ export default async function BlogListPage({
             <p>No posts published yet. Check back soon.</p>
           </div>
         ) : (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(min(100%,320px),1fr))", gap: "1.5rem" }}>
-                     {posts.map((post) => (
-           <BlogPostCard key={post.id} post={post} locale={locale} />
-         ))}
-          </div>
+          <BlogListClient posts={posts} locale={locale} />
         )}
       </div>
     </div>

@@ -4,6 +4,7 @@ import { useState }     from "react";
 import Link             from "next/link";
 import { useRouter }    from "next/navigation";
 import type { Project, ProjectCategory, ProjectImage } from "@/types";
+import { reorder } from "@/lib/reorder";
 
 type ProjectRow = Project & { category: ProjectCategory | null; images: ProjectImage[] };
 
@@ -47,15 +48,12 @@ export default function AdminProjectsClient({
   }
 
   async function move(id: string, dir: -1 | 1) {
-    const idx = sorted.findIndex(p => p.id === id);
-    const swapIdx = idx + dir;
-    if (swapIdx < 0 || swapIdx >= sorted.length) return;
-    const a = sorted[idx], b = sorted[swapIdx];
+    const result = reorder(sorted, "sortOrder", p => p.id === id, dir);
+    if (!result) return;
     setBusyId(id);
-    await Promise.all([
-      fetch(`/api/v1/admin/projects/${a.id}`, { method:"PATCH", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ sortOrder: b.sortOrder }) }),
-      fetch(`/api/v1/admin/projects/${b.id}`, { method:"PATCH", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ sortOrder: a.sortOrder }) }),
-    ]);
+    await Promise.all(result.changed.map(p => fetch(`/api/v1/admin/projects/${p.id}`, {
+      method:"PATCH", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ sortOrder: p.sortOrder }),
+    })));
     setBusyId(null);
     router.refresh();
   }

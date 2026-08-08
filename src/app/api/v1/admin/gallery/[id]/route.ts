@@ -1,8 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { galleryItemSchema } from "@/lib/validations";
 import { requireAdmin, logActivity } from "@/lib/adminGuard";
 
 type P = { params:{id:string} };
+
+export async function PUT(request: NextRequest, { params }: P) {
+  const { user, error } = await requireAdmin(request);
+  if (error) return error;
+
+  const parsed = galleryItemSchema.partial().safeParse(await request.json());
+  if (!parsed.success) {
+    return NextResponse.json({ success:false, error:"Validation failed", issues:parsed.error.flatten() }, { status:422 });
+  }
+
+  const existing = await prisma.galleryItem.findUnique({ where:{ id:params.id } });
+  if (!existing) return NextResponse.json({ success:false, error:"Not found" }, { status:404 });
+
+  const item = await prisma.galleryItem.update({ where:{ id:params.id }, data: parsed.data });
+  await logActivity(user!.id, "UPDATE", "GalleryItem", `Updated gallery item (${item.category})`, item.id, request);
+  return NextResponse.json({ success:true, data:item });
+}
 
 export async function DELETE(request: NextRequest, { params }: P) {
   const { user, error } = await requireAdmin(request);

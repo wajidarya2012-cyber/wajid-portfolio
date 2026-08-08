@@ -24,11 +24,12 @@ type FooterVisibility = {
 };
 
 export default function Footer({
-  locale, profile, navConfig, footerVisibility, workingHours, legalLinks,
+  locale, profile, navConfig, sectionOrder, footerVisibility, workingHours, legalLinks,
 }: {
   locale: string;
   profile?: Profile | null;
   navConfig?: NavItemConfig[];
+  sectionOrder?: Record<string, number>;
   footerVisibility?: FooterVisibility;
   workingHours?: string;
   legalLinks?: { privacyUrl?: string; termsUrl?: string };
@@ -64,7 +65,7 @@ export default function Footer({
     showCopyright:    footerVisibility?.showCopyright    !== false,
   };
 
-  const quickLinks = buildNavItems(navConfig, locale, tn);
+  const quickLinks = buildNavItems(navConfig, locale, tn, sectionOrder);
 
   const contactItems = [
     p.email    && { icon:"✉", label:tl("contactEmail")    ?? "Email",    value: p.email as string,    href:`mailto:${p.email}` },

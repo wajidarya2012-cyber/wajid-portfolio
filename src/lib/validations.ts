@@ -63,8 +63,8 @@ export const projectSchema = z.object({
   status:         z.enum(["ACTIVE", "ARCHIVED", "DRAFT"]).default("ACTIVE"),
   featured:       z.boolean().default(false),
   sortOrder:      z.number().int().min(0).optional(),
-  startDate:      z.string().refine(v => !v || !isNaN(Date.parse(v)), "Invalid date").optional().nullable(),
-  endDate:        z.string().refine(v => !v || !isNaN(Date.parse(v)), "Invalid date").optional().nullable(),
+  startDate:      z.preprocess((v) => (v === "" ? null : v), z.string().refine(v => !v || !isNaN(Date.parse(v)), "Invalid date").optional().nullable()),
+  endDate:        z.preprocess((v) => (v === "" ? null : v), z.string().refine(v => !v || !isNaN(Date.parse(v)), "Invalid date").optional().nullable()),
   visible:        z.boolean().optional(),
   showOnHomepage: z.boolean().optional(),
   clientName:     z.string().optional().nullable(),
@@ -132,6 +132,8 @@ export const experienceSchema = z.object({
   description_fa:   z.string().min(1),
   technologies:     z.array(z.string()).optional(),
   achievements:     z.array(z.string()).optional(),
+  achievements_ps:  z.array(z.string()).optional(),
+  achievements_fa:  z.array(z.string()).optional(),
   logoUrl:          z.string().optional().nullable(),
   logoPublicId:     z.string().optional().nullable(),
   employmentType:   z.string().optional().nullable(),
@@ -162,6 +164,17 @@ export const educationSchema = z.object({
   endYear:        z.coerce.number().int().min(1950).max(2100).nullable().optional(),
   gpa:            z.string().optional(),
   icon:           z.string().optional(),
+  logoUrl:        z.string().optional().nullable(),
+  logoPublicId:   z.string().optional().nullable(),
+  honors_en:  z.array(z.string()).optional(),
+  honors_ps:  z.array(z.string()).optional(),
+  honors_fa:  z.array(z.string()).optional(),
+  courses_en: z.array(z.string()).optional(),
+  courses_ps: z.array(z.string()).optional(),
+  courses_fa: z.array(z.string()).optional(),
+  featured:   z.boolean().optional(),
+  visible:    z.boolean().optional(),
+  isCurrent:  z.boolean().optional(),
   sortOrder:      z.number().int().optional(),
 });
 
@@ -217,14 +230,26 @@ export const blogPostSchema = z.object({
   coverPublicId:   z.string().optional(),
   featuredVideoUrl: z.string().url().optional().or(z.literal("")),
   status:       z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]).default("DRAFT"),
+  featured:     z.boolean().optional(),
+  tags:         z.array(z.string()).optional(),
 });
 
 // ── Gallery ────────────────────────────────────────────────────────────────
 export const galleryItemSchema = z.object({
+  title_en:   z.string().optional(),
+  title_ps:   z.string().optional(),
+  title_fa:   z.string().optional(),
   caption_en: z.string().optional(),
   caption_ps: z.string().optional(),
   caption_fa: z.string().optional(),
+  altText_en: z.string().optional(),
+  altText_ps: z.string().optional(),
+  altText_fa: z.string().optional(),
   category:   z.string().min(1),
+  tags:       z.array(z.string()).optional(),
+  featured:       z.boolean().optional(),
+  visible:        z.boolean().optional(),
+  showOnHomepage: z.boolean().optional(),
   sortOrder:  z.number().int().min(0).optional(),
 });
 
@@ -241,7 +266,7 @@ export const contactSchema = z.object({
 export const analyticsTrackSchema = z.object({
   sessionId: z.string().uuid(),
   page:      z.string().min(1),
-  event:     z.enum(["PAGE_VIEW", "PROJECT_VIEW", "CV_DOWNLOAD", "CONTACT_SUBMIT", "BLOG_VIEW"]),
+  event:     z.enum(["PAGE_VIEW", "PROJECT_VIEW", "CV_DOWNLOAD", "CONTACT_SUBMIT", "BLOG_VIEW", "GALLERY_VIEW"]),
   projectId: z.string().uuid().optional(),
   referrer:  z.string().optional(),
 });

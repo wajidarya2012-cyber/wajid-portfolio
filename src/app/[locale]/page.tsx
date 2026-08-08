@@ -1,4 +1,5 @@
 import { Fragment } from "react";
+import { setRequestLocale } from "next-intl/server";
 import { prisma }          from "@/lib/prisma";
 import HeroSection         from "@/components/public/HeroSection";
 import AboutSection        from "@/components/public/AboutSection";
@@ -7,6 +8,7 @@ import ExperienceSection   from "@/components/public/ExperienceSection";
 import EducationSection    from "@/components/public/EducationSection";
 import CertSection         from "@/components/public/CertSection";
 import JourneySection      from "@/components/public/JourneySection";
+import GallerySection      from "@/components/public/GallerySection";
 import ProjectsSection     from "@/components/public/ProjectsSection";
 import StatsSection        from "@/components/public/StatsSection";
 import ContactSection      from "@/components/public/ContactSection";
@@ -31,8 +33,12 @@ export async function generateMetadata({ params: { locale } }: { params: { local
 
 export default async function HomePage({ params: { locale } }: { params: { locale: string } }) {
   const safeLocale = ["en","ps","fa"].includes(locale) ? locale : "en";
+  // Required by next-intl for the App Router: binds requestLocale for this render so
+  // getMessages()/useTranslations() resolve the right locale instead of silently
+  // falling back to the default (en) — see docs/DEBUGGING_GUIDE.md.
+  setRequestLocale(safeLocale);
 
-const [profile, skillCats, experience, education, certifications, journeySlides, projects, siteSettings] = await Promise.all([
+const [profile, skillCats, experience, education, certifications, journeySlides, projects, galleryItems, siteSettings] = await Promise.all([
     prisma.profile.findFirst().catch(() => null),
     prisma.skillCategory.findMany({
       include: { skills: { orderBy: { sortOrder:"asc" } } },
@@ -52,7 +58,12 @@ const [profile, skillCats, experience, education, certifications, journeySlides,
       },
       orderBy: [{ featured:"desc" }, { sortOrder:"asc" }],
     }).catch(() => []),
-    prisma.siteSettings.findMany({ where: { key: { in: ["contact_working_hours", "hero_bg_images", "skills_section_config", "experience_section_config"] } } }).catch(() => []),
+    prisma.galleryItem.findMany({
+      where:   { visible: true, showOnHomepage: true },
+      orderBy: [{ featured:"desc" }, { sortOrder:"asc" }],
+      take:    8,
+    }).catch(() => []),
+    prisma.siteSettings.findMany({ where: { key: { in: ["contact_working_hours", "hero_bg_images", "skills_section_config", "experience_section_config", "gallery_section_config", "education_section_config"] } } }).catch(() => []),
   ]);
   const workingHours = siteSettings.find(s => s.key === "contact_working_hours")?.value;
   const heroBgImagesRaw = siteSettings.find(s => s.key === "hero_bg_images")?.value;
@@ -61,28 +72,32 @@ const [profile, skillCats, experience, education, certifications, journeySlides,
     const parsed = heroBgImagesRaw ? JSON.parse(heroBgImagesRaw) : [];
     if (Array.isArray(parsed)) {
       heroBgSlides = parsed
-        heroBgSlides = parsed
         .map((entry: unknown): Record<string, unknown> =>
           typeof entry === "string" ? { desktopUrl: entry } : (entry as Record<string, unknown>) ?? {})
         .filter((s: Record<string, unknown>): s is import("@/components/public/HeroSection").HeroBgSlide =>
           typeof s.desktopUrl === "string");
-        
     }
   } catch {}
   let skillsConfig: import("@/components/public/SkillsSection").SkillsSectionConfig = {};
   try { const raw = siteSettings.find(s => s.key === "skills_section_config")?.value; if (raw) skillsConfig = JSON.parse(raw); } catch {}
   let experienceConfig: import("@/components/public/ExperienceSection").ExperienceSectionConfig = {};
   try { const raw = siteSettings.find(s => s.key === "experience_section_config")?.value; if (raw) experienceConfig = JSON.parse(raw); } catch {}
+  let galleryConfig: import("@/components/public/GallerySection").GallerySectionConfig = {};
+  try { const raw = siteSettings.find(s => s.key === "gallery_section_config")?.value; if (raw) galleryConfig = JSON.parse(raw); } catch {}
+  let educationConfig: import("@/components/public/EducationSection").EducationSectionConfig = {};
+  try { const raw = siteSettings.find(s => s.key === "education_section_config")?.value; if (raw) educationConfig = JSON.parse(raw); } catch {}
 
-  // Middle homepage sections support a configurable display order (currently Skills and
-  // Experience expose an override) — default order matches the original fixed sequence.
+  // Middle homepage sections support a configurable display order (currently Skills,
+  // Experience, and Gallery expose an override) — default order matches the original
+  // fixed sequence, with Gallery inserted just before Projects.
   const middleSections = [
     { key:"about",          order:0,                          node:<AboutSection      profile={profile}           locale={safeLocale} /> },
     { key:"skills",         order:skillsConfig.order ?? 1,     node:<SkillsSection     categories={skillCats}      locale={safeLocale} config={skillsConfig} /> },
     { key:"experience",     order:experienceConfig.order ?? 2,     node:<ExperienceSection experience={experience}     locale={safeLocale} config={experienceConfig} /> },
-    { key:"education",      order:3,                          node:<EducationSection  education={education}       locale={safeLocale} /> },
+    { key:"education",      order:educationConfig.order ?? 3,     node:<EducationSection  education={education}       locale={safeLocale} config={educationConfig} /> },
     { key:"certifications", order:4,                          node:<CertSection       certifications={certifications} locale={safeLocale} /> },
     { key:"journey",        order:5,                          node:<JourneySection    slides={journeySlides}      locale={safeLocale} /> },
+    { key:"gallery",        order:galleryConfig.order ?? 5.5,  node:<GallerySection    items={galleryItems}        locale={safeLocale} config={galleryConfig} /> },
     { key:"projects",       order:6,                          node:<ProjectsSection   projects={projects}         locale={safeLocale} /> },
   ].sort((a, b) => a.order - b.order);
 

@@ -3,6 +3,7 @@ import { useState, useRef }  from "react";
 import { useRouter } from "next/navigation";
 import type { Profile } from "@/types";
 import { TRANSLATE_LANGUAGES } from "@/lib/translateLanguages";
+import { reorder } from "@/lib/reorder";
 
 export default function SettingsForm({ settingsMap, profile }: { settingsMap: Record<string,string>; profile: Profile|null }) {
   const router = useRouter();
@@ -36,6 +37,7 @@ export default function SettingsForm({ settingsMap, profile }: { settingsMap: Re
     { key:"experience",     defaultLabel:"Experience" },
     { key:"certifications", defaultLabel:"Certifications" },
     { key:"projects",       defaultLabel:"Projects" },
+    { key:"gallery",        defaultLabel:"Gallery" },
     { key:"blog",           defaultLabel:"Blog" },
     { key:"contact",        defaultLabel:"Contact" },
   ];
@@ -60,14 +62,7 @@ export default function SettingsForm({ settingsMap, profile }: { settingsMap: Re
     setNavItems(prev => prev.map(item => item.key === key ? { ...item, [field]: value } : item));
   }
   function moveNavItem(key: string, dir: -1 | 1) {
-    setNavItems(prev => {
-      const sorted = [...prev].sort((a,b) => a.order - b.order);
-      const idx = sorted.findIndex(i => i.key === key);
-      const swapIdx = idx + dir;
-      if (swapIdx < 0 || swapIdx >= sorted.length) return prev;
-      [sorted[idx].order, sorted[swapIdx].order] = [sorted[swapIdx].order, sorted[idx].order];
-      return sorted.map(i => ({ ...i }));
-    });
+    setNavItems(prev => reorder(prev, "order", i => i.key === key, dir)?.list ?? prev);
   }
   async function saveNavItems() {
     setNavSaving(true); setNavMsg(null);

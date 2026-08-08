@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { reorder } from "@/lib/reorder";
 
 interface Skill { id:string; name_en:string; name_ps:string; name_fa:string; percentage:number; sortOrder:number; categoryId:string; icon?:string|null; visible:boolean; featured:boolean; }
 interface Category { id:string; name_en:string; name_ps:string; name_fa:string; icon:string; sortOrder:number; visible:boolean; skills:Skill[]; }
@@ -78,7 +79,7 @@ export default function SkillsManager({ initialCategories, initialSectionConfig 
   async function addCategory() {
     if (!newCat.name_en) return;
     setSaving(true);
-    const res  = await fetch("/api/v1/admin/skills/categories", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ ...newCat, sortOrder: cats.length }) });
+    const res  = await fetch("/api/v1/admin/skills/categories", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ ...newCat, sortOrder: cats.length ? Math.max(...cats.map(c=>c.sortOrder))+1 : 0 }) });
     const data = await res.json();
     setSaving(false);
     if (data.success) { setNewCat({ name_en:"", name_ps:"", name_fa:"", icon:"💻" }); router.refresh(); setMsg("Category added!"); }
@@ -104,16 +105,19 @@ export default function SkillsManager({ initialCategories, initialSectionConfig 
     else setMsg("Error: " + (data.error ?? "Failed to update category."));
   }
   async function moveCategory(id: string, dir: -1 | 1) {
-    const sorted = [...cats].sort((a,b) => a.sortOrder - b.sortOrder);
-    const idx = sorted.findIndex(c => c.id === id);
-    const swapIdx = idx + dir;
-    if (swapIdx < 0 || swapIdx >= sorted.length) return;
-    const a = sorted[idx], b = sorted[swapIdx];
-    await Promise.all([
-      fetch(`/api/v1/admin/skills/categories/${a.id}`, { method:"PUT", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ sortOrder: b.sortOrder }) }),
-      fetch(`/api/v1/admin/skills/categories/${b.id}`, { method:"PUT", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ sortOrder: a.sortOrder }) }),
-    ]);
-    router.refresh();
+    const result = reorder(cats, "sortOrder", c => c.id === id, dir);
+    if (!result) return;
+    const prev = cats;
+    setCats(result.list); // optimistic — reflect the new order immediately
+    try {
+      await Promise.all(result.changed.map(cat => fetch(`/api/v1/admin/skills/categories/${cat.id}`, {
+        method:"PUT", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ sortOrder: cat.sortOrder }),
+      })));
+      router.refresh();
+    } catch {
+      setCats(prev);
+      setMsg("Error: Failed to reorder category.");
+    }
   }
 
   /* ── Skills ── */
@@ -121,8 +125,9 @@ export default function SkillsManager({ initialCategories, initialSectionConfig 
     const sk = newSkill[catId];
     if (!sk?.name_en) return;
     setSaving(true);
+    const catSkills = cats.find(c=>c.id===catId)?.skills ?? [];
     const res  = await fetch("/api/v1/admin/skills", { method:"POST", headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({ ...sk, categoryId: catId, sortOrder: cats.find(c=>c.id===catId)?.skills.length ?? 0 }) });
+      body: JSON.stringify({ ...sk, categoryId: catId, sortOrder: catSkills.length ? Math.max(...catSkills.map(s=>s.sortOrder))+1 : 0 }) });
     const data = await res.json();
     setSaving(false);
     if (data.success) {
@@ -152,16 +157,19 @@ export default function SkillsManager({ initialCategories, initialSectionConfig 
   }
   async function moveSkill(catId: string, id: string, dir: -1 | 1) {
     const cat = cats.find(c => c.id === catId); if (!cat) return;
-    const sorted = [...cat.skills].sort((a,b) => a.sortOrder - b.sortOrder);
-    const idx = sorted.findIndex(s => s.id === id);
-    const swapIdx = idx + dir;
-    if (swapIdx < 0 || swapIdx >= sorted.length) return;
-    const a = sorted[idx], b = sorted[swapIdx];
-    await Promise.all([
-      fetch(`/api/v1/admin/skills/${a.id}`, { method:"PUT", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ sortOrder: b.sortOrder }) }),
-      fetch(`/api/v1/admin/skills/${b.id}`, { method:"PUT", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ sortOrder: a.sortOrder }) }),
-    ]);
-    router.refresh();
+    const result = reorder(cat.skills, "sortOrder", s => s.id === id, dir);
+    if (!result) return;
+    const prev = cats;
+    setCats(prevCats => prevCats.map(c => c.id === catId ? { ...c, skills: result.list } : c)); // optimistic
+    try {
+      await Promise.all(result.changed.map(skill => fetch(`/api/v1/admin/skills/${skill.id}`, {
+        method:"PUT", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ sortOrder: skill.sortOrder }),
+      })));
+      router.refresh();
+    } catch {
+      setCats(prev);
+      setMsg("Error: Failed to reorder skill.");
+    }
   }
   async function toggleSkillFlag(skill: Skill, field: "visible"|"featured") {
     const res = await fetch(`/api/v1/admin/skills/${skill.id}`, { method:"PUT", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ [field]: !skill[field] }) });
