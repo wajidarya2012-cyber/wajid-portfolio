@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import type { Profile } from "@/types";
 import { TRANSLATE_LANGUAGES } from "@/lib/translateLanguages";
 import { reorder } from "@/lib/reorder";
+import { DEFAULT_SECTION_ORDER } from "@/lib/navConfig";
 
 export default function SettingsForm({ settingsMap, profile }: { settingsMap: Record<string,string>; profile: Profile|null }) {
   const router = useRouter();
@@ -30,12 +31,17 @@ export default function SettingsForm({ settingsMap, profile }: { settingsMap: Re
   const [faviconUploading, setFaviconUploading] = useState(false);
   const [ogUploading, setOgUploading]           = useState(false);
 
-  // Navigation menu — keys/routes are fixed in code; only label/order/visibility/newTab are editable.
+  // Navigation menu — keys/routes are fixed in code (src/lib/navConfig.ts); only
+  // label/order/visibility/newTab are editable. A key's default order (for a brand-new item
+  // that hasn't been saved yet) comes from the same DEFAULT_SECTION_ORDER map the public nav
+  // and the homepage section order use — see docs/PUBLIC_MODULES.md.
   const NAV_DEFAULTS = [
     { key:"about",          defaultLabel:"About" },
     { key:"skills",         defaultLabel:"Skills" },
     { key:"experience",     defaultLabel:"Experience" },
+    { key:"education",      defaultLabel:"Education" },
     { key:"certifications", defaultLabel:"Certifications" },
+    { key:"journey",        defaultLabel:"Journey" },
     { key:"projects",       defaultLabel:"Projects" },
     { key:"gallery",        defaultLabel:"Gallery" },
     { key:"blog",           defaultLabel:"Blog" },
@@ -46,12 +52,12 @@ export default function SettingsForm({ settingsMap, profile }: { settingsMap: Re
     let saved: Partial<NavItem>[] = [];
     try { saved = settingsMap["nav_items"] ? JSON.parse(settingsMap["nav_items"]) : []; } catch {}
     const byKey = new Map(saved.map(s => [s.key, s]));
-    return NAV_DEFAULTS.map((d, i) => {
+    return NAV_DEFAULTS.map((d) => {
       const s = byKey.get(d.key);
       return {
         key: d.key,
         label_en: s?.label_en ?? "", label_ps: s?.label_ps ?? "", label_fa: s?.label_fa ?? "",
-        order: s?.order ?? i, visible: s?.visible !== false, newTab: s?.newTab === true,
+        order: s?.order ?? DEFAULT_SECTION_ORDER[d.key] ?? 0, visible: s?.visible !== false, newTab: s?.newTab === true,
       };
     }).sort((a,b) => a.order - b.order);
   });
@@ -403,21 +409,57 @@ export default function SettingsForm({ settingsMap, profile }: { settingsMap: Re
           {navItems.map((item, idx) => {
             const def = NAV_DEFAULTS.find(d => d.key === item.key);
             return (
-              <div key={item.key} style={{ display:"grid", gridTemplateColumns:"auto 1fr 1fr 1fr auto auto auto", gap:"0.5rem", alignItems:"center", padding:"0.75rem", background:"var(--bg-secondary)", borderRadius:"8px" }}>
-                <div style={{ display:"flex", flexDirection:"column", gap:"2px" }}>
-                  <button type="button" onClick={()=>moveNavItem(item.key,-1)} disabled={idx===0} className="btn-ghost" style={{ padding:"0.15rem 0.4rem", fontSize:"0.7rem", lineHeight:1 }}>▲</button>
-                  <button type="button" onClick={()=>moveNavItem(item.key,1)} disabled={idx===navItems.length-1} className="btn-ghost" style={{ padding:"0.15rem 0.4rem", fontSize:"0.7rem", lineHeight:1 }}>▼</button>
+              <div key={item.key} style={{ background:"var(--bg-secondary)", borderRadius:"8px", padding:"0.75rem" }}>
+                {/* Desktop/tablet — compact single-row layout */}
+                <div className="hidden md:grid" style={{ gridTemplateColumns:"auto 1fr 1fr 1fr auto auto auto", gap:"0.5rem", alignItems:"center" }}>
+                  <div style={{ display:"flex", flexDirection:"column", gap:"2px" }}>
+                    <button type="button" onClick={()=>moveNavItem(item.key,-1)} disabled={idx===0} className="btn-ghost" style={{ padding:"0.15rem 0.4rem", fontSize:"0.7rem", lineHeight:1 }}>▲</button>
+                    <button type="button" onClick={()=>moveNavItem(item.key,1)} disabled={idx===navItems.length-1} className="btn-ghost" style={{ padding:"0.15rem 0.4rem", fontSize:"0.7rem", lineHeight:1 }}>▼</button>
+                  </div>
+                  <input value={item.label_en} onChange={e=>setNavField(item.key,"label_en",e.target.value)} placeholder={`${def?.defaultLabel} (EN)`} style={inp} />
+                  <input value={item.label_ps} onChange={e=>setNavField(item.key,"label_ps",e.target.value)} placeholder="پښتو" style={{ ...inp, direction:"rtl" }} />
+                  <input value={item.label_fa} onChange={e=>setNavField(item.key,"label_fa",e.target.value)} placeholder="دری" style={{ ...inp, direction:"rtl" }} />
+                  <label style={{ display:"flex", alignItems:"center", gap:"0.35rem", fontSize:"0.75rem", color:"var(--text-secondary)", whiteSpace:"nowrap", cursor:"pointer" }}>
+                    <input type="checkbox" checked={item.visible} onChange={e=>setNavField(item.key,"visible",e.target.checked)} /> Visible
+                  </label>
+                  <label style={{ display:"flex", alignItems:"center", gap:"0.35rem", fontSize:"0.75rem", color:"var(--text-secondary)", whiteSpace:"nowrap", cursor:"pointer" }}>
+                    <input type="checkbox" checked={item.newTab} onChange={e=>setNavField(item.key,"newTab",e.target.checked)} /> New tab
+                  </label>
+                  <span style={{ fontSize:"0.7rem", color:"var(--text-muted)", fontFamily:"monospace" }}>{item.key}</span>
                 </div>
-                <input value={item.label_en} onChange={e=>setNavField(item.key,"label_en",e.target.value)} placeholder={`${def?.defaultLabel} (EN)`} style={inp} />
-                <input value={item.label_ps} onChange={e=>setNavField(item.key,"label_ps",e.target.value)} placeholder="پښتو" style={{ ...inp, direction:"rtl" }} />
-                <input value={item.label_fa} onChange={e=>setNavField(item.key,"label_fa",e.target.value)} placeholder="دری" style={{ ...inp, direction:"rtl" }} />
-                <label style={{ display:"flex", alignItems:"center", gap:"0.35rem", fontSize:"0.75rem", color:"var(--text-secondary)", whiteSpace:"nowrap", cursor:"pointer" }}>
-                  <input type="checkbox" checked={item.visible} onChange={e=>setNavField(item.key,"visible",e.target.checked)} /> Visible
-                </label>
-                <label style={{ display:"flex", alignItems:"center", gap:"0.35rem", fontSize:"0.75rem", color:"var(--text-secondary)", whiteSpace:"nowrap", cursor:"pointer" }}>
-                  <input type="checkbox" checked={item.newTab} onChange={e=>setNavField(item.key,"newTab",e.target.checked)} /> New tab
-                </label>
-                <span style={{ fontSize:"0.7rem", color:"var(--text-muted)", fontFamily:"monospace" }}>{item.key}</span>
+
+                {/* Mobile — stacked card layout */}
+                <div className="md:hidden" style={{ display:"flex", flexDirection:"column", gap:"0.65rem" }}>
+                  <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+                    <span style={{ fontSize:"0.72rem", color:"var(--text-muted)", fontFamily:"monospace", fontWeight:600 }}>{item.key}</span>
+                    <div style={{ display:"flex", gap:"0.5rem" }}>
+                      <button type="button" onClick={()=>moveNavItem(item.key,-1)} disabled={idx===0} className="btn-ghost" aria-label="Move up"
+                        style={{ width:"34px", height:"34px", fontSize:"0.85rem", display:"flex", alignItems:"center", justifyContent:"center" }}>▲</button>
+                      <button type="button" onClick={()=>moveNavItem(item.key,1)} disabled={idx===navItems.length-1} className="btn-ghost" aria-label="Move down"
+                        style={{ width:"34px", height:"34px", fontSize:"0.85rem", display:"flex", alignItems:"center", justifyContent:"center" }}>▼</button>
+                    </div>
+                  </div>
+                  <div>
+                    <label style={{ ...lbl, marginBottom:"0.3rem" }}>{def?.defaultLabel} (EN)</label>
+                    <input value={item.label_en} onChange={e=>setNavField(item.key,"label_en",e.target.value)} placeholder={`${def?.defaultLabel} (EN)`} style={inp} />
+                  </div>
+                  <div>
+                    <label style={{ ...lbl, marginBottom:"0.3rem" }}>پښتو</label>
+                    <input value={item.label_ps} onChange={e=>setNavField(item.key,"label_ps",e.target.value)} placeholder="پښتو" style={{ ...inp, direction:"rtl" }} />
+                  </div>
+                  <div>
+                    <label style={{ ...lbl, marginBottom:"0.3rem" }}>دری</label>
+                    <input value={item.label_fa} onChange={e=>setNavField(item.key,"label_fa",e.target.value)} placeholder="دری" style={{ ...inp, direction:"rtl" }} />
+                  </div>
+                  <div style={{ display:"flex", gap:"1.5rem" }}>
+                    <label style={{ display:"flex", alignItems:"center", gap:"0.4rem", fontSize:"0.8rem", color:"var(--text-secondary)", cursor:"pointer" }}>
+                      <input type="checkbox" checked={item.visible} onChange={e=>setNavField(item.key,"visible",e.target.checked)} /> Visible
+                    </label>
+                    <label style={{ display:"flex", alignItems:"center", gap:"0.4rem", fontSize:"0.8rem", color:"var(--text-secondary)", cursor:"pointer" }}>
+                      <input type="checkbox" checked={item.newTab} onChange={e=>setNavField(item.key,"newTab",e.target.checked)} /> New tab
+                    </label>
+                  </div>
+                </div>
               </div>
             );
           })}

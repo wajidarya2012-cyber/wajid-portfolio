@@ -1,6 +1,7 @@
 import { Fragment } from "react";
 import { setRequestLocale } from "next-intl/server";
 import { prisma }          from "@/lib/prisma";
+import { resolveSectionOrder, type NavItemConfig } from "@/lib/navConfig";
 import HeroSection         from "@/components/public/HeroSection";
 import AboutSection        from "@/components/public/AboutSection";
 import SkillsSection       from "@/components/public/SkillsSection";
@@ -63,7 +64,7 @@ const [profile, skillCats, experience, education, certifications, journeySlides,
       orderBy: [{ featured:"desc" }, { sortOrder:"asc" }],
       take:    8,
     }).catch(() => []),
-    prisma.siteSettings.findMany({ where: { key: { in: ["contact_working_hours", "hero_bg_images", "skills_section_config", "experience_section_config", "gallery_section_config", "education_section_config"] } } }).catch(() => []),
+    prisma.siteSettings.findMany({ where: { key: { in: ["contact_working_hours", "hero_bg_images", "skills_section_config", "experience_section_config", "gallery_section_config", "education_section_config", "nav_items"] } } }).catch(() => []),
   ]);
   const workingHours = siteSettings.find(s => s.key === "contact_working_hours")?.value;
   const heroBgImagesRaw = siteSettings.find(s => s.key === "hero_bg_images")?.value;
@@ -87,26 +88,39 @@ const [profile, skillCats, experience, education, certifications, journeySlides,
   let educationConfig: import("@/components/public/EducationSection").EducationSectionConfig = {};
   try { const raw = siteSettings.find(s => s.key === "education_section_config")?.value; if (raw) educationConfig = JSON.parse(raw); } catch {}
 
-  // Middle homepage sections support a configurable display order (currently Skills,
-  // Experience, and Gallery expose an override) — default order matches the original
-  // fixed sequence, with Gallery inserted just before Projects.
+  // Settings → Navigation Menu (`nav_items`) is the single source of truth for section order,
+  // for every section key that also has a nav link — see resolveSectionOrder() in
+  // @/lib/navConfig and docs/PUBLIC_MODULES.md. A key's saved order is read regardless of
+  // that nav item's visibility, so disabling a nav link never affects whether — or where —
+  // its homepage section renders; visibility only controls the nav link itself (see
+  // buildNavItems()/Navbar.tsx). Falls back to each section's own "Position on Homepage"
+  // field (Skills/Experience/Education/Gallery), then to a fixed default, so nothing changes
+  // for a site that has never touched Settings → Navigation Menu.
+  let navConfig: NavItemConfig[] = [];
+  try {
+    const raw = siteSettings.find(s => s.key === "nav_items")?.value;
+    const parsed = raw ? JSON.parse(raw) : [];
+    if (Array.isArray(parsed)) navConfig = parsed;
+  } catch {}
+
+  // Stats has no nav link of its own, so it always renders immediately before Contact rather
+  // than being independently orderable.
   const middleSections = [
-    { key:"about",          order:0,                          node:<AboutSection      profile={profile}           locale={safeLocale} /> },
-    { key:"skills",         order:skillsConfig.order ?? 1,     node:<SkillsSection     categories={skillCats}      locale={safeLocale} config={skillsConfig} /> },
-    { key:"experience",     order:experienceConfig.order ?? 2,     node:<ExperienceSection experience={experience}     locale={safeLocale} config={experienceConfig} /> },
-    { key:"education",      order:educationConfig.order ?? 3,     node:<EducationSection  education={education}       locale={safeLocale} config={educationConfig} /> },
-    { key:"certifications", order:4,                          node:<CertSection       certifications={certifications} locale={safeLocale} /> },
-    { key:"journey",        order:5,                          node:<JourneySection    slides={journeySlides}      locale={safeLocale} /> },
-    { key:"gallery",        order:galleryConfig.order ?? 5.5,  node:<GallerySection    items={galleryItems}        locale={safeLocale} config={galleryConfig} /> },
-    { key:"projects",       order:6,                          node:<ProjectsSection   projects={projects}         locale={safeLocale} /> },
+    { key:"about",          order:resolveSectionOrder("about", navConfig),                             node:<AboutSection      profile={profile}           locale={safeLocale} /> },
+    { key:"skills",         order:resolveSectionOrder("skills", navConfig, skillsConfig.order),         node:<SkillsSection     categories={skillCats}      locale={safeLocale} config={skillsConfig} /> },
+    { key:"experience",     order:resolveSectionOrder("experience", navConfig, experienceConfig.order), node:<ExperienceSection experience={experience}     locale={safeLocale} config={experienceConfig} /> },
+    { key:"education",      order:resolveSectionOrder("education", navConfig, educationConfig.order),   node:<EducationSection  education={education}       locale={safeLocale} config={educationConfig} /> },
+    { key:"certifications", order:resolveSectionOrder("certifications", navConfig),                     node:<CertSection       certifications={certifications} locale={safeLocale} /> },
+    { key:"journey",        order:resolveSectionOrder("journey", navConfig),                            node:<JourneySection    slides={journeySlides}      locale={safeLocale} /> },
+    { key:"gallery",        order:resolveSectionOrder("gallery", navConfig, galleryConfig.order),       node:<GallerySection    items={galleryItems}        locale={safeLocale} config={galleryConfig} /> },
+    { key:"projects",       order:resolveSectionOrder("projects", navConfig),                           node:<ProjectsSection   projects={projects}         locale={safeLocale} /> },
+    { key:"contact",        order:resolveSectionOrder("contact", navConfig),                            node:<><StatsSection profile={profile} /><ContactSection profile={profile} locale={safeLocale} workingHours={workingHours} /></> },
   ].sort((a, b) => a.order - b.order);
 
   return (
     <>
       <HeroSection       profile={profile}           locale={safeLocale} heroBgSlides={heroBgSlides} />
       {middleSections.map(s => <Fragment key={s.key}>{s.node}</Fragment>)}
-      <StatsSection profile={profile} />
-      <ContactSection    profile={profile}    locale={safeLocale} workingHours={workingHours} />
     </>
   );
 }

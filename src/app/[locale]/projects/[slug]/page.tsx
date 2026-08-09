@@ -4,6 +4,7 @@ import { prisma }      from "@/lib/prisma";
 import Link            from "next/link";
 import AnalyticsTracker from "@/components/public/AnalyticsTracker";
 import ShareButtons    from "@/components/public/ShareButtons";
+import ProjectImageGrid, { ProjectFeaturedImage } from "@/components/public/ProjectImageGrid";
 
 function pick(obj: Record<string, unknown>, field: string, locale: string): string {
   return ((obj[`${field}_${locale}`] ?? obj[`${field}_en`] ?? "") as string);
@@ -84,11 +85,12 @@ export default async function ProjectDetailPage({ params }: { params: { locale: 
         </div>
 
         {/* Featured image */}
-        {(project.images.find(i => i.isThumbnail) ?? project.images[0]) && (
-          <div style={{ width:"100%", borderRadius:"16px", overflow:"hidden", marginBottom:"2rem", border:"1px solid var(--border)" }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={(project.images.find(i => i.isThumbnail) ?? project.images[0]).url} alt={title} style={{ width:"100%", display:"block" }} />
-          </div>
+        {project.images.length > 0 && (
+          <ProjectFeaturedImage
+            images={project.images.map(img => ({ id: img.id, url: img.url, caption: img.caption }))}
+            index={Math.max(0, project.images.findIndex(i => i.isThumbnail))}
+            alt={title}
+          />
         )}
 
         {/* Technologies */}
@@ -126,17 +128,10 @@ export default async function ProjectDetailPage({ params }: { params: { locale: 
         )}
 
         {/* Gallery */}
-        {project.images.length > 1 && (
-          <div style={{ marginBottom:"1.75rem" }}>
-            <h2 style={{ fontFamily:"var(--font-syne)", fontWeight:700, fontSize:"1rem", color:"#06b6d4", marginBottom:"0.875rem" }}>🖼 Gallery</h2>
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(180px,1fr))", gap:"0.75rem" }}>
-              {project.images.map(img => (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img key={img.id} src={img.url} alt={img.caption ?? ""} style={{ width:"100%", aspectRatio:"16/9", objectFit:"cover", borderRadius:"10px", border:"1px solid var(--border)" }} />
-              ))}
-            </div>
-          </div>
-        )}
+        <ProjectImageGrid
+          images={project.images.map(img => ({ id: img.id, url: img.url, caption: img.caption }))}
+          title={title}
+        />
 
         {/* Links */}
         {project.links.length > 0 && (

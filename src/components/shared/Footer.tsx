@@ -1,6 +1,5 @@
 "use client";
 
-import Link               from "next/link";
 import { useTranslations } from "next-intl";
 import type { Profile }    from "@/types";
 import { buildNavItems, type NavItemConfig } from "@/lib/navConfig";
@@ -188,11 +187,6 @@ export default function Footer({
             <p style={{ fontSize:"0.72rem", color:"var(--text-muted)", margin:0 }}>
               {pick("footerBuiltWith") || tl("builtWith")}
             </p>
-            <Link href="/admin/login" style={{ fontSize:"0.72rem", color:"var(--text-muted)", textDecoration:"none", opacity:0.5, transition:"opacity 0.2s" }}
-              onMouseEnter={e=>{ (e.currentTarget as HTMLElement).style.opacity="1"; }}
-              onMouseLeave={e=>{ (e.currentTarget as HTMLElement).style.opacity="0.5"; }}>
-              Admin ↗
-            </Link>
           </div>
         </div>
       </div>
