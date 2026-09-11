@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import SocialIcon   from "@/components/shared/SocialIcon";
 
 export default function ShareButtons({ url, title }: { url: string; title: string }) {
+  const t = useTranslations("common");
   const [copied, setCopied] = useState(false);
 
   async function copyLink() {
@@ -35,7 +37,7 @@ export default function ShareButtons({ url, title }: { url: string; title: strin
 
   return (
     <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", flexWrap: "wrap" }}>
-      <span style={{ fontSize: "0.78rem", color: "var(--text-muted)", fontWeight: 600 }}>Share:</span>
+      <span style={{ fontSize: "0.78rem", color: "var(--text-muted)", fontWeight: 600 }}>{t("share")}:</span>
       {targets.map(({ platform, href }) => (
         <a
           key={platform}
@@ -53,7 +55,7 @@ export default function ShareButtons({ url, title }: { url: string; title: strin
       <button
         type="button"
         onClick={copyLink}
-        aria-label="Copy link"
+        aria-label={t("copyLink")}
         style={{ ...btnStyle, cursor: "pointer", fontSize: "0.85rem" }}
         onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = "#4f46e5"; el.style.color = "#818cf8"; }}
         onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = "var(--border)"; el.style.color = "var(--text-secondary)"; }}

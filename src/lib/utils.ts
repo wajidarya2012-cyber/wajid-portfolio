@@ -60,18 +60,36 @@ export function splitTitle(
 
 // ── IP address extractor from Next.js request ──────────────────────────────
 export function getIp(request: Request): string {
-  return (
-    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-    request.headers.get("x-real-ip") ??
-    "unknown"
-  );
+  // Precedence matches getClientIp() in src/lib/rateLimit.ts - see the note there for
+  // why x-real-ip wins and why the forwarded fallback takes the LAST entry.
+  const real = request.headers.get("x-real-ip")?.trim();
+  if (real) return real;
+  const chain = request.headers.get("x-forwarded-for")?.split(",").map(s => s.trim()).filter(Boolean);
+  return chain?.length ? chain[chain.length - 1] : "unknown";
 }
 
-// ── Date formatter ─────────────────────────────────────────────────────────
-export function formatDate(date: Date | string, locale = "en"): string {
-  return new Intl.DateTimeFormat(locale === "en" ? "en-US" : locale, {
-    year: "numeric", month: "long",
-  }).format(new Date(date));
+// ── Locale-aware date formatter ────────────────────────────────────────────
+// Public pages previously hardcoded `toLocaleDateString("en-US")` at four call
+// sites, so every date rendered in English on /ps and /fa.
+//
+// `calendar: "gregory"` is deliberate. Passing a bare "ps"/"fa" locale to Intl
+// switches to the Persian (Jalali) calendar — "۲۰ شهریور ۱۴۰۵" rather than
+// "۱۱ سپتامبر ۲۰۲۶" — which silently changes what the date *means* relative to the
+// Gregorian value stored in Postgres. Pinning the calendar keeps the date itself
+// stable while still localising month names and numerals. If Jalali output is ever
+// wanted for ps/fa, remove the option here once rather than at each call site.
+export function formatDate(
+  date:    Date | string | number,
+  locale:  string = "en",
+  options: Intl.DateTimeFormatOptions = { year: "numeric", month: "long", day: "numeric" }
+): string {
+  const d = date instanceof Date ? date : new Date(date);
+  if (Number.isNaN(d.getTime())) return "";
+  try {
+    return new Intl.DateTimeFormat(locale, { ...options, calendar: "gregory" }).format(d);
+  } catch {
+    return new Intl.DateTimeFormat("en", { ...options, calendar: "gregory" }).format(d);
+  }
 }
 
 // ── Truncate text ──────────────────────────────────────────────────────────

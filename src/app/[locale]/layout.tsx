@@ -1,3 +1,4 @@
+import { notFound } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { isRTL, locales }        from "@/i18n";
@@ -23,6 +24,13 @@ export default async function LocaleLayout({
   // getMessages()/useTranslations() resolve the right locale instead of silently
   // falling back to the default (en) — must run before getMessages(). See
   // docs/DEBUGGING_GUIDE.md.
+  // `[locale]` sits at the root of the app directory, so it matches any single path
+  // segment. Without this guard /robots.txt, /api, /anything.ext and /nonexistent all
+  // matched it and page.tsx silently coerced the unknown value to "en", returning the
+  // full English homepage with HTTP 200 — a soft 404 on every bogus URL, and the reason
+  // crawlers saw infinite duplicate pages. Unknown locales now 404 properly.
+  if (!(locales as readonly string[]).includes(locale)) notFound();
+
   setRequestLocale(locale);
   const messages = await getMessages();
   const dir      = isRTL(locale) ? "rtl" : "ltr";

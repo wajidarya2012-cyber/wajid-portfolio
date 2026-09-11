@@ -32,7 +32,7 @@ export default function CertSection({ certifications, locale }: { certifications
 
   return (
     <>
-      <section id="certifications" style={{ padding:"5.5rem 0", background:"var(--bg-secondary)" }}>
+      <section id="certifications" style={{ padding:"4.25rem 0", background:"var(--bg-secondary)" }}>
         <div className="section-container" ref={ref}>
           <span className="section-eyebrow reveal">{tl("eyebrow")}</span>
           <h2 className="section-title reveal reveal-delay-1">
@@ -40,35 +40,34 @@ export default function CertSection({ certifications, locale }: { certifications
           </h2>
           <div className="divider reveal reveal-delay-2" style={{ marginBottom:"2.5rem" }} />
 
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,200px),1fr))", gap:"1.25rem" }}>
-            {certifications.map((cert, idx) => (
-              <div key={cert.id} className="glass-card reveal" onClick={() => setSelected(cert)}
-                style={{ borderRadius:"16px", padding:"clamp(1.25rem,3vw,1.75rem)", textAlign:"center", transition:"all 0.25s", transitionDelay:`${idx*0.08}s`, minWidth:0, display:"flex", flexDirection:"column", alignItems:"center", cursor:"pointer" }}
-                onMouseEnter={e=>{ const el=e.currentTarget as HTMLElement; el.style.transform="translateY(-5px)"; el.style.borderColor="rgba(79,70,229,0.4)"; el.style.boxShadow="0 12px 32px rgba(79,70,229,0.18)"; }}
-                onMouseLeave={e=>{ const el=e.currentTarget as HTMLElement; el.style.transform="none"; el.style.borderColor="var(--border)"; el.style.boxShadow="var(--shadow-card)"; }}>
-
-                <div style={{ width:"60px", height:"60px", borderRadius:"50%", margin:"0 auto 1rem", background:"linear-gradient(135deg,rgba(79,70,229,0.12),rgba(6,182,212,0.06))", border:"1px solid rgba(79,70,229,0.22)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"1.6rem", flexShrink:0 }}>
-                  {cert.icon}
-                </div>
-
-                <h3 style={{ fontFamily:"var(--font-syne)", fontWeight:700, fontSize:"clamp(0.82rem,2vw,0.9rem)", marginBottom:"0.4rem", wordBreak:"break-word", lineHeight:1.35 }}>
-                  {pick(cert as Record<string,unknown>,"name",locale)}
-                </h3>
-                <p style={{ fontSize:"0.78rem", fontWeight:600, color:"#818cf8", marginBottom:"0.25rem", wordBreak:"break-word" }}>
-                  {pick(cert as Record<string,unknown>,"issuer",locale)}
-                </p>
-                {cert.year && (
-                  <p style={{ fontFamily:"var(--font-fira)", fontSize:"0.7rem", color:"var(--text-muted)", marginBottom:"0.75rem" }}>
-                    {cert.year}
-                  </p>
-                )}
-                <span style={{ display:"inline-flex", alignItems:"center", gap:"0.25rem", fontSize:"0.75rem", color:"#06b6d4", fontWeight:600, marginTop:"auto", paddingTop:"0.5rem" }}>
-                  {tl("viewDetails")} →
+          {/* Phase 34: was a grid of four identical centred cards (icon / name / issuer /
+              year / CTA). Credentials read better as a scannable list - name and issuer on
+              the start edge, year on the end edge, one hairline between rows. Each row is now
+              a real <button> (it opens the detail modal); it used to be a div with onClick,
+              which no keyboard user could reach. */}
+          <div className="reveal reveal-delay-3" style={{ borderTop:"1px solid var(--border)" }}>
+            {certifications.map((cert) => (
+              <button key={cert.id} type="button" onClick={() => setSelected(cert)}
+                style={{ width:"100%", display:"flex", alignItems:"center", gap:"0.9rem", textAlign:"start",
+                         padding:"1rem 0.25rem", background:"none", border:"none", borderBottom:"1px solid var(--border)",
+                         cursor:"pointer", color:"inherit", font:"inherit" }}>
+                <span aria-hidden style={{ fontSize:"1.35rem", flexShrink:0, width:"2rem", textAlign:"center" }}>{cert.icon}</span>
+                <span style={{ flex:1, minWidth:0 }}>
+                  <span style={{ display:"block", fontFamily:"var(--font-syne)", fontWeight:700, fontSize:"0.98rem", lineHeight:1.35, wordBreak:"break-word" }}>
+                    {pick(cert as Record<string,unknown>,"name",locale)}
+                  </span>
+                  <span style={{ display:"block", fontSize:"0.88rem", color:"var(--text-secondary)", marginTop:"0.15rem", wordBreak:"break-word" }}>
+                    {pick(cert as Record<string,unknown>,"issuer",locale)}
+                  </span>
                 </span>
-              </div>
+                {cert.year && (
+                  <span style={{ fontSize:"0.85rem", color:"var(--text-muted)", flexShrink:0, marginInlineStart:"0.5rem" }}>{cert.year}</span>
+                )}
+                <span aria-hidden style={{ fontSize:"1rem", color:"var(--text-muted)", flexShrink:0, marginInlineStart:"0.25rem" }}>›</span>
+              </button>
             ))}
             {certifications.length===0 && (
-              <p style={{ color:"var(--text-muted)", fontSize:"0.875rem" }}>{tl("noEntries")}</p>
+              <p style={{ color:"var(--text-muted)", fontSize:"0.9rem", padding:"1.5rem 0" }}>{tl("noEntries")}</p>
             )}
           </div>
         </div>
@@ -90,7 +89,7 @@ export default function CertSection({ certifications, locale }: { certifications
                 ✕
               </button>
 
-              <div style={{ width:"72px", height:"72px", borderRadius:"50%", margin:"0 auto 1.25rem", background:"linear-gradient(135deg,rgba(79,70,229,0.15),rgba(6,182,212,0.08))", border:"1px solid rgba(79,70,229,0.25)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"2rem" }}>
+              <div style={{ width:"72px", height:"72px", borderRadius:"50%", margin:"0 auto 1.25rem", background:"var(--bg-secondary)", border:"1px solid var(--border)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"2rem" }}>
                 {selected.icon}
               </div>
 

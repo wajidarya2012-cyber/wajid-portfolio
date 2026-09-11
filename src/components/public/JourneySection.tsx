@@ -43,7 +43,7 @@ export default function JourneySection({ slides, locale }: { slides: JourneySlid
   const titleParts = splitTitle(tl("title"), tl("titleHighlight"));
 
   return (
-    <section id="journey" style={{ padding:"5.5rem 0", background:"var(--bg-primary)" }}>
+    <section id="journey" style={{ padding:"4.25rem 0", background:"var(--bg-primary)" }}>
       <style dangerouslySetInnerHTML={{ __html: `
         @media (max-width: 640px) {
           .journey-frame { aspect-ratio: 4 / 3 !important; }

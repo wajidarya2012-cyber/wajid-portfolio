@@ -1,24 +1,18 @@
 "use client";
 
 
-
 import Link from "next/link";
-
+import { useTranslations } from "next-intl";
+import { t as pick, formatDate } from "@/lib/utils";
 
 
 const G = "linear-gradient(135deg,#4f46e5,#06b6d4)";
 
 
-
-function pick(obj: Record<string, unknown>, field: string, locale: string): string {
-
-  return ((obj[`${field}_${locale}`] ?? obj[`${field}_en`] ?? "") as string);
-
-}
-
-
-
 export default function BlogPostCard({ post, locale }: { post: any; locale: string }) {
+
+  const t = useTranslations("blog");
+
 
   return (
 
@@ -56,11 +50,11 @@ export default function BlogPostCard({ post, locale }: { post: any; locale: stri
 
           <span style={{ fontSize: "0.72rem", color: "var(--text-muted)", fontFamily: "var(--font-fira)" }}>
 
-            {post.publishedAt ? new Date(post.publishedAt).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }) : ""}
+            {post.publishedAt ? formatDate(post.publishedAt, locale, { year: "numeric", month: "short", day: "numeric" }) : ""}
 
           </span>
 
-          <span style={{ fontSize: "0.8rem", fontWeight: 600, color: "#06b6d4" }}>Read more →</span>
+          <span style={{ fontSize: "0.8rem", fontWeight: 600, color: "#06b6d4" }}>{t("readMore")} →</span>
 
         </div>
 

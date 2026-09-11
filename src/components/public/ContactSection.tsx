@@ -56,7 +56,7 @@ export default function ContactSection({ profile, locale, workingHours }: { prof
   const titleParts = splitTitle(tl("title"), tl("titleHighlight"));
 
   return (
-    <section id="contact" style={{ padding:"5.5rem 0", background:"var(--bg-primary)" }}>
+    <section id="contact" style={{ padding:"4.25rem 0", background:"var(--bg-primary)" }}>
       <div className="section-container" ref={ref}>
         <span className="section-eyebrow reveal">{tl("eyebrow")}</span>
         <h2 className="section-title reveal reveal-delay-1">
@@ -80,7 +80,7 @@ export default function ContactSection({ profile, locale, workingHours }: { prof
                   style={{ textDecoration:"none", display:"flex", alignItems:"center", gap:"1rem", padding:"0.875rem 1.25rem", borderRadius:"12px", border:"1px solid var(--border)", background:"var(--bg-card)", backdropFilter:"blur(10px)", transition:"all 0.2s", minWidth:0, overflow:"hidden" }}
                   onMouseEnter={e=>{ const el=e.currentTarget as HTMLElement; el.style.borderColor="rgba(79,70,229,0.4)"; el.style.transform="translateX(4px)"; }}
                   onMouseLeave={e=>{ const el=e.currentTarget as HTMLElement; el.style.borderColor="var(--border)"; el.style.transform="none"; }}>
-                  <div style={{ width:"42px", height:"42px", borderRadius:"10px", background:"linear-gradient(135deg,rgba(79,70,229,0.15),rgba(6,182,212,0.08))", border:"1px solid rgba(79,70,229,0.22)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"1.1rem", flexShrink:0 }}>
+                  <div style={{ width:"42px", height:"42px", borderRadius:"10px", background:"var(--bg-secondary)", border:"1px solid var(--border)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"1.1rem", flexShrink:0 }}>
                     {icon}
                   </div>
                   <div style={{ minWidth:0 }}>

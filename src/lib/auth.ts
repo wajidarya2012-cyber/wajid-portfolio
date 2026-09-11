@@ -49,7 +49,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const parsed = loginSchema.safeParse(credentials);
         if (!parsed.success) return null;
 
-        const ip = headers().get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+        // Same precedence as getClientIp() in src/lib/rateLimit.ts. This one guards the
+        // login brute-force limiter, so it is the most important of the three.
+        const h = headers();
+        const realIp = h.get("x-real-ip")?.trim();
+        const fwd = h.get("x-forwarded-for")?.split(",").map(s => s.trim()).filter(Boolean);
+        const ip = realIp || (fwd?.length ? fwd[fwd.length - 1] : "unknown");
         const { ok } = rateLimit(`login:${ip}`, 8, 15 * 60 * 1000); // 8 attempts / 15 min per IP
         if (!ok) return null;
 

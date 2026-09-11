@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import ImageLightbox, { type LightboxImage } from "./ImageLightbox";
 
 // Standalone project detail page's image viewer — reuses the same ImageLightbox already
@@ -41,12 +42,13 @@ export default function ProjectImageGrid({
   images: LightboxImage[];
   title: string;
 }) {
+  const t = useTranslations("projects");
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   if (images.length <= 1) return null;
 
   return (
     <div style={{ marginBottom:"1.75rem" }}>
-      <h2 style={{ fontFamily:"var(--font-syne)", fontWeight:700, fontSize:"1rem", color:"#06b6d4", marginBottom:"0.875rem" }}>🖼 Gallery</h2>
+      <h2 style={{ fontFamily:"var(--font-syne)", fontWeight:700, fontSize:"1rem", color:"#06b6d4", marginBottom:"0.875rem" }}>🖼 {t("gallery")}</h2>
       <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(180px,1fr))", gap:"0.75rem" }}>
         {images.map((img, i) => (
           <button key={img.id} type="button" onClick={() => setLightboxIndex(i)}

@@ -22,7 +22,7 @@
   --border-hover:   rgba(79,70,229,0.35);
   --text-primary:   #0F172A;
   --text-secondary: #334155;
-  --text-muted:     #64748B;
+  --text-muted:     #5A6A80; /* WCAG AA on --bg-primary: 5.01 (was #64748B = 4.33) */
   --shadow-card:    0 4px 24px rgba(79,70,229,0.08), 0 1px 4px rgba(0,0,0,0.04);
   --shadow-glow:    0 0 40px rgba(79,70,229,0.18);
   --shadow-glow-sm: 0 0 20px rgba(79,70,229,0.12);
@@ -48,7 +48,7 @@
   --border-hover:   rgba(79,70,229,0.45);
   --text-primary:   #F1F5F9;
   --text-secondary: #94A3B8;
-  --text-muted:     #475569;
+  --text-muted:     #7B8798; /* WCAG AA on --bg-primary: 5.39 (was #475569 = 2.59) */
   --shadow-card:    0 4px 24px rgba(0,0,0,0.4), 0 1px 4px rgba(0,0,0,0.2);
   --shadow-glow:    0 0 50px rgba(79,70,229,0.3);
   --shadow-glow-sm: 0 0 25px rgba(79,70,229,0.18);
@@ -202,8 +202,6 @@ body {
   background: var(--bg-card);
   border: 1px solid var(--border);
   box-shadow: var(--shadow-card);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
   transition: border-color var(--transition), box-shadow var(--transition), transform var(--transition);
 }
 .glass-card:hover {
@@ -233,12 +231,12 @@ body {
   padding: 0.75rem 1.75rem; border-radius: 9999px;
   font-weight: 600; font-size: 0.875rem; color: #fff;
   background: var(--gradient);
-  box-shadow: 0 4px 20px rgba(79,70,229,0.4);
+  box-shadow: 0 1px 2px rgba(15,23,42,0.16);
   transition: all var(--transition);
   cursor: pointer; border: none; text-decoration: none;
   white-space: nowrap;
 }
-.btn-primary:hover  { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(79,70,229,0.55); }
+.btn-primary:hover  { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(15,23,42,0.2); }
 .btn-primary:active { transform: translateY(0); }
 
 .btn-secondary {
@@ -295,8 +293,8 @@ textarea.input-field { resize: vertical; min-height: 100px; }
 ═══════════════════════════════════════════════ */
 .tag-badge {
   display: inline-flex; align-items: center;
-  font-size: 0.7rem; padding: 0.2rem 0.65rem; border-radius: 9999px;
-  border: 1px solid rgba(79,70,229,0.22); background: rgba(79,70,229,0.08); color: #818cf8;
+  font-size: 0.76rem; padding: 0.22rem 0.6rem; border-radius: 6px;
+  border: 1px solid var(--border); background: transparent; color: var(--text-secondary);
   font-weight: 500; white-space: nowrap;
 }
 .accent-badge {
@@ -326,20 +324,19 @@ textarea.input-field { resize: vertical; min-height: 100px; }
 
 .section-eyebrow {
   display: block;
-  font-family: var(--font-fira), monospace;
-  font-size: 0.72rem; font-weight: 500;
-  text-transform: uppercase; letter-spacing: 0.18em;
-  color: #06b6d4; margin-bottom: 0.75rem;
+  font-size: 0.82rem; font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--text-muted); margin-bottom: 0.6rem;
 }
 .section-title {
   font-family: var(--font-syne), sans-serif;
-  font-size: clamp(1.75rem, 4vw, 2.6rem);
-  font-weight: 800; line-height: 1.12;
-  letter-spacing: -0.035em; margin-bottom: 1rem;
+  font-size: clamp(1.9rem, 4vw, 2.75rem);
+  font-weight: 800; line-height: 1.1;
+  letter-spacing: -0.03em; margin-bottom: 0.9rem;
 }
 .divider {
-  width: 3.5rem; height: 3px; border-radius: 2px;
-  background: var(--gradient); margin-bottom: 1.5rem;
+  width: 2.25rem; height: 1px; border-radius: 1px;
+  background: var(--border-hover); opacity: 0.55; margin-bottom: 1.35rem;
 }
 
 /* ═══════════════════════════════════════════════

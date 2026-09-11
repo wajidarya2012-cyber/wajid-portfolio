@@ -7,14 +7,19 @@ import type { Profile }                 from "@/types";
 const G = "linear-gradient(135deg,#4f46e5,#06b6d4)";
 
 function Counter({ target, suffix }: { target:number; suffix:string }) {
-  const [val, setVal]  = useState(0);
+  // Start at the real value: the count-up is an enhancement, not the source of truth.
+  // Previously this began at 0 and only corrected itself if the observer fired, so a
+  // non-triggering viewport (or a crawler) saw "0+".
+  const [val, setVal]  = useState(target);
   const ref            = useRef<HTMLDivElement>(null);
   const animated       = useRef(false);
 
   useEffect(() => {
+    if (typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
     const obs = new IntersectionObserver(([e]) => {
       if (e.isIntersecting && !animated.current) {
         animated.current = true;
+        setVal(0);
         const duration = 1400;
         const start    = performance.now();
         const step     = (now: number) => {
@@ -32,7 +37,7 @@ function Counter({ target, suffix }: { target:number; suffix:string }) {
   }, [target]);
 
   return (
-    <div ref={ref} style={{ fontFamily:"var(--font-syne)", fontSize:"clamp(2rem,5vw,3rem)", fontWeight:800, lineHeight:1, background:G, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>
+    <div ref={ref} style={{ fontFamily:"var(--font-syne)", fontSize:"clamp(2rem,5vw,3rem)", fontWeight:800, lineHeight:1, color:"var(--text-primary)" }}>
       {val}{suffix}
     </div>
   );

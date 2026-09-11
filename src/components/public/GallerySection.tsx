@@ -45,6 +45,7 @@ export default function GallerySection({ items, locale, config }: { items: any[]
   const subtitle     = config ? pick(config as unknown as Record<string,unknown>, "subtitle", locale) : "";
   const description = config ? pick(config as unknown as Record<string,unknown>, "description", locale) : "";
   const titleParts = splitTitle(tl("title"), tl("titleHighlight"));
+  const sparse = homepageItems.length <= 3;
   const bg = config?.background ?? "default";
   const bgStyle: React.CSSProperties =
     bg === "transparent" ? { background:"transparent" } :
@@ -52,7 +53,7 @@ export default function GallerySection({ items, locale, config }: { items: any[]
     { background:"var(--bg-secondary)" };
 
   return (
-    <section id="gallery" style={{ padding:"5.5rem 0", ...bgStyle }}>
+    <section id="gallery" style={{ padding: sparse ? "3.25rem 0" : "4.25rem 0", ...bgStyle }}>
       <div className="section-container" ref={ref}>
         <span className="section-eyebrow reveal">{tl("eyebrow")}</span>
         <h2 className="section-title reveal reveal-delay-1">
@@ -70,9 +71,11 @@ export default function GallerySection({ items, locale, config }: { items: any[]
           </p>
         )}
 
-        <div className="reveal reveal-delay-3" style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(140px,1fr))", gap:"0.75rem", marginBottom:"1.75rem" }}>
+        <div className="reveal reveal-delay-3" style={ sparse
+          ? { display:"flex", flexWrap:"wrap", gap:"0.75rem", marginBottom:"1.5rem" }
+          : { display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(140px,1fr))", gap:"0.75rem", marginBottom:"1.75rem" } }>
           {homepageItems.map(item => (
-            <Link key={item.id} href={`/${locale}/gallery`} style={{ position:"relative", borderRadius:"12px", overflow:"hidden", aspectRatio:"1/1", display:"block", border:"1px solid var(--border)" }}>
+            <Link key={item.id} href={`/${locale}/gallery`} style={{ position:"relative", borderRadius:"10px", overflow:"hidden", aspectRatio:"1/1", display:"block", border:"1px solid var(--border)", ...(sparse ? { width:"clamp(120px,28vw,168px)", flexShrink:0 } : {}) }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={item.url} alt={pick(item,"altText",locale) || pick(item,"title",locale) || ""} loading="lazy" style={{ width:"100%", height:"100%", objectFit:"cover", display:"block" }} />
             </Link>

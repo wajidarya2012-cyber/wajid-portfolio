@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin, logActivity } from "@/lib/adminGuard";
+import { revalidateSiteChrome } from "@/lib/revalidate";
 
 export async function GET(request: NextRequest) {
   const { error } = await requireAdmin(request);
@@ -65,5 +66,6 @@ export async function POST(request: NextRequest) {
   );
   await prisma.$transaction(ops);
   await logActivity(user!.id, "UPDATE", "SiteSettings", "Updated site settings", undefined, request);
+  revalidateSiteChrome();
   return NextResponse.json({ success:true });
 }

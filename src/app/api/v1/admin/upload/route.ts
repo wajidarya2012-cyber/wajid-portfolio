@@ -5,6 +5,18 @@ import { uploadBuffer, uploadDocument, deleteResource } from "@/lib/cloudinary";
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 const ALLOWED_DOC_TYPES   = ["application/pdf"];
 
+// Phase 35: `folder` arrived straight from the multipart body and was interpolated
+// into `wajid-portfolio/${folder}` in src/lib/cloudinary.ts, so a value like
+// "../../something" wrote outside the intended Cloudinary folder tree. Admin-only,
+// so the blast radius was limited, but there is no reason to accept an arbitrary
+// value. This is the exact folder set the admin UI sends (and the one documented in
+// CLAUDE.md §20) - anything else is rejected rather than silently rewritten, so a
+// typo surfaces instead of scattering assets.
+const ALLOWED_FOLDERS = new Set([
+  "blog", "branding", "cv", "education-logos", "experience-bg", "experience-logos",
+  "gallery", "hero-bg", "journey", "profile", "projects", "signature", "skills-bg",
+]);
+
 export async function POST(request: NextRequest) {
   const { user, error } = await requireAdmin(request);
   if (error) return error;
@@ -12,7 +24,10 @@ export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
     const file     = formData.get("file") as File | null;
-    const folder   = (formData.get("folder") as string) ?? "general";
+    const folder   = (formData.get("folder") as string) ?? "";
+    if (!ALLOWED_FOLDERS.has(folder)) {
+      return NextResponse.json({ success: false, error: "Invalid upload folder" }, { status: 400 });
+    }
     const type     = (formData.get("type")   as string) ?? "image";
 
     if (!file) {
@@ -41,9 +56,11 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true, data: result }, { status: 201 });
   } catch (err) {
+    // Log the detail server-side; return a generic message. The Cloudinary
+    // misconfiguration error names environment variables, which should not reach a
+    // browser even on an admin-only route.
     console.error("Upload error:", err);
-    const message = err instanceof Error ? err.message : "Upload failed";
-    return NextResponse.json({ success: false, error: message }, { status: 500 });
+    return NextResponse.json({ success: false, error: "Upload failed" }, { status: 500 });
   }
 }
 

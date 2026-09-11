@@ -11,7 +11,9 @@ export async function GET(request: NextRequest) {
   const { error } = await requireAdmin(request);
   if (error) return error;
 
-  const days  = parseInt(new URL(request.url).searchParams.get("days") ?? "30");
+  // Clamp: an unparseable ?days= previously produced NaN -> Invalid Date -> a 500.
+  const rawDays = parseInt(new URL(request.url).searchParams.get("days") ?? "30", 10);
+  const days  = Number.isFinite(rawDays) ? Math.min(Math.max(rawDays, 1), 365) : 30;
   const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 
   const rows = await prisma.$queryRaw<{ page: string; views: bigint }[]>`

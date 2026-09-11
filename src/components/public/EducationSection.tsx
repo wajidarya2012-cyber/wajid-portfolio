@@ -55,7 +55,7 @@ export default function EducationSection({ education, locale, config }: { educat
     { background:"var(--bg-primary)" };
 
   return (
-    <section id="education" style={{ padding:"5.5rem 0", ...bgStyle }}>
+    <section id="education" style={{ padding:"4.25rem 0", ...bgStyle }}>
       <div className="section-container" ref={ref}>
         <span className="section-eyebrow reveal">{tl("eyebrow")}</span>
         {customTitle ? (
@@ -77,34 +77,33 @@ export default function EducationSection({ education, locale, config }: { educat
           </p>
         )}
 
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,260px),1fr))", gap:"1.25rem" }}>
+        <div style={{ position:"relative", paddingInlineStart:"1.75rem", borderInlineStart:"1px solid var(--border)" }}>
           {items.map((edu, idx) => {
             const e = edu as unknown as Record<string, unknown>;
             const honors  = (e[`honors_${locale}`] as string[] | undefined)?.length ? (e[`honors_${locale}`] as string[])  : (e.honors_en as string[] | undefined);
             const courses = (e[`courses_${locale}`] as string[] | undefined)?.length ? (e[`courses_${locale}`] as string[]) : (e.courses_en as string[] | undefined);
             return (
-              <div key={edu.id} className="glass-card reveal" style={{ borderRadius:"16px", padding:"clamp(1.25rem,3vw,1.75rem)", transition:"all 0.25s", transitionDelay:`${idx*0.1}s`, minWidth:0, display:"flex", flexDirection:"column" }}
-                onMouseEnter={ev=>{ const el=ev.currentTarget as HTMLElement; el.style.transform="translateY(-4px)"; el.style.borderColor="rgba(79,70,229,0.4)"; el.style.boxShadow="0 12px 32px rgba(79,70,229,0.15)"; }}
-                onMouseLeave={ev=>{ const el=ev.currentTarget as HTMLElement; el.style.transform="none"; el.style.borderColor="var(--border)"; el.style.boxShadow="var(--shadow-card)"; }}>
+              <div key={edu.id} className="reveal" style={{ position:"relative", marginBottom: idx===items.length-1?"0":"2.5rem", transitionDelay:`${idx*0.1}s`, minWidth:0 }}>
+                <span aria-hidden style={{ position:"absolute", insetInlineStart:"-2.03rem", top:"0.45rem", width:"9px", height:"9px", borderRadius:"50%", background: e.isCurrent ? "#4f46e5" : "var(--border-hover)", outline:"3px solid var(--bg-primary)" }} />
 
-                {/* Icon / Logo */}
-                {e.logoUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={e.logoUrl as string} alt="" style={{ width:"52px", height:"52px", borderRadius:"14px", objectFit:"cover", marginBottom:"1rem", flexShrink:0, background:"#fff" }} />
-                ) : (
-                  <div style={{ width:"52px", height:"52px", borderRadius:"14px", background:"linear-gradient(135deg,rgba(79,70,229,0.15),rgba(6,182,212,0.08))", border:"1px solid rgba(79,70,229,0.2)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"1.6rem", marginBottom:"1rem", flexShrink:0 }}>
-                    {edu.icon}
-                  </div>
-                )}
-
-                <h3 style={{ fontFamily:"var(--font-syne)", fontWeight:700, fontSize:"clamp(0.9rem,2vw,1rem)", marginBottom:"0.35rem", wordBreak:"break-word", lineHeight:1.3 }}>
-                  {pick(edu as Record<string,unknown>,"degree",locale)} {e.featured ? <span title={tl("featured")} style={{ fontSize:"0.75rem" }}>⭐</span> : null}
-                </h3>
-                <p style={{ fontWeight:600, fontSize:"0.85rem", color:"#818cf8", marginBottom:"0.25rem", wordBreak:"break-word" }}>
-                  {pick(edu as Record<string,unknown>,"institution",locale)}
-                </p>
-                <p style={{ fontFamily:"var(--font-fira)", fontSize:"0.7rem", color:"var(--text-muted)", marginBottom:"0.875rem" }}>
+                <p style={{ fontSize:"0.8rem", fontWeight:600, color:"var(--text-muted)", marginBottom:"0.3rem" }}>
                   {edu.startYear} — {e.isCurrent ? tl("present") : edu.endYear ?? tl("present")}{edu.location ? ` · ${edu.location}` : ""}
+                </p>
+
+                <div style={{ display:"flex", alignItems:"center", gap:"0.6rem", minWidth:0, marginBottom:"0.15rem" }}>
+                  {e.logoUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={e.logoUrl as string} alt="" style={{ width:"28px", height:"28px", borderRadius:"6px", objectFit:"cover", flexShrink:0, background:"#fff" }} />
+                  ) : (
+                    <span aria-hidden style={{ fontSize:"1.2rem", flexShrink:0 }}>{edu.icon}</span>
+                  )}
+                  <h3 style={{ fontFamily:"var(--font-syne)", fontWeight:700, fontSize:"clamp(1.05rem,2.2vw,1.2rem)", lineHeight:1.3, wordBreak:"break-word", minWidth:0 }}>
+                    {pick(edu as Record<string,unknown>,"degree",locale)}
+                    {e.featured ? <span title={tl("featured")} style={{ fontSize:"0.8rem", marginInlineStart:"0.35rem" }}>⭐</span> : null}
+                  </h3>
+                </div>
+                <p style={{ fontSize:"0.95rem", fontWeight:500, color:"var(--text-secondary)", marginBottom:"0.7rem", wordBreak:"break-word" }}>
+                  {pick(edu as Record<string,unknown>,"institution",locale)}
                 </p>
                 {edu.gpa && (
                   <p style={{ fontSize:"0.78rem", color:"#06b6d4", fontWeight:600, marginBottom:"0.5rem" }}>
@@ -112,19 +111,19 @@ export default function EducationSection({ education, locale, config }: { educat
                   </p>
                 )}
                 {pick(edu as Record<string,unknown>,"description",locale) && (
-                  <p style={{ fontSize:"0.82rem", lineHeight:1.75, color:"var(--text-secondary)", margin:"0 0 0.75rem", wordBreak:"break-word" }}>
+                  <p style={{ fontSize:"0.92rem", lineHeight:1.75, color:"var(--text-secondary)", margin:"0 0 0.75rem", wordBreak:"break-word", maxWidth:"62ch" }}>
                     {pick(edu as Record<string,unknown>,"description",locale)}
                   </p>
                 )}
                 {courses && courses.length > 0 && (
-                  <div style={{ display:"flex", flexWrap:"wrap", gap:"0.35rem", marginBottom:"0.6rem" }}>
-                    {courses.map(c => <span key={c} className="tag-badge" style={{ fontSize:"0.65rem" }}>{c}</span>)}
-                  </div>
+                  <p style={{ fontSize:"0.85rem", color:"var(--text-muted)", lineHeight:1.7, marginBottom:"0.6rem", wordBreak:"break-word" }}>
+                    {courses.join(" · ")}
+                  </p>
                 )}
                 {honors && honors.length > 0 && (
-                  <ul style={{ margin:0, paddingLeft:"1.1rem", display:"flex", flexDirection:"column", gap:"0.25rem" }}>
+                  <ul style={{ margin:0, paddingInlineStart:"1.1rem", display:"flex", flexDirection:"column", gap:"0.25rem" }}>
                     {honors.map((h, i) => (
-                      <li key={i} style={{ fontSize:"0.76rem", color:"var(--text-muted)", lineHeight:1.6 }}>🏅 {h}</li>
+                      <li key={i} style={{ fontSize:"0.85rem", color:"var(--text-muted)", lineHeight:1.6 }}>{h}</li>
                     ))}
                   </ul>
                 )}

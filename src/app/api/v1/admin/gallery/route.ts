@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin, logActivity } from "@/lib/adminGuard";
+import { revalidateGallery } from "@/lib/revalidate";
 
 export async function GET(request: NextRequest) {
   const { error } = await requireAdmin(request);
@@ -33,5 +34,6 @@ export async function POST(request: NextRequest) {
     },
   });
   await logActivity(user!.id, "CREATE", "GalleryItem", `Uploaded image to ${item.category}`, item.id, request);
+  revalidateGallery();
   return NextResponse.json({ success:true, data:item }, { status:201 });
 }

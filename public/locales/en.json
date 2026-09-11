@@ -15,11 +15,19 @@
   "hero": {
     "available": "Available for Opportunities",
     "greeting": "Hello, I'm",
-    "roles": ["IT & Network Manager", "Software Developer", "Database Administrator", "Technology Consultant"],
+    "roles": [
+      "IT & Network Manager",
+      "Software Developer",
+      "Database Administrator",
+      "Technology Consultant"
+    ],
     "bio": "Transforming Ideas into Digital Solutions through Software Development, IT Management, and Innovation.",
     "contactBtn": "Contact Me",
     "cvBtn": "Download CV",
-    "badge": { "title": "CS Graduate", "sub": "IT & Networks" },
+    "badge": {
+      "title": "CS Graduate",
+      "sub": "IT & Networks"
+    },
     "yearsShort": "Years",
     "projectsShort": "Projects"
   },
@@ -53,7 +61,13 @@
     "title": "Skills & Technologies",
     "titleHighlight": "Technologies",
     "featured": "Featured",
-    "desc": "A broad technical skillset built through years of real-world deployments and project delivery."
+    "desc": "A broad technical skillset built through years of real-world deployments and project delivery.",
+    "level": {
+      "expert": "Expert",
+      "advanced": "Advanced",
+      "proficient": "Proficient",
+      "familiar": "Familiar"
+    }
   },
   "experience": {
     "eyebrow": "Work History",
@@ -61,7 +75,8 @@
     "titleHighlight": "Experience",
     "present": "Present",
     "featured": "Featured",
-    "noEntries": "No experience entries yet."
+    "noEntries": "No experience entries yet.",
+    "technologies": "Technologies Used"
   },
   "education": {
     "eyebrow": "Academic Background",
@@ -118,7 +133,10 @@
     "gallery": "Project Gallery",
     "featuredBadge": "Featured",
     "openImage": "Open image",
-    "noResults": "No projects in this category."
+    "noResults": "No projects in this category.",
+    "relatedProjects": "Related Projects",
+    "backToProjects": "Back to Projects",
+    "views": "views"
   },
   "stats": {
     "years": "Years of Experience",
@@ -158,7 +176,13 @@
     "title": "Blog & Articles",
     "readMore": "Read More",
     "publishedOn": "Published on",
-    "backToBlog": "Back to Blog"
+    "backToBlog": "Back to Blog",
+    "titleHighlight": "Articles",
+    "description": "Thoughts on technology, software development, and IT management.",
+    "noPosts": "No posts published yet. Check back soon.",
+    "searchPlaceholder": "Search articles...",
+    "relatedArticles": "Related Articles",
+    "minRead": "min read"
   },
   "gallery": {
     "eyebrow": "Moments",
@@ -173,6 +197,14 @@
       "events": "Events",
       "training": "Training",
       "achievements": "Achievements"
+    },
+    "searchPlaceholder": "Search photos...",
+    "allAlbums": "All Albums",
+    "sort": {
+      "newest": "Newest First",
+      "oldest": "Oldest First",
+      "mostViewed": "Most Viewed",
+      "featured": "Featured First"
     }
   },
   "footer": {
@@ -200,6 +232,14 @@
     "edit": "Edit",
     "add": "Add New",
     "search": "Search",
-    "noResults": "No results found"
+    "noResults": "No results found",
+    "tryAgain": "Try again",
+    "share": "Share",
+    "all": "All",
+    "previousImage": "Previous image",
+    "nextImage": "Next image",
+    "copyLink": "Copy link",
+    "backToTop": "Back to top",
+    "scrollToNext": "Scroll to next section"
   }
 }

@@ -3,8 +3,10 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET() {
   try {
+    // Hidden categories and hidden skills must not leak through the public API.
     const categories = await prisma.skillCategory.findMany({
-      include: { skills: { orderBy: { sortOrder: "asc" } } },
+      where:   { visible: true },
+      include: { skills: { where: { visible: true }, orderBy: { sortOrder: "asc" } } },
       orderBy: { sortOrder: "asc" },
     });
     return NextResponse.json({ success: true, data: categories });

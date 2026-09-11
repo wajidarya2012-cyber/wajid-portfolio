@@ -1,6 +1,7 @@
 ﻿import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin, logActivity } from "@/lib/adminGuard";
+import { revalidateAll } from "@/lib/revalidate";
 
 const REQUIRED_KEYS = [
   "profile", "siteSettings", "projectCategory", "project",
@@ -85,6 +86,7 @@ export async function POST(request: NextRequest) {
     }, { timeout: 30000 });
 
     await logActivity(user!.id, "UPDATE", "Backup", "Restored site data from backup file", undefined, request);
+    revalidateAll();
     return NextResponse.json({ success: true });
   } catch (e: unknown) {
     console.error("Backup restore error:", e);

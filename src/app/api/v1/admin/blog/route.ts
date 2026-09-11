@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { blogPostSchema } from "@/lib/validations";
 import { requireAdmin, logActivity } from "@/lib/adminGuard";
+import { revalidateBlog } from "@/lib/revalidate";
 import { getPagination } from "@/lib/utils";
 import { Prisma } from "@prisma/client";
 
@@ -25,6 +26,7 @@ export async function POST(request: NextRequest) {
   try {
     const post = await prisma.blogPost.create({ data: { ...parsed.data, publishedAt: parsed.data.status==="PUBLISHED"?new Date():null } });
     await logActivity(user!.id, "CREATE", "BlogPost", `Created: ${post.title_en}`, post.id, request);
+    revalidateBlog();
     return NextResponse.json({ success:true, data:post }, { status:201 });
   } catch (e: unknown) {
     if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {

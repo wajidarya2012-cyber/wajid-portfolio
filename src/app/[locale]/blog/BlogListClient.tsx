@@ -1,17 +1,21 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useTranslations } from "next-intl";
 import BlogPostCard from "@/components/public/BlogPostCard";
+import { t as pickLocale } from "@/lib/utils";
 
 const PAGE_SIZE = 9;
 
 export default function BlogListClient({ posts, locale }: { posts: any[]; locale: string }) {
+  const tb = useTranslations("blog");
+  const tc = useTranslations("common");
   const [search, setSearch] = useState("");
   const [tag, setTag]       = useState("all");
   const [page, setPage]     = useState(1);
 
   function pick(obj: Record<string, unknown>, field: string): string {
-    return ((obj[`${field}_${locale}`] ?? obj[`${field}_en`] ?? "") as string);
+    return pickLocale(obj, field, locale);
   }
 
   const tags = useMemo(() => {
@@ -41,7 +45,7 @@ export default function BlogListClient({ posts, locale }: { posts: any[]; locale
         <input
           value={search}
           onChange={e => { setSearch(e.target.value); setPage(1); }}
-          placeholder="Search articles..."
+          placeholder={tb("searchPlaceholder")}
           style={{ flex: "1 1 220px", maxWidth: "320px", padding: "0.6rem 1rem", borderRadius: "9999px", border: "1px solid var(--border)", background: "var(--bg-card)", color: "var(--text-primary)", fontSize: "0.85rem", outline: "none" }}
         />
         {tags.length > 0 && (
@@ -57,7 +61,7 @@ export default function BlogListClient({ posts, locale }: { posts: any[]; locale
                   color: tag === t ? "#fff" : "var(--text-secondary)",
                 }}
               >
-                {t === "all" ? "All" : t}
+                {t === "all" ? tc("all") : t}
               </button>
             ))}
           </div>
@@ -67,7 +71,7 @@ export default function BlogListClient({ posts, locale }: { posts: any[]; locale
       {shown.length === 0 ? (
         <div style={{ textAlign: "center", padding: "5rem 0", color: "var(--text-muted)" }}>
           <p style={{ fontSize: "2rem", marginBottom: "1rem" }}>🔍</p>
-          <p>No articles match your search.</p>
+          <p>{tc("noResults")}</p>
         </div>
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(min(100%,320px),1fr))", gap: "1.5rem" }}>

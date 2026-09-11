@@ -1,15 +1,13 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useTranslations } from "next-intl";
+import { t as pick } from "@/lib/utils";
 import ImageLightbox, { type LightboxImage } from "@/components/public/ImageLightbox";
 
 const PAGE_SIZE = 12;
 
 type Album = { slug: string; name_en?: string; name_ps?: string; name_fa?: string };
-
-function pick(obj: Record<string, unknown>, field: string, locale: string): string {
-  return ((obj[`${field}_${locale}`] ?? obj[`${field}_en`] ?? "") as string);
-}
 
 export default function GalleryGridClient({
   items, albums, locale,
@@ -18,6 +16,7 @@ export default function GalleryGridClient({
   albums: Album[];
   locale: string;
 }) {
+  const tg = useTranslations("gallery");
   const [search, setSearch] = useState("");
   const [album, setAlbum]   = useState("all");
   const [tag, setTag]       = useState("all");
@@ -83,20 +82,20 @@ export default function GalleryGridClient({
         <input
           value={search}
           onChange={e => { setSearch(e.target.value); setPage(1); }}
-          placeholder="Search photos..."
+          placeholder={tg("searchPlaceholder")}
           style={{ flex: "1 1 200px", maxWidth: "300px", padding: "0.55rem 1rem", borderRadius: "9999px", border: "1px solid var(--border)", background: "var(--bg-card)", color: "var(--text-primary)", fontSize: "0.85rem", outline: "none" }}
         />
         <select value={sort} onChange={e => setSort(e.target.value)}
           style={{ padding: "0.5rem 0.9rem", borderRadius: "9999px", fontSize: "0.78rem", fontWeight: 600, border: "1px solid var(--border)", background: "var(--bg-card)", color: "var(--text-secondary)", cursor: "pointer" }}>
-          <option value="newest">Newest First</option>
-          <option value="oldest">Oldest First</option>
-          <option value="mostViewed">Most Viewed</option>
-          <option value="featured">Featured First</option>
+          <option value="newest">{tg("sort.newest")}</option>
+          <option value="oldest">{tg("sort.oldest")}</option>
+          <option value="mostViewed">{tg("sort.mostViewed")}</option>
+          <option value="featured">{tg("sort.featured")}</option>
         </select>
       </div>
 
       <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginBottom: "0.75rem" }}>
-        <button onClick={() => { setAlbum("all"); setPage(1); }} style={pillStyle(album === "all")}>All Albums</button>
+        <button onClick={() => { setAlbum("all"); setPage(1); }} style={pillStyle(album === "all")}>{tg("allAlbums")}</button>
         {albums.map(a => (
           <button key={a.slug} onClick={() => { setAlbum(a.slug); setPage(1); }} style={pillStyle(album === a.slug)}>{albumLabel(a.slug)}</button>
         ))}

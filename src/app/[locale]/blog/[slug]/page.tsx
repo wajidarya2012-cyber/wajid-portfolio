@@ -1,4 +1,7 @@
 import { notFound }  from "next/navigation";
+import { t as pick, formatDate } from "@/lib/utils";
+import { localizedSeo, localizedUrl } from "@/lib/localeUrls";
+import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
 import { prisma }    from "@/lib/prisma";
 import Link          from "next/link";
@@ -10,10 +13,6 @@ import { readingTime }  from "@/lib/utils";
 
 const G = "linear-gradient(135deg,#4f46e5,#06b6d4)";
 
-function pick(obj: Record<string, unknown>, field: string, locale: string): string {
-  return ((obj[`${field}_${locale}`] ?? obj[`${field}_en`] ?? "") as string);
-}
-
 async function getPost(slug: string) {
   return prisma.blogPost.findFirst({ where: { slug, status: "PUBLISHED" } }).catch(() => null);
 }
@@ -24,10 +23,12 @@ export async function generateMetadata({ params: { locale, slug } }: { params: {
   const p = post as unknown as Record<string, unknown>;
   const title       = pick(p, "metaTitle", locale) || pick(p, "title", locale);
   const description = pick(p, "metaDesc", locale)  || pick(p, "excerpt", locale);
+  const seo = localizedSeo({ type: "blogPost", slug }, locale);
   return {
     title,
     description,
-    openGraph: { title, description, type: "article", ...(post.coverImage ? { images: [{ url: post.coverImage }] } : {}) },
+    alternates: seo.alternates,
+    openGraph: { ...seo.openGraph, title, description, type: "article", ...(post.coverImage ? { images: [{ url: post.coverImage }] } : {}) },
     twitter:   { card: "summary_large_image", title, ...(post.coverImage ? { images: [post.coverImage] } : {}) },
   };
 }
@@ -39,6 +40,8 @@ export default async function BlogPostPage({
 }) {
   const post = await getPost(slug);
   if (!post) notFound();
+
+  const tl = await getTranslations({ locale, namespace: "blog" });
 
   // Increment view count
   await prisma.blogPost.update({
@@ -58,8 +61,7 @@ export default async function BlogPostPage({
         take:    3,
       }).catch(() => []);
 
-  const appUrl  = process.env.NEXT_PUBLIC_APP_URL ?? "";
-  const pageUrl = `${appUrl}/${locale}/blog/${slug}`;
+  const pageUrl = localizedUrl({ type: "blogPost", slug }, locale);
   const title   = pick(post as Record<string, unknown>, "title", locale);
   const content = pick(post as Record<string, unknown>, "content", locale);
 
@@ -79,8 +81,8 @@ export default async function BlogPostPage({
           <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem", alignItems: "center", marginBottom: "1rem" }}>
             {post.publishedAt && (
               <p style={{ fontSize: "0.82rem", color: "var(--text-muted)", fontFamily: "var(--font-fira)", margin: 0 }}>
-                {new Date(post.publishedAt).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
-                {" · "}{readingTime(content)} min read
+                {formatDate(post.publishedAt, locale)}
+                {" · "}{readingTime(content)} {tl("minRead")}
                 {post.viewCount > 0 ? ` · ${post.viewCount} views` : ""}
               </p>
             )}
@@ -128,7 +130,7 @@ export default async function BlogPostPage({
         {/* Footer */}
         <div style={{ marginTop: "3rem", paddingTop: "2rem", borderTop: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "1rem" }}>
           <Link href={`/${locale}/blog`} className="btn-secondary" style={{ fontSize: "0.875rem" }}>
-            ← Back to Blog
+            ← {tl("backToBlog")}
           </Link>
           <ShareButtons url={pageUrl} title={title} />
         </div>
@@ -137,7 +139,7 @@ export default async function BlogPostPage({
         {related.length > 0 && (
           <div style={{ marginTop: "3rem", paddingTop: "2rem", borderTop: "1px solid var(--border)" }}>
             <h2 style={{ fontFamily: "var(--font-syne)", fontWeight: 700, fontSize: "1.1rem", marginBottom: "1.25rem" }}>
-              Related <span style={{ background: G, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Articles</span>
+              {tl("relatedArticles")}
             </h2>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(min(100%,220px),1fr))", gap: "1rem" }}>
               {related.map(r => (

@@ -1,14 +1,13 @@
 import { notFound }    from "next/navigation";
+import { t as pick, formatDate } from "@/lib/utils";
+import { localizedSeo, localizedUrl } from "@/lib/localeUrls";
+import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
 import { prisma }      from "@/lib/prisma";
 import Link            from "next/link";
 import AnalyticsTracker from "@/components/public/AnalyticsTracker";
 import ShareButtons    from "@/components/public/ShareButtons";
 import ProjectImageGrid, { ProjectFeaturedImage } from "@/components/public/ProjectImageGrid";
-
-function pick(obj: Record<string, unknown>, field: string, locale: string): string {
-  return ((obj[`${field}_${locale}`] ?? obj[`${field}_en`] ?? "") as string);
-}
 
 async function getProject(slug: string) {
   return prisma.project.findFirst({
@@ -29,10 +28,12 @@ export async function generateMetadata({ params }: { params: { locale: string; s
   const title       = pick(p, "seoTitle", params.locale)       || pick(p, "title", params.locale);
   const description = pick(p, "seoDescription", params.locale) || pick(p, "description", params.locale);
   const thumb = project.images.find(i => i.isThumbnail) ?? project.images[0];
+  const seo = localizedSeo({ type: "project", slug: params.slug }, params.locale);
   return {
     title,
     description,
-    openGraph: { title, description, ...(thumb ? { images: [{ url: thumb.url }] } : {}) },
+    alternates: seo.alternates,
+    openGraph: { ...seo.openGraph, title, description, ...(thumb ? { images: [{ url: thumb.url }] } : {}) },
     twitter:   { card: "summary_large_image", title, ...(thumb ? { images: [thumb.url] } : {}) },
   };
 }
@@ -51,9 +52,9 @@ export default async function ProjectDetailPage({ params }: { params: { locale: 
       }).catch(() => [])
     : [];
 
+  const tl = await getTranslations({ locale, namespace: "projects" });
   const p = project as unknown as Record<string, unknown>;
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
-  const pageUrl = `${appUrl}/${locale}/projects/${slug}`;
+  const pageUrl = localizedUrl({ type: "project", slug }, locale);
   const title   = pick(project as Record<string,unknown>, "title", locale);
 
   return (
@@ -61,7 +62,7 @@ export default async function ProjectDetailPage({ params }: { params: { locale: 
       <div className="section-container" style={{ paddingTop:"3rem", paddingBottom:"5rem", maxWidth:"56rem" }}>
 
         <Link href={`/${locale}#projects`} style={{ display:"inline-flex", alignItems:"center", gap:"0.4rem", fontSize:"0.85rem", color:"var(--text-muted)", textDecoration:"none", marginBottom:"2rem" }}>
-          ← Back to Projects
+          ← {tl("backToProjects")}
         </Link>
 
         {/* Header */}
@@ -78,8 +79,8 @@ export default async function ProjectDetailPage({ params }: { params: { locale: 
           <div style={{ display:"flex", flexWrap:"wrap", gap:"1.25rem", fontSize:"0.82rem", color:"var(--text-muted)", marginBottom:"1rem" }}>
             {(p.clientName as string) && <span>🏢 {p.clientName as string}</span>}
             {(p.location as string)   && <span>📍 {p.location as string}</span>}
-            {project.endDate          && <span>📅 {new Date(project.endDate).toLocaleDateString("en-US",{ year:"numeric", month:"long" })}</span>}
-            {project.viewCount > 0    && <span>👁 {project.viewCount} views</span>}
+            {project.endDate          && <span>📅 {formatDate(project.endDate, locale, { year:"numeric", month:"long" })}</span>}
+            {project.viewCount > 0    && <span>👁 {project.viewCount} {tl("views")}</span>}
           </div>
           <ShareButtons url={pageUrl} title={title} />
         </div>
@@ -106,7 +107,7 @@ export default async function ProjectDetailPage({ params }: { params: { locale: 
 
         {project.features.length > 0 && (
           <div style={{ marginBottom:"1.75rem" }}>
-            <h2 style={{ fontFamily:"var(--font-syne)", fontWeight:700, fontSize:"1rem", color:"#06b6d4", marginBottom:"0.875rem" }}>✅ Key Features</h2>
+            <h2 style={{ fontFamily:"var(--font-syne)", fontWeight:700, fontSize:"1rem", color:"#06b6d4", marginBottom:"0.875rem" }}>✅ {tl("features")}</h2>
             <ul style={{ listStyle:"none", padding:0, display:"flex", flexDirection:"column", gap:"0.6rem" }}>
               {project.features.map(f => (
                 <li key={f.id} style={{ display:"flex", gap:"0.6rem", fontSize:"0.9rem", color:"var(--text-secondary)", lineHeight:1.7 }}>
@@ -120,7 +121,7 @@ export default async function ProjectDetailPage({ params }: { params: { locale: 
 
         {pick(project as Record<string,unknown>, "challenge", locale) && (
           <div style={{ marginBottom:"1.75rem" }}>
-            <h2 style={{ fontFamily:"var(--font-syne)", fontWeight:700, fontSize:"1rem", color:"#06b6d4", marginBottom:"0.6rem" }}>🧩 Challenge Solved</h2>
+            <h2 style={{ fontFamily:"var(--font-syne)", fontWeight:700, fontSize:"1rem", color:"#06b6d4", marginBottom:"0.6rem" }}>🧩 {tl("challenge")}</h2>
             <p style={{ fontSize:"0.9rem", lineHeight:1.9, color:"var(--text-secondary)" }}>
               {pick(project as Record<string,unknown>, "challenge", locale)}
             </p>
@@ -147,7 +148,7 @@ export default async function ProjectDetailPage({ params }: { params: { locale: 
         {/* Related projects */}
         {related.length > 0 && (
           <div style={{ paddingTop:"2rem", borderTop:"1px solid var(--border)" }}>
-            <h2 style={{ fontFamily:"var(--font-syne)", fontWeight:700, fontSize:"1.1rem", marginBottom:"1.25rem" }}>Related Projects</h2>
+            <h2 style={{ fontFamily:"var(--font-syne)", fontWeight:700, fontSize:"1.1rem", marginBottom:"1.25rem" }}>{tl("relatedProjects")}</h2>
             <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(min(100%,220px),1fr))", gap:"1rem" }}>
               {related.map(r => {
                 const thumb = r.images[0];

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { blogPostSchema } from "@/lib/validations";
 import { requireAdmin, logActivity } from "@/lib/adminGuard";
+import { revalidateBlog } from "@/lib/revalidate";
 import { Prisma } from "@prisma/client";
 
 type P = { params:{id:string} };
@@ -28,6 +29,7 @@ export async function PUT(request: NextRequest, { params }: P) {
   try {
     const post = await prisma.blogPost.update({ where:{id:params.id}, data:{ ...parsed.data, publishedAt } });
     await logActivity(user!.id, "UPDATE", "BlogPost", `Updated: ${post.title_en}`, post.id, request);
+    revalidateBlog();
     return NextResponse.json({ success:true, data:post });
   } catch (e: unknown) {
     if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
@@ -45,5 +47,6 @@ export async function DELETE(request: NextRequest, { params }: P) {
   if (!existing) return NextResponse.json({ success:false, error:"Not found" }, { status:404 });
   await prisma.blogPost.delete({ where:{id:params.id} });
   await logActivity(user!.id, "DELETE", "BlogPost", `Deleted post: ${existing.title_en}`, params.id, request);
+  revalidateBlog();
   return NextResponse.json({ success:true });
 }

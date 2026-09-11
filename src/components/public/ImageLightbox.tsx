@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 
 export interface LightboxImage {
   id: string;
@@ -20,6 +21,7 @@ export default function ImageLightbox({
   onClose: () => void;
   onIndexChange: (i: number) => void;
 }) {
+  const t = useTranslations("common");
   const [zoomed, setZoomed] = useState(false);
 
   const goPrev = useCallback(() => {
@@ -57,7 +59,7 @@ export default function ImageLightbox({
       {/* Close */}
       <button
         onClick={onClose}
-        aria-label="Close"
+        aria-label={t("close")}
         style={{ position: "absolute", top: "1rem", right: "1rem", width: "40px", height: "40px", borderRadius: "50%", border: "1px solid rgba(255,255,255,0.25)", background: "rgba(255,255,255,0.08)", color: "#fff", cursor: "pointer", fontSize: "1.1rem", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2 }}
       >
         ✕
@@ -74,7 +76,7 @@ export default function ImageLightbox({
       {images.length > 1 && (
         <button
           onClick={e => { e.stopPropagation(); goPrev(); }}
-          aria-label="Previous image"
+          aria-label={t("previousImage")}
           style={{ position: "absolute", left: "0.75rem", top: "50%", transform: "translateY(-50%)", width: "44px", height: "44px", borderRadius: "50%", border: "1px solid rgba(255,255,255,0.25)", background: "rgba(255,255,255,0.08)", color: "#fff", cursor: "pointer", fontSize: "1.3rem", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2 }}
         >
           ‹
@@ -105,7 +107,7 @@ export default function ImageLightbox({
       {images.length > 1 && (
         <button
           onClick={e => { e.stopPropagation(); goNext(); }}
-          aria-label="Next image"
+          aria-label={t("nextImage")}
           style={{ position: "absolute", right: "0.75rem", top: "50%", transform: "translateY(-50%)", width: "44px", height: "44px", borderRadius: "50%", border: "1px solid rgba(255,255,255,0.25)", background: "rgba(255,255,255,0.08)", color: "#fff", cursor: "pointer", fontSize: "1.3rem", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2 }}
         >
           ›

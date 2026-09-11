@@ -4,6 +4,7 @@ import { prisma }        from "@/lib/prisma";
 import GalleryGridClient  from "./GalleryGridClient";
 import AnalyticsTracker   from "@/components/public/AnalyticsTracker";
 import { splitTitle }     from "@/lib/utils";
+import { localizedSeo }   from "@/lib/localeUrls";
 
 const G = "linear-gradient(135deg,#4f46e5,#06b6d4)";
 
@@ -37,7 +38,13 @@ export async function generateMetadata({ params: { locale } }: { params: { local
   const tl          = await getTranslations({ locale, namespace: "gallery" });
   const title       = section.seoTitle       || pick(section as unknown as Record<string,unknown>, "title", locale) || tl("title");
   const description = section.seoDescription || tl("defaultDescription");
-  return { title: `${title} | Gallery`, description };
+  const seo = localizedSeo({ type: "gallery" }, locale);
+  return {
+    title,
+    description,
+    alternates: seo.alternates,
+    openGraph: { ...seo.openGraph, title, description },
+  };
 }
 
 export default async function GalleryPage({ params: { locale } }: { params: { locale: string } }) {

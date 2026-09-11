@@ -7,6 +7,16 @@ import { splitTitle }        from "@/lib/utils";
 
 const G = "linear-gradient(135deg,#4f46e5,#06b6d4)";
 
+// Phase 33: public skill rendering shows a named proficiency tier instead of a
+// percentage + progress bar. The Skill.percentage column and its admin input are
+// unchanged - this is presentation only. Single place to tune the thresholds.
+function levelKey(percentage: number): "expert" | "advanced" | "proficient" | "familiar" {
+  if (percentage >= 90) return "expert";
+  if (percentage >= 75) return "advanced";
+  if (percentage >= 55) return "proficient";
+  return "familiar";
+}
+
 function pick(obj: Record<string,unknown>, field: string, locale: string): string {
   const val = obj[`${field}_${locale}`] as string | undefined;
   return (val && val.trim() !== "" ? val : (obj[`${field}_en`] as string)) ?? "";
@@ -72,7 +82,7 @@ export default function SkillsSection({ categories, locale, config }: { categori
     { background:"var(--bg-primary)" };
 
   return (
-    <section id="skills" style={{ padding:"5.5rem 0", ...bgStyle }}>
+    <section id="skills" style={{ padding:"4.25rem 0", ...bgStyle }}>
       {bg === "image" && config?.backgroundImage && (
         <>
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -105,10 +115,10 @@ export default function SkillsSection({ categories, locale, config }: { categori
           <div ref={gridRef} style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,220px),1fr))", gap:"1.25rem" }}>
             {visibleCategories.map((cat, idx) => (
               <div key={cat.id} className="glass-card reveal" style={{ borderRadius:"16px", padding:"1.5rem", transition:"all 0.25s", transitionDelay:`${idx * 0.08}s`, minWidth:0 }}
-                onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = "rgba(79,70,229,0.4)"; el.style.boxShadow = "0 8px 32px rgba(79,70,229,0.15)"; }}
+                onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = "var(--border-hover)"; }}
                 onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = "var(--border)"; el.style.boxShadow = "var(--shadow-card)"; }}>
                 <div style={{ display:"flex", alignItems:"center", gap:"0.75rem", marginBottom:"1.25rem" }}>
-                  <div style={{ width:"40px", height:"40px", borderRadius:"10px", background:"linear-gradient(135deg,rgba(79,70,229,0.15),rgba(6,182,212,0.08))", border:"1px solid rgba(79,70,229,0.22)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"1.1rem", flexShrink:0 }}>
+                  <div style={{ width:"40px", height:"40px", borderRadius:"10px", background:"var(--bg-secondary)", border:"1px solid var(--border)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"1.1rem", flexShrink:0 }}>
                     {cat.icon}
                   </div>
                   <span style={{ fontFamily:"var(--font-syne)", fontWeight:700, fontSize:"0.88rem", wordBreak:"break-word", minWidth:0 }}>
@@ -124,12 +134,9 @@ export default function SkillsSection({ categories, locale, config }: { categori
                           {pick(skill as Record<string,unknown>, "name", locale)}
                           {skill.featured && <span title={tl("featured")} style={{ fontSize:"0.65rem" }}>⭐</span>}
                         </span>
-                        <span style={{ fontFamily:"var(--font-fira)", fontSize:"0.7rem", color:"#06b6d4", flexShrink:0 }}>
-                          {skill.percentage}%
+                        <span style={{ fontSize:"0.75rem", color:"var(--text-muted)", flexShrink:0 }}>
+                          {tl(`level.${levelKey(skill.percentage)}`)}
                         </span>
-                      </div>
-                      <div style={{ height:"5px", borderRadius:"3px", background:"var(--border)", overflow:"hidden" }}>
-                        <div className="skill-bar-fill" style={{ "--target-width": `${skill.percentage}%` } as React.CSSProperties} />
                       </div>
                     </div>
                   ))}
@@ -145,7 +152,7 @@ export default function SkillsSection({ categories, locale, config }: { categori
             {visibleCategories.map((cat, idx) => (
               <div key={cat.id} className="glass-card reveal" style={{ borderRadius:"18px", padding:"1.5rem", transitionDelay:`${idx * 0.08}s` }}>
                 <div style={{ display:"flex", alignItems:"center", gap:"0.75rem", marginBottom:"1rem" }}>
-                  <div style={{ width:"40px", height:"40px", borderRadius:"10px", background:"linear-gradient(135deg,rgba(79,70,229,0.15),rgba(6,182,212,0.08))", border:"1px solid rgba(79,70,229,0.22)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"1.1rem", flexShrink:0 }}>
+                  <div style={{ width:"40px", height:"40px", borderRadius:"10px", background:"var(--bg-secondary)", border:"1px solid var(--border)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"1.1rem", flexShrink:0 }}>
                     {cat.icon}
                   </div>
                   <span style={{ fontFamily:"var(--font-syne)", fontWeight:700, fontSize:"0.95rem" }}>
@@ -157,7 +164,6 @@ export default function SkillsSection({ categories, locale, config }: { categori
                     <span key={skill.id} className="tag-badge" style={{ display:"inline-flex", alignItems:"center", gap:"0.4rem" }}>
                       {skill.icon && <span>{skill.icon}</span>}
                       {pick(skill as Record<string,unknown>, "name", locale)}
-                      <span style={{ color:"#06b6d4", fontFamily:"var(--font-fira)", fontSize:"0.68rem" }}>{skill.percentage}%</span>
                       {skill.featured && <span style={{ fontSize:"0.65rem" }}>⭐</span>}
                     </span>
                   ))}
@@ -183,7 +189,7 @@ export default function SkillsSection({ categories, locale, config }: { categori
                         {pick(skill as Record<string,unknown>, "name", locale)}
                         {skill.featured && <span style={{ fontSize:"0.65rem" }}>⭐</span>}
                       </span>
-                      <span style={{ fontFamily:"var(--font-fira)", fontSize:"0.75rem", color:"#06b6d4", fontWeight:600 }}>{skill.percentage}%</span>
+                      <span style={{ fontSize:"0.75rem", color:"var(--text-muted)" }}>{tl(`level.${levelKey(skill.percentage)}`)}</span>
                     </div>
                   ))}
                 </div>

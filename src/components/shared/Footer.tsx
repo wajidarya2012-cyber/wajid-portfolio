@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import type { Profile }    from "@/types";
 import { buildNavItems, type NavItemConfig } from "@/lib/navConfig";
+import { t as pickLocale } from "@/lib/utils";
 import SocialIcon         from "@/components/shared/SocialIcon";
 
 const G = "linear-gradient(135deg,#4f46e5,#06b6d4)";
@@ -37,8 +38,7 @@ export default function Footer({
   const tn = useTranslations("nav");
 
   function pick(field: string): string {
-    const obj = (profile ?? {}) as Record<string, unknown>;
-    return ((obj[`${field}_${locale}`] ?? obj[`${field}_en`] ?? "") as string);
+    return pickLocale((profile ?? {}) as Record<string, unknown>, field, locale);
   }
 
   const p = (profile ?? {}) as Record<string, unknown>;

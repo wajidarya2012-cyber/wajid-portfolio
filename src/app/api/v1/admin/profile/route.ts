@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma }   from "@/lib/prisma";
 import { requireAdmin, logActivity } from "@/lib/adminGuard";
+import { revalidateSiteChrome } from "@/lib/revalidate";
 
 export async function GET(request: NextRequest) {
   const { error } = await requireAdmin(request);
@@ -72,6 +73,7 @@ export async function PUT(request: NextRequest) {
       : await prisma.profile.create({ data: data as Parameters<typeof prisma.profile.create>[0]["data"] });
 
     await logActivity(user!.id, "UPDATE", "Profile", "Updated profile information", profile.id, request);
+    revalidateSiteChrome();
     return NextResponse.json({ success:true, data:profile });
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : "Database error";

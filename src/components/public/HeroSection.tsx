@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { t as pickTrilingual } from "@/lib/utils";
 import Image                  from "next/image";
 import { useTranslations }    from "next-intl";
 import type { Profile }       from "@/types";
@@ -31,12 +32,12 @@ export type HeroBgSlide = {
 
 function pickLocale<T extends Record<string, unknown>>(obj: T | null | undefined, field: string, locale: string, fallback = ""): string {
   if (!obj) return fallback;
-  const val = (obj[`${field}_${locale}`] ?? obj[`${field}_en`]) as string | undefined;
-  return val || fallback;
+  return pickTrilingual(obj, field, locale) || fallback;
 }
 
 export default function HeroSection({ profile, locale, heroBgSlides = [] }: { profile: Profile | null; locale: string; heroBgSlides?: HeroBgSlide[] }) {
   const t         = useTranslations("hero");
+  const tc        = useTranslations("common");
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const typeRef   = useRef<HTMLSpanElement>(null);
   const [bgIndex, setBgIndex] = useState(0);
@@ -209,9 +210,9 @@ export default function HeroSection({ profile, locale, heroBgSlides = [] }: { pr
         </>
       )}
       {/* Canvas */}
-      <canvas ref={canvasRef} style={{ position:"absolute", inset:0, width:"100%", height:"100%", opacity:0.28, pointerEvents:"none" }} />
+      <canvas ref={canvasRef} style={{ position:"absolute", inset:0, width:"100%", height:"100%", opacity:0.14, pointerEvents:"none" }} />
       {/* Radial glow */}
-      <div style={{ position:"absolute", inset:0, background:"radial-gradient(ellipse 70% 60% at 65% 45%, rgba(79,70,229,0.1), transparent)", pointerEvents:"none" }} />
+      <div style={{ position:"absolute", inset:0, background:"radial-gradient(ellipse 70% 60% at 65% 45%, rgba(79,70,229,0.05), transparent)", pointerEvents:"none" }} />
       {/* Bottom gradient fade */}
       <div style={{ position:"absolute", bottom:0, left:0, right:0, height:"180px", background:"linear-gradient(to top,var(--bg-primary),transparent)", pointerEvents:"none" }} />
 
@@ -321,13 +322,11 @@ export default function HeroSection({ profile, locale, heroBgSlides = [] }: { pr
           {/* ── RIGHT — photo ── */}
           <div className="hero-photo-col" style={{ display:"flex", justifyContent:"center", alignItems:"center" }}>
             <div style={{ position:"relative", width:"320px", height:"320px" }}>
-              {/* Outer spinning ring */}
-              <div style={{ position:"absolute", inset:"-22px", borderRadius:"50%", border:"2px dashed rgba(79,70,229,0.28)", animation:"spinSlow 24s linear infinite", pointerEvents:"none" }} />
-              {/* Inner glow ring */}
-              <div style={{ position:"absolute", inset:"-8px", borderRadius:"50%", background:"conic-gradient(from 0deg,#4f46e5,#06b6d4,#4f46e5)", opacity:0.15, animation:"spinSlow 8s linear infinite reverse", pointerEvents:"none" }} />
+              {/* Decorative rotating rings + portrait glow removed in Phase 33 — they read as
+                  AI/startup ornament. The portrait now carries a single quiet ring. */}
 
               {/* Photo */}
-              <div style={{ width:"320px", height:"320px", borderRadius:"50%", padding:"3px", background:G, animation:"float 7s ease-in-out infinite", boxShadow:"0 0 60px rgba(79,70,229,0.35)" }}>
+              <div style={{ width:"320px", height:"320px", borderRadius:"50%", padding:"2px", background:"var(--border-hover)", boxShadow:"var(--shadow-card)" }}>
                 <div style={{ width:"100%", height:"100%", borderRadius:"50%", background:"var(--bg-secondary)", overflow:"hidden", display:"flex", alignItems:"center", justifyContent:"center" }}>
                   {profile?.photoUrl
                     ? <Image src={profile.photoUrl} alt={fullName ?? "Wajid Ali Arya"} width={320} height={320} style={{ objectFit:"cover", objectPosition:"center 30%", width:"100%", height:"100%" }} priority unoptimized />
@@ -343,7 +342,7 @@ export default function HeroSection({ profile, locale, heroBgSlides = [] }: { pr
 
               {/* CS badge */}
               {show("showProfileBadge") && (
-                <div className="glass-card" style={{ position:"absolute", top:"8px", left:"-24px", borderRadius:"14px", padding:"0.65rem 0.875rem", display:"flex", alignItems:"center", gap:"0.5rem", animation:"float 7s ease-in-out infinite", animationDelay:"-2s" }}>
+                <div className="glass-card" style={{ position:"absolute", top:"14px", left:"-14px", borderRadius:"10px", padding:"0.6rem 0.85rem", display:"flex", alignItems:"center", gap:"0.5rem" }}>
                   <span style={{ fontSize:"1.3rem" }}>🏆</span>
                   <div>
                     <p style={{ fontSize:"0.68rem", fontWeight:700, lineHeight:1.2, margin:0 }}>{badgeTitle}</p>
@@ -354,10 +353,10 @@ export default function HeroSection({ profile, locale, heroBgSlides = [] }: { pr
 
               {/* Stats badge */}
               {show("showStats") && (
-                <div className="glass-card" style={{ position:"absolute", bottom:"8px", right:"-24px", borderRadius:"14px", padding:"0.65rem 1rem", display:"flex", gap:"0.875rem", alignItems:"center", animation:"float 7s ease-in-out infinite", animationDelay:"-4s" }}>
+                <div className="glass-card" style={{ position:"absolute", bottom:"14px", right:"-14px", borderRadius:"10px", padding:"0.6rem 1rem", display:"flex", gap:"0.875rem", alignItems:"center" }}>
                   {[{n:`${yearsExp}+`,l:t("yearsShort")},{n:`${projectsCnt}+`,l:t("projectsShort")}].map(({n,l},i) => (
                     <div key={l} style={{ textAlign:"center" }}>
-                      <p style={{ fontFamily:"var(--font-syne)", fontSize:"1.3rem", fontWeight:800, margin:0, background:G, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>{n}</p>
+                      <p style={{ fontFamily:"var(--font-syne)", fontSize:"1.3rem", fontWeight:800, margin:0, color:"var(--text-primary)" }}>{n}</p>
                       <p style={{ fontSize:"0.58rem", color:"var(--text-muted)", textTransform:"uppercase", letterSpacing:"0.06em", margin:0 }}>{l}</p>
                       {i===0 && <div style={{ position:"absolute", top:"25%", right:"50%", width:"1px", height:"50%", background:"var(--border)" }} />}
                     </div>
@@ -371,7 +370,7 @@ export default function HeroSection({ profile, locale, heroBgSlides = [] }: { pr
 
       {/* Scroll indicator */}
       {show("showScrollIndicator") && (
-        <a href="#about" aria-label="Scroll to next section"
+        <a href="#about" aria-label={tc("scrollToNext")}
           style={{ position:"absolute", bottom:"1.75rem", left:"50%", transform:"translateX(-50%)", zIndex:1, display:"flex", flexDirection:"column", alignItems:"center", gap:"0.35rem", textDecoration:"none", opacity:0.6, transition:"opacity 0.2s", animation:"bounceDown 2.4s ease-in-out infinite" }}
           onMouseEnter={e=>{ (e.currentTarget as HTMLElement).style.opacity="1"; }}
           onMouseLeave={e=>{ (e.currentTarget as HTMLElement).style.opacity="0.6"; }}>

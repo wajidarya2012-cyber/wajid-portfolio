@@ -1,13 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { t as pick } from "@/lib/utils";
 import { readingTime } from "@/lib/utils";
 
 const G = "linear-gradient(135deg,#4f46e5,#06b6d4)";
-
-function pick(obj: Record<string, unknown>, field: string, locale: string): string {
-  return ((obj[`${field}_${locale}`] ?? obj[`${field}_en`] ?? "") as string);
-}
 
 export default function BlogPostCard({ post, locale }: { post: any; locale: string }) {
   return (

@@ -73,7 +73,7 @@ export default function AboutSection({ profile, locale }: { profile: Profile|nul
   const techTags = (Array.isArray(p.heroTechTags) ? (p.heroTechTags as string[]) : []);
 
   return (
-    <section id="about" style={{ padding:"5.5rem 0", background:"var(--bg-secondary)", position:"relative", overflow:"hidden" }}>
+    <section id="about" style={{ padding:"4.25rem 0", background:"var(--bg-secondary)", position:"relative", overflow:"hidden" }}>
       {/* Ambient glow */}
       <div style={{ position:"absolute", top:"10%", right:"-10%", width:"400px", height:"400px", borderRadius:"50%", background:"radial-gradient(circle,rgba(79,70,229,0.08),transparent 70%)", pointerEvents:"none" }} />
 
@@ -165,7 +165,7 @@ export default function AboutSection({ profile, locale }: { profile: Profile|nul
                   <div key={idx} className="glass-card" style={{ borderRadius:"16px", padding:"1.25rem", cursor:"default", transition:"all 0.3s", minWidth:0, transitionDelay:`${idx*0.06}s` }}
                     onMouseEnter={e=>{ const el=e.currentTarget as HTMLElement; el.style.borderColor="rgba(79,70,229,0.45)"; el.style.transform="translateY(-4px) scale(1.02)"; el.style.boxShadow="0 12px 32px rgba(79,70,229,0.18)"; }}
                     onMouseLeave={e=>{ const el=e.currentTarget as HTMLElement; el.style.borderColor="var(--border)"; el.style.transform="none"; el.style.boxShadow="var(--shadow-card)"; }}>
-                    <div style={{ width:"44px", height:"44px", borderRadius:"12px", background:"linear-gradient(135deg,rgba(79,70,229,0.15),rgba(6,182,212,0.08))", border:"1px solid rgba(79,70,229,0.2)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"1.3rem", marginBottom:"0.75rem" }}>
+                    <div style={{ width:"44px", height:"44px", borderRadius:"12px", background:"var(--bg-secondary)", border:"1px solid var(--border)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"1.3rem", marginBottom:"0.75rem" }}>
                       {v.icon}
                     </div>
                     <h4 style={{ fontFamily:"var(--font-syne)", fontWeight:700, fontSize:"0.9rem", marginBottom:"0.35rem", wordBreak:"break-word" }}>{pick(v as unknown as Record<string,unknown>, "title", locale)}</h4>

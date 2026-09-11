@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { projectSchema } from "@/lib/validations";
 import { requireAdmin, logActivity } from "@/lib/adminGuard";
+import { revalidateProjects } from "@/lib/revalidate";
 import { getPagination } from "@/lib/utils";
 import { Prisma } from "@prisma/client";
 
@@ -80,6 +81,7 @@ export async function POST(request: NextRequest) {
     });
 
     await logActivity(user!.id, "CREATE", "Project", `Created project: ${project.title_en}`, project.id, request);
+    revalidateProjects();
     return NextResponse.json({ success: true, data: project }, { status: 201 });
   } catch (e: unknown) {
     if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {

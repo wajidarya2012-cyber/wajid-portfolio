@@ -74,7 +74,7 @@ export default function ProjectsSection({ projects, locale }: { projects: Projec
 
   return (
     <>
-      <section id="projects" style={{ padding:"5.5rem 0", background:"var(--bg-primary)" }}>
+      <section id="projects" style={{ padding:"4.25rem 0", background:"var(--bg-primary)" }}>
         <div className="section-container" ref={ref}>
           <span className="section-eyebrow reveal">{tl("eyebrow")}</span>
           <h2 className="section-title reveal reveal-delay-1">
@@ -115,10 +115,14 @@ export default function ProjectsSection({ projects, locale }: { projects: Projec
               const slug  = project.category?.slug ?? "general";
               const thumb = project.images.find(img => img.isThumbnail) ?? project.images[0];
               return (
-                <article key={project.id} className="glass-card reveal" onClick={() => setSelected(project)}
+                <article key={project.id} className="glass-card reveal"
+                  role="button" tabIndex={0}
+                  aria-label={`${pick(project as Record<string,unknown>, "title", locale)} — ${tl("viewDetails")}`}
+                  onClick={() => setSelected(project)}
+                  onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelected(project); } }}
                   style={{ borderRadius:"16px", overflow:"hidden", cursor:"pointer", transition:"all 0.3s", transitionDelay:`${idx*0.06}s`, minWidth:0, display:"flex", flexDirection:"column" }}
-                  onMouseEnter={e => { const el=e.currentTarget as HTMLElement; el.style.transform="translateY(-5px)"; el.style.borderColor="rgba(79,70,229,0.45)"; el.style.boxShadow="0 16px 40px rgba(79,70,229,0.2)"; }}
-                  onMouseLeave={e => { const el=e.currentTarget as HTMLElement; el.style.transform="none"; el.style.borderColor="var(--border)"; el.style.boxShadow="var(--shadow-card)"; }}>
+                  onMouseEnter={e => { const el=e.currentTarget as HTMLElement; el.style.transform="translateY(-4px)"; el.style.borderColor="var(--border-hover)"; }}
+                  onMouseLeave={e => { const el=e.currentTarget as HTMLElement; el.style.transform="none"; el.style.borderColor="var(--border)"; }}>
 
                   {/* Thumbnail */}
                   <div style={{ height:"160px", background:THUMB_BG[slug]??"linear-gradient(135deg,rgba(79,70,229,0.2),rgba(6,182,212,0.12))", display:"flex", alignItems:"center", justifyContent:"center", position:"relative", overflow:"hidden", flexShrink:0 }}>
@@ -134,25 +138,23 @@ export default function ProjectsSection({ projects, locale }: { projects: Projec
                   </div>
 
                   <div style={{ padding:"1.25rem", display:"flex", flexDirection:"column", flex:1 }}>
-                    <p style={{ fontFamily:"var(--font-fira)", fontSize:"0.65rem", color:"#06b6d4", textTransform:"uppercase", letterSpacing:"0.12em", marginBottom:"0.35rem" }}>
+                    <p style={{ fontSize:"0.8rem", color:"var(--text-muted)", fontWeight:500, marginBottom:"0.3rem" }}>
                       {pick((project.category ?? {name_en:"General"}) as Record<string,unknown>, "name", locale)}
                     </p>
-                    <h3 style={{ fontFamily:"var(--font-syne)", fontWeight:700, fontSize:"clamp(0.9rem,2vw,1rem)", marginBottom:"0.5rem", lineHeight:1.3, wordBreak:"break-word" }}>
+                    <h3 style={{ fontFamily:"var(--font-syne)", fontWeight:700, fontSize:"clamp(1.05rem,2.2vw,1.18rem)", marginBottom:"0.45rem", lineHeight:1.3, wordBreak:"break-word" }}>
                       {pick(project as Record<string,unknown>, "title", locale)}
                     </h3>
-                    <p style={{ fontSize:"0.82rem", color:"var(--text-secondary)", lineHeight:1.7, marginBottom:"0.875rem", display:"-webkit-box", WebkitLineClamp:3, WebkitBoxOrient:"vertical", overflow:"hidden", flex:1 }}>
+                    <p style={{ fontSize:"0.9rem", color:"var(--text-secondary)", lineHeight:1.7, marginBottom:"0.875rem", display:"-webkit-box", WebkitLineClamp:3, WebkitBoxOrient:"vertical", overflow:"hidden", flex:1 }}>
                       {pick(project as Record<string,unknown>, "description", locale)}
                     </p>
-                    <div style={{ display:"flex", flexWrap:"wrap", gap:"0.35rem", marginBottom:"0.875rem" }}>
-                      {project.technologies.slice(0,4).map(t => (
-                        <span key={t} className="tag-badge" style={{ fontSize:"0.65rem" }}>{t}</span>
-                      ))}
-                      {project.technologies.length > 4 && (
-                        <span className="tag-badge" style={{ fontSize:"0.65rem" }}>+{project.technologies.length-4}</span>
-                      )}
-                    </div>
+                    {project.technologies.length > 0 && (
+                      <p style={{ fontSize:"0.82rem", color:"var(--text-muted)", lineHeight:1.6, marginBottom:"0.875rem", wordBreak:"break-word" }}>
+                        {project.technologies.slice(0,4).join(" · ")}
+                        {project.technologies.length > 4 ? ` +${project.technologies.length-4}` : ""}
+                      </p>
+                    )}
                     <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginTop:"auto" }}>
-                      <span style={{ fontSize:"0.78rem", fontWeight:600, color:"#06b6d4" }}>
+                      <span style={{ fontSize:"0.85rem", fontWeight:600, color:"#06b6d4" }}>
                         {tl("viewDetails")} →
                       </span>
                       {project.viewCount > 0 && (

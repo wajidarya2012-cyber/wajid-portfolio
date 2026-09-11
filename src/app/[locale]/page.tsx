@@ -2,6 +2,8 @@ import { Fragment } from "react";
 import { setRequestLocale } from "next-intl/server";
 import { prisma }          from "@/lib/prisma";
 import { resolveSectionOrder, type NavItemConfig } from "@/lib/navConfig";
+import { t as pick } from "@/lib/utils";
+import { localizedSeo } from "@/lib/localeUrls";
 import HeroSection         from "@/components/public/HeroSection";
 import AboutSection        from "@/components/public/AboutSection";
 import SkillsSection       from "@/components/public/SkillsSection";
@@ -19,15 +21,19 @@ export const revalidate = 0;
 
 export async function generateMetadata({ params: { locale } }: { params: { locale: string } }) {
   const profile = await prisma.profile.findFirst().catch(() => null);
-  const name    = locale==="ps" ? profile?.fullName_ps : locale==="fa" ? profile?.fullName_fa : profile?.fullName_en ?? "Wajid Ali Arya";
-  const title   = locale==="ps" ? profile?.title_ps   : locale==="fa" ? profile?.title_fa    : profile?.title_en   ?? "IT Manager & Software Developer";
+  const p       = (profile ?? {}) as Record<string, unknown>;
+  const name    = pick(p, "fullName", locale) || "Wajid Ali Arya";
+  const title   = pick(p, "title", locale)    || "IT Manager & Software Developer";
+  const bio     = pick(p, "bio", locale)      || "Professional portfolio";
+  const seo = localizedSeo({ type: "home" }, locale);
   return {
     title:       `${name} | ${title}`,
-    description: locale==="ps" ? profile?.bio_ps : locale==="fa" ? profile?.bio_fa : profile?.bio_en ?? "Professional portfolio",
+    description: bio,
+    alternates:  seo.alternates,
     openGraph: {
+      ...seo.openGraph,
       title:       `${name} | ${title}`,
-      description: locale==="ps" ? profile?.bio_ps : locale==="fa" ? profile?.bio_fa : profile?.bio_en ?? "",
-      locale,
+      description: bio,
     },
   };
 }

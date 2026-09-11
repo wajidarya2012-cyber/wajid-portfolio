@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { projectSchema } from "@/lib/validations";
 import { requireAdmin, logActivity } from "@/lib/adminGuard";
+import { revalidateProjects } from "@/lib/revalidate";
 import { Prisma } from "@prisma/client";
 
 type Params = { params: { id: string } };
@@ -72,6 +73,7 @@ export async function PUT(request: NextRequest, { params }: Params) {
     });
 
     await logActivity(user!.id, "UPDATE", "Project", `Updated project: ${project.title_en}`, project.id, request);
+    revalidateProjects();
     return NextResponse.json({ success: true, data: project });
   } catch (e: unknown) {
     if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
@@ -106,6 +108,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
 
   const project = await prisma.project.update({ where: { id: params.id }, data });
   await logActivity(user!.id, "UPDATE", "Project", `Updated project: ${project.title_en}`, project.id, request);
+  revalidateProjects();
   return NextResponse.json({ success: true, data: project });
 }
 
@@ -118,5 +121,6 @@ export async function DELETE(request: NextRequest, { params }: Params) {
 
   await prisma.project.delete({ where: { id: params.id } });
   await logActivity(user!.id, "DELETE", "Project", `Deleted project: ${project.title_en}`, params.id, request);
+  revalidateProjects();
   return NextResponse.json({ success: true });
 }

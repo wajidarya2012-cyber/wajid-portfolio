@@ -10,6 +10,7 @@ export async function GET(request: NextRequest) {
     const projects = await prisma.project.findMany({
       where: {
         status: "ACTIVE",
+        visible: true,
         ...(featured     ? { featured: true }                               : {}),
         ...(categorySlug ? { category: { slug: categorySlug } }            : {}),
       },

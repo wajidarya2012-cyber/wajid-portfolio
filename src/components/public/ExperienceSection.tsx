@@ -88,7 +88,7 @@ export default function ExperienceSection({ experience, locale, config }: { expe
   }
 
   return (
-    <section id="experience" style={{ padding:"5.5rem 0", ...bgStyle }}>
+    <section id="experience" style={{ padding:"4.25rem 0", ...bgStyle }}>
       {bg === "image" && config?.backgroundImage && (
         <>
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -118,49 +118,59 @@ export default function ExperienceSection({ experience, locale, config }: { expe
           </p>
         )}
 
-        {/* TIMELINE layout (default) */}
+        {/* TIMELINE layout (default) — Phase 34: rebuilt as a CV career history.
+            Was one glass-card per role with an indigo date pill, indigo organisation text
+            and cyan technology pills. Now: date first, then role, then organisation, then
+            summary/achievements — the reading order of a professional CV — carried by
+            typography and a single rail instead of a card per job.
+            Rail/dot/offset use LOGICAL properties so the timeline mirrors correctly in
+            Pashto/Dari; the previous paddingLeft + borderLeft + left:-2.25rem put the rail
+            on the wrong side in RTL. */}
         {layout === "timeline" && (
-          <div style={{ position:"relative", paddingLeft:"1.5rem", borderLeft:"2px solid rgba(79,70,229,0.3)" }}>
+          <div style={{ position:"relative", paddingInlineStart:"1.75rem", borderInlineStart:"1px solid var(--border)" }}>
             {items.map((exp, idx) => {
               const e = exp as unknown as Record<string, unknown>;
+              const period = `${fmtYear(exp.startDate)} — ${exp.isCurrent ? tl("present") : exp.endDate ? fmtYear(exp.endDate) : ""}`;
               return (
-                <div key={exp.id} className="reveal" style={{ position:"relative", marginBottom: idx===items.length-1?"0":"2.25rem", transitionDelay:`${idx*0.1}s` }}>
-                  <div style={{ position:"absolute", left:"-2.25rem", top:"1.25rem", width:"14px", height:"14px", borderRadius:"50%", background:G, boxShadow:"0 0 0 4px rgba(79,70,229,0.18)", flexShrink:0 }} />
-                  <div className="glass-card" style={{ borderRadius:"16px", padding:"clamp(1rem,3vw,1.5rem)", marginLeft:"0.5rem", transition:"all 0.25s", minWidth:0, overflow:"hidden" }}
-                    onMouseEnter={ev=>{ const el=ev.currentTarget as HTMLElement; el.style.transform="translateX(4px)"; el.style.borderColor="rgba(79,70,229,0.4)"; el.style.boxShadow="0 8px 28px rgba(79,70,229,0.12)"; }}
-                    onMouseLeave={ev=>{ const el=ev.currentTarget as HTMLElement; el.style.transform="none"; el.style.borderColor="var(--border)"; el.style.boxShadow="var(--shadow-card)"; }}>
-                    <div style={{ display:"flex", flexWrap:"wrap", alignItems:"flex-start", justifyContent:"space-between", gap:"0.5rem", marginBottom:"0.5rem" }}>
-                      <div style={{ display:"flex", alignItems:"center", gap:"0.6rem", minWidth:0, flex:1 }}>
-                        {e.logoUrl ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={e.logoUrl as string} alt="" style={{ width:"32px", height:"32px", borderRadius:"8px", objectFit:"cover", flexShrink:0, background:"#fff" }} />
-                        ) : null}
-                        <h3 style={{ fontFamily:"var(--font-syne)", fontWeight:700, fontSize:"clamp(0.95rem,2vw,1.05rem)", wordBreak:"break-word", minWidth:0 }}>
-                          {pick(exp as Record<string,unknown>,"role",safeLocale)} {e.featured ? <span title={tl("featured")} style={{ fontSize:"0.75rem" }}>⭐</span> : null}
-                        </h3>
-                      </div>
-                      <span style={{ fontFamily:"var(--font-fira)", fontSize:"0.7rem", padding:"0.22rem 0.75rem", borderRadius:"9999px", background:"rgba(79,70,229,0.1)", border:"1px solid rgba(79,70,229,0.25)", color:"#06b6d4", whiteSpace:"nowrap", flexShrink:0 }}>
-                        {fmtYear(exp.startDate)} — {exp.isCurrent ? tl("present") : exp.endDate ? fmtYear(exp.endDate) : ""}
-                      </span>
-                    </div>
-                    <p style={{ fontWeight:600, fontSize:"0.875rem", color:"#818cf8", marginBottom:"0.75rem", wordBreak:"break-word" }}>
-                      {pick(exp as Record<string,unknown>,"organization",safeLocale)}
-                    </p>
-                    <ExpMeta exp={exp} />
-                    <p style={{ fontSize:"0.875rem", lineHeight:1.8, color:"var(--text-secondary)", marginBottom:"1rem", wordBreak:"break-word" }}>
-                      {pick(exp as Record<string,unknown>,"description",safeLocale)}
-                    </p>
-                    <div style={{ display:"flex", flexWrap:"wrap", gap:"0.4rem" }}>
-                      {exp.technologies.map(tech => (
-                        <span key={tech} className="accent-badge" style={{ fontSize:"0.68rem" }}>{tech}</span>
-                      ))}
-                    </div>
+                <div key={exp.id} className="reveal" style={{ position:"relative", marginBottom: idx===items.length-1?"0":"2.75rem", transitionDelay:`${idx*0.1}s`, minWidth:0 }}>
+                  <span aria-hidden style={{ position:"absolute", insetInlineStart:"-2.03rem", top:"0.45rem", width:"9px", height:"9px", borderRadius:"50%", background: exp.isCurrent ? "#4f46e5" : "var(--border-hover)", outline:"3px solid var(--bg-secondary)" }} />
+
+                  <p style={{ fontSize:"0.8rem", fontWeight:600, color:"var(--text-muted)", marginBottom:"0.3rem" }}>
+                    {period}{e.employmentType ? ` · ${e.employmentType as string}` : ""}
+                  </p>
+
+                  <div style={{ display:"flex", alignItems:"center", gap:"0.6rem", minWidth:0, marginBottom:"0.15rem" }}>
+                    {e.logoUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={e.logoUrl as string} alt="" style={{ width:"28px", height:"28px", borderRadius:"6px", objectFit:"cover", flexShrink:0, background:"#fff" }} />
+                    ) : null}
+                    <h3 style={{ fontFamily:"var(--font-syne)", fontWeight:700, fontSize:"clamp(1.05rem,2.2vw,1.2rem)", lineHeight:1.3, wordBreak:"break-word", minWidth:0 }}>
+                      {pick(exp as Record<string,unknown>,"role",safeLocale)}
+                      {e.featured ? <span title={tl("featured")} style={{ fontSize:"0.8rem", marginInlineStart:"0.35rem" }}>⭐</span> : null}
+                    </h3>
                   </div>
+
+                  <p style={{ fontSize:"0.95rem", fontWeight:500, color:"var(--text-secondary)", marginBottom:"0.7rem", wordBreak:"break-word" }}>
+                    {pick(exp as Record<string,unknown>,"organization",safeLocale)}
+                  </p>
+
+                  <p style={{ fontSize:"0.92rem", lineHeight:1.75, color:"var(--text-secondary)", marginBottom:"0.2rem", wordBreak:"break-word", maxWidth:"62ch" }}>
+                    {pick(exp as Record<string,unknown>,"description",safeLocale)}
+                  </p>
+
+                  <ExpMeta exp={exp} />
+
+                  {exp.technologies.length > 0 && (
+                    <p style={{ fontSize:"0.85rem", color:"var(--text-muted)", marginTop:"0.7rem", lineHeight:1.7, wordBreak:"break-word" }}>
+                      <span style={{ fontWeight:600, color:"var(--text-secondary)" }}>{tl("technologies")}: </span>
+                      {exp.technologies.join(" · ")}
+                    </p>
+                  )}
                 </div>
               );
             })}
             {items.length===0 && (
-              <p style={{ color:"var(--text-muted)", fontSize:"0.875rem", padding:"2rem 0.5rem" }}>{tl("noEntries")}</p>
+              <p style={{ color:"var(--text-muted)", fontSize:"0.9rem", padding:"2rem 0.5rem" }}>{tl("noEntries")}</p>
             )}
           </div>
         )}

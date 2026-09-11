@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 
 export default function ScrollUI() {
+  const t = useTranslations("common");
   const [progress, setProgress] = useState(0);
   const [visible, setVisible]   = useState(false);
 
@@ -33,7 +35,7 @@ export default function ScrollUI() {
       <button
         className={`back-to-top ${visible ? "visible" : ""}`}
         onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-        aria-label="Back to top"
+        aria-label={t("backToTop")}
         style={{
           position: "fixed",
           bottom: "clamp(1rem,3vw,2rem)",
