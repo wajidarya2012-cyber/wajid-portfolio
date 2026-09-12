@@ -222,22 +222,22 @@ export default function EducationManager({ initialData, initialSectionConfig }: 
       <div className="admin-card">
         <h3 style={{ fontWeight:700, fontSize:"0.9rem", marginBottom:"0.25rem" }}>Education Section — Layout & Content</h3>
         <p style={{ fontSize:"0.78rem", color:"var(--text-muted)", marginBottom:"1rem" }}>Leave title/subtitle/description empty to use the site defaults.</p>
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:"0.75rem", marginBottom:"0.75rem" }}>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,200px),1fr))", gap:"0.75rem", marginBottom:"0.75rem" }}>
           <div><label style={lbl}>Title (EN)</label><input value={section.title_en} onChange={e=>setSection(p=>({...p,title_en:e.target.value}))} style={inp} /></div>
           <div><label style={lbl}>Title (پښتو)</label><input value={section.title_ps} onChange={e=>setSection(p=>({...p,title_ps:e.target.value}))} style={{...inp,direction:"rtl"}} /></div>
           <div><label style={lbl}>Title (دری)</label><input value={section.title_fa} onChange={e=>setSection(p=>({...p,title_fa:e.target.value}))} style={{...inp,direction:"rtl"}} /></div>
         </div>
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:"0.75rem", marginBottom:"0.75rem" }}>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,200px),1fr))", gap:"0.75rem", marginBottom:"0.75rem" }}>
           <div><label style={lbl}>Subtitle (EN)</label><input value={section.subtitle_en} onChange={e=>setSection(p=>({...p,subtitle_en:e.target.value}))} style={inp} /></div>
           <div><label style={lbl}>Subtitle (پښتو)</label><input value={section.subtitle_ps} onChange={e=>setSection(p=>({...p,subtitle_ps:e.target.value}))} style={{...inp,direction:"rtl"}} /></div>
           <div><label style={lbl}>Subtitle (دری)</label><input value={section.subtitle_fa} onChange={e=>setSection(p=>({...p,subtitle_fa:e.target.value}))} style={{...inp,direction:"rtl"}} /></div>
         </div>
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:"0.75rem", marginBottom:"1rem" }}>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,200px),1fr))", gap:"0.75rem", marginBottom:"1rem" }}>
           <div><label style={lbl}>Description (EN)</label><input value={section.description_en} onChange={e=>setSection(p=>({...p,description_en:e.target.value}))} style={inp} /></div>
           <div><label style={lbl}>Description (پښتو)</label><input value={section.description_ps} onChange={e=>setSection(p=>({...p,description_ps:e.target.value}))} style={{...inp,direction:"rtl"}} /></div>
           <div><label style={lbl}>Description (دری)</label><input value={section.description_fa} onChange={e=>setSection(p=>({...p,description_fa:e.target.value}))} style={{...inp,direction:"rtl"}} /></div>
         </div>
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:"0.75rem", marginBottom:"1rem" }}>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,200px),1fr))", gap:"0.75rem", marginBottom:"1rem" }}>
           <div>
             <label style={lbl}>Background</label>
             <select value={section.background} onChange={e=>setSection(p=>({...p,background:e.target.value as SectionConfig["background"]}))} style={inp}>
@@ -290,7 +290,7 @@ export default function EducationManager({ initialData, initialSectionConfig }: 
           </div>
           {TABS.filter(t=>t.key===tab).map(({key,dir})=>(
             <div key={key} style={{ display:"flex", flexDirection:"column", gap:"0.75rem" }}>
-              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"0.75rem" }}>
+              <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,220px),1fr))", gap:"0.75rem" }}>
                 <div><label style={lbl}>Degree *</label><input value={(form as Record<string,unknown>)[`degree_${key}`] as string} onChange={e=>set(`degree_${key}`,e.target.value)} style={{ ...inp, direction:dir as "ltr"|"rtl" }} /></div>
                 <div><label style={lbl}>Institution *</label><input value={(form as Record<string,unknown>)[`institution_${key}`] as string} onChange={e=>set(`institution_${key}`,e.target.value)} style={{ ...inp, direction:dir as "ltr"|"rtl" }} /></div>
               </div>
@@ -325,7 +325,7 @@ export default function EducationManager({ initialData, initialSectionConfig }: 
             </div>
           ))}
 
-          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr 60px", gap:"0.75rem" }}>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,150px),1fr))", gap:"0.75rem" }}>
             <div><label style={lbl}>Location</label><input value={form.location} onChange={e=>set("location",e.target.value)} style={inp} /></div>
             <div><label style={lbl}>Start Year *</label><input type="number" value={form.startYear} onChange={e=>set("startYear",Number(e.target.value))} style={inp} /></div>
             <div>

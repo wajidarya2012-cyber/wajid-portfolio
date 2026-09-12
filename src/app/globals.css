@@ -500,7 +500,16 @@ section { overflow-x: hidden; }
 ═══════════════════════════════════════════════ */
 .glass-card {
   overflow: hidden;
-  word-break: break-word;
+  /* Phase 37: was `word-break: break-word`, a legacy alias behaving like
+     `overflow-wrap: anywhere` — it breaks a word at ANY character as soon as the line is tight.
+     In the narrow admin table columns and skill rows that produced the reported "A/C/T/I/O/N"
+     vertical character stacking. `overflow-wrap: break-word` still stops a long unbreakable
+     string (a URL, a long slug) from overflowing its card, but only breaks a word that cannot
+     fit on a line of its own, so normal words stay intact.
+     NOTE: the `overflow: hidden` above beats Tailwind's `.overflow-x-auto` at equal specificity
+     (it is declared after `@tailwind utilities`), so a scrollable region inside a card must be
+     its own child element rather than the card itself — see ActivityLogTable.tsx. */
+  overflow-wrap: break-word;
 }
 
 /* ═══════════════════════════════════════════════

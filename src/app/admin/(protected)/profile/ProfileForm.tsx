@@ -358,7 +358,7 @@ export default function ProfileForm({ profile, heroBgImages }: { profile: Profil
           <h3 style={{ fontWeight:700, fontSize:"0.95rem", marginBottom:"0.25rem" }}>
             Content — {LOCALES.find(l=>l.key===key)?.label}
           </h3>
-          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"1rem" }}>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,220px),1fr))", gap:"1rem" }}>
             <div>
               <label style={labelStyle}>Full Name *</label>
               <input value={(form as Record<string,unknown>)[`fullName_${key}`] as string}
@@ -384,7 +384,7 @@ export default function ProfileForm({ profile, heroBgImages }: { profile: Profil
               onChange={e => set(`aboutText_${key}`, e.target.value)}
               rows={5} style={{ ...inputStyle, resize:"vertical", direction: dir }} />
           </div>
-          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:"1rem" }}>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,200px),1fr))", gap:"1rem" }}>
             <div>
               <label style={labelStyle}>Hero Greeting (optional)</label>
               <input value={(form as Record<string,unknown>)[`heroGreeting_${key}`] as string}
@@ -404,7 +404,7 @@ export default function ProfileForm({ profile, heroBgImages }: { profile: Profil
                 placeholder="Download CV" style={{ ...inputStyle, direction: dir }} />
             </div>
           </div>
-          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:"1rem" }}>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,200px),1fr))", gap:"1rem" }}>
             <div>
               <label style={labelStyle}>About — Section Title (optional)</label>
               <input value={(form as Record<string,unknown>)[`aboutTitle_${key}`] as string}
@@ -430,7 +430,7 @@ export default function ProfileForm({ profile, heroBgImages }: { profile: Profil
       {/* Contact info */}
       <div className="admin-card">
         <h3 style={{ fontWeight:700, fontSize:"0.95rem", marginBottom:"1rem" }}>Contact Information</h3>
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"1rem" }}>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,220px),1fr))", gap:"1rem" }}>
           {[
             { key:"email",    label:"Email *",   type:"email",  ph:"your@email.com" },
             { key:"phone",    label:"Phone",     type:"tel",    ph:"+93 XXX XXX XXXX" },
@@ -449,7 +449,7 @@ export default function ProfileForm({ profile, heroBgImages }: { profile: Profil
       {/* Social links */}
       <div className="admin-card">
         <h3 style={{ fontWeight:700, fontSize:"0.95rem", marginBottom:"1rem" }}>Social & Links</h3>
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"1rem" }}>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,220px),1fr))", gap:"1rem" }}>
           {[
             { key:"linkedinUrl", label:"LinkedIn URL", ph:"https://linkedin.com/in/..." },
             { key:"githubUrl",   label:"GitHub URL",   ph:"https://github.com/..." },
@@ -476,7 +476,7 @@ export default function ProfileForm({ profile, heroBgImages }: { profile: Profil
         <p style={{ fontSize:"0.8rem", color:"var(--text-muted)", marginBottom:"1rem" }}>
           Independently show or hide each platform in the Hero and Footer social icons — a blank URL is always hidden regardless of this toggle.
         </p>
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"0.6rem" }}>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,220px),1fr))", gap:"0.6rem" }}>
           {[
             { key:"showLinkedin",  label:"LinkedIn" },
             { key:"showGithub",    label:"GitHub" },
@@ -501,7 +501,7 @@ export default function ProfileForm({ profile, heroBgImages }: { profile: Profil
       {/* Hero Badges & Stats */}
       <div className="admin-card">
         <h3 style={{ fontWeight:700, fontSize:"0.95rem", marginBottom:"1rem" }}>Hero Section — Badges & Stats</h3>
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"1rem", marginBottom:"1rem" }}>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,220px),1fr))", gap:"1rem", marginBottom:"1rem" }}>
           <div>
             <label style={labelStyle}>Availability Badge Text (EN)</label>
             <input value={form.availableText_en} onChange={e => set("availableText_en", e.target.value)} placeholder="Available for Opportunities" style={inputStyle} />
@@ -542,7 +542,7 @@ export default function ProfileForm({ profile, heroBgImages }: { profile: Profil
         </p>
         <div style={{ display:"flex", flexDirection:"column", gap:"0.75rem" }}>
           {heroRoles.map((r, idx) => (
-            <div key={idx} style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr auto", gap:"0.5rem", alignItems:"center" }}>
+            <div key={idx} style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,150px),1fr))", gap:"0.5rem", alignItems:"center" }}>
               <input value={r.en} onChange={e => setHeroRoleField(idx, "en", e.target.value)} placeholder="English" style={inputStyle} />
               <input value={r.ps} onChange={e => setHeroRoleField(idx, "ps", e.target.value)} placeholder="پښتو" style={{ ...inputStyle, direction:"rtl" }} />
               <input value={r.fa} onChange={e => setHeroRoleField(idx, "fa", e.target.value)} placeholder="دری" style={{ ...inputStyle, direction:"rtl" }} />
@@ -600,7 +600,7 @@ export default function ProfileForm({ profile, heroBgImages }: { profile: Profil
         <p style={{ fontSize:"0.8rem", color:"var(--text-muted)", marginBottom:"1rem" }}>
           Toggle optional Hero elements on or off without touching any code.
         </p>
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"0.6rem" }}>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,220px),1fr))", gap:"0.6rem" }}>
           {[
             { key:"showGreeting",           label:"Greeting kicker" },
             { key:"showSubtitle",           label:"Subtitle (Professional Title)" },
@@ -625,7 +625,7 @@ export default function ProfileForm({ profile, heroBgImages }: { profile: Profil
       {/* Quick Facts */}
       <div className="admin-card">
         <h3 style={{ fontWeight:700, fontSize:"0.95rem", marginBottom:"1rem" }}>About Section — Quick Facts</h3>
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:"1rem" }}>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,200px),1fr))", gap:"1rem" }}>
           <div>
             <label style={labelStyle}>Education (EN)</label>
             <input value={form.education_en} onChange={e => set("education_en", e.target.value)} style={inputStyle} />
@@ -650,17 +650,17 @@ export default function ProfileForm({ profile, heroBgImages }: { profile: Profil
         <div style={{ display:"flex", flexDirection:"column", gap:"0.875rem" }}>
           {coreValues.map((v, idx) => (
             <div key={idx} style={{ padding:"0.875rem", background:"var(--bg-secondary)", borderRadius:"8px", display:"flex", flexDirection:"column", gap:"0.5rem" }}>
-              <div style={{ display:"grid", gridTemplateColumns:"60px 1fr 1fr 1fr", gap:"0.5rem" }}>
-                <input value={v.icon} onChange={e => setValueField(idx, "icon", e.target.value)} style={{ ...inputStyle, textAlign:"center" }} />
-                <input value={v.title_en} onChange={e => setValueField(idx, "title_en", e.target.value)} placeholder="Title (EN)" style={inputStyle} />
-                <input value={v.title_ps} onChange={e => setValueField(idx, "title_ps", e.target.value)} placeholder="سرلیک (پښتو)" style={{ ...inputStyle, direction:"rtl" }} />
-                <input value={v.title_fa} onChange={e => setValueField(idx, "title_fa", e.target.value)} placeholder="عنوان (دری)" style={{ ...inputStyle, direction:"rtl" }} />
+              <div style={{ display:"flex", flexWrap:"wrap", gap:"0.5rem" }}>
+                <input value={v.icon} onChange={e => setValueField(idx, "icon", e.target.value)} style={{ ...inputStyle, flex:"0 0 60px", textAlign:"center" }} />
+                <input value={v.title_en} onChange={e => setValueField(idx, "title_en", e.target.value)} placeholder="Title (EN)" style={{ flex:"1 1 150px", ...inputStyle }} />
+                <input value={v.title_ps} onChange={e => setValueField(idx, "title_ps", e.target.value)} placeholder="سرلیک (پښتو)" style={{ flex:"1 1 150px", ...inputStyle, direction:"rtl" }} />
+                <input value={v.title_fa} onChange={e => setValueField(idx, "title_fa", e.target.value)} placeholder="عنوان (دری)" style={{ flex:"1 1 150px", ...inputStyle, direction:"rtl" }} />
               </div>
-              <div style={{ display:"grid", gridTemplateColumns:"60px 1fr 1fr 1fr", gap:"0.5rem" }}>
-                <div />
-                <input value={v.desc_en} onChange={e => setValueField(idx, "desc_en", e.target.value)} placeholder="Description (EN)" style={inputStyle} />
-                <input value={v.desc_ps} onChange={e => setValueField(idx, "desc_ps", e.target.value)} placeholder="توضیحات (پښتو)" style={{ ...inputStyle, direction:"rtl" }} />
-                <input value={v.desc_fa} onChange={e => setValueField(idx, "desc_fa", e.target.value)} placeholder="توضیحات (دری)" style={{ ...inputStyle, direction:"rtl" }} />
+              <div style={{ display:"flex", flexWrap:"wrap", gap:"0.5rem" }}>
+                <div style={{ flex:"0 0 60px" }} />
+                <input value={v.desc_en} onChange={e => setValueField(idx, "desc_en", e.target.value)} placeholder="Description (EN)" style={{ flex:"1 1 150px", ...inputStyle }} />
+                <input value={v.desc_ps} onChange={e => setValueField(idx, "desc_ps", e.target.value)} placeholder="توضیحات (پښتو)" style={{ flex:"1 1 150px", ...inputStyle, direction:"rtl" }} />
+                <input value={v.desc_fa} onChange={e => setValueField(idx, "desc_fa", e.target.value)} placeholder="توضیحات (دری)" style={{ flex:"1 1 150px", ...inputStyle, direction:"rtl" }} />
               </div>
             </div>
           ))}
@@ -694,7 +694,7 @@ export default function ProfileForm({ profile, heroBgImages }: { profile: Profil
         <p style={{ fontSize:"0.8rem", color:"var(--text-muted)", marginBottom:"1rem" }}>
           Toggle optional About elements on or off without touching any code.
         </p>
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"0.6rem" }}>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,220px),1fr))", gap:"0.6rem" }}>
           {[
             { key:"showSubtitle",     label:"Subtitle" },
             { key:"showProfileImage", label:"Small profile image" },
@@ -721,7 +721,7 @@ export default function ProfileForm({ profile, heroBgImages }: { profile: Profil
           <label style={labelStyle}>Footer Tagline (EN)</label>
           <textarea value={form.footerTagline_en} onChange={e => set("footerTagline_en", e.target.value)} rows={2} style={{ ...inputStyle, resize:"vertical" }} />
         </div>
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"1rem" }}>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,220px),1fr))", gap:"1rem" }}>
           <div>
             <label style={labelStyle}>Certifications Count</label>
             <input type="number" min={0} value={form.certificationsCount} onChange={e => set("certificationsCount", Number(e.target.value))} style={inputStyle} />
@@ -736,7 +736,7 @@ export default function ProfileForm({ profile, heroBgImages }: { profile: Profil
       {/* Footer Bottom Bar */}
       <div className="admin-card">
         <h3 style={{ fontWeight:700, fontSize:"0.95rem", marginBottom:"1rem" }}>Footer — Copyright Line</h3>
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"1rem" }}>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,220px),1fr))", gap:"1rem" }}>
           <div>
             <label style={labelStyle}>Rights Text (EN)</label>
             <input value={form.footerRights_en} onChange={e => set("footerRights_en", e.target.value)} placeholder="All rights reserved." style={inputStyle} />
@@ -751,7 +751,7 @@ export default function ProfileForm({ profile, heroBgImages }: { profile: Profil
       {/* Admin Login Branding */}
       <div className="admin-card">
         <h3 style={{ fontWeight:700, fontSize:"0.95rem", marginBottom:"1rem" }}>Admin Login Page Branding</h3>
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"1rem", marginBottom:"1rem" }}>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,220px),1fr))", gap:"1rem", marginBottom:"1rem" }}>
           <div>
             <label style={labelStyle}>Brand Name</label>
             <input value={form.loginBrandName} onChange={e => set("loginBrandName", e.target.value)} style={inputStyle} />

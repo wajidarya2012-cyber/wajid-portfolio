@@ -187,22 +187,22 @@ export default function SkillsManager({ initialCategories, initialSectionConfig 
         <p style={{ fontSize:"0.78rem", color:"var(--text-muted)", marginBottom:"1rem" }}>
           Controls the section as a whole. Leave title/subtitle/description empty to use the site defaults.
         </p>
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:"0.75rem", marginBottom:"0.75rem" }}>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,200px),1fr))", gap:"0.75rem", marginBottom:"0.75rem" }}>
           <div><label style={lbl}>Title (EN)</label><input value={section.title_en} onChange={e=>setSection(p=>({...p,title_en:e.target.value}))} style={inputSm} /></div>
           <div><label style={lbl}>Title (پښتو)</label><input value={section.title_ps} onChange={e=>setSection(p=>({...p,title_ps:e.target.value}))} style={{...inputSm,direction:"rtl"}} /></div>
           <div><label style={lbl}>Title (دری)</label><input value={section.title_fa} onChange={e=>setSection(p=>({...p,title_fa:e.target.value}))} style={{...inputSm,direction:"rtl"}} /></div>
         </div>
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:"0.75rem", marginBottom:"0.75rem" }}>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,200px),1fr))", gap:"0.75rem", marginBottom:"0.75rem" }}>
           <div><label style={lbl}>Subtitle (EN)</label><input value={section.subtitle_en} onChange={e=>setSection(p=>({...p,subtitle_en:e.target.value}))} style={inputSm} /></div>
           <div><label style={lbl}>Subtitle (پښتو)</label><input value={section.subtitle_ps} onChange={e=>setSection(p=>({...p,subtitle_ps:e.target.value}))} style={{...inputSm,direction:"rtl"}} /></div>
           <div><label style={lbl}>Subtitle (دری)</label><input value={section.subtitle_fa} onChange={e=>setSection(p=>({...p,subtitle_fa:e.target.value}))} style={{...inputSm,direction:"rtl"}} /></div>
         </div>
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:"0.75rem", marginBottom:"1rem" }}>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,200px),1fr))", gap:"0.75rem", marginBottom:"1rem" }}>
           <div><label style={lbl}>Description (EN)</label><input value={section.description_en} onChange={e=>setSection(p=>({...p,description_en:e.target.value}))} style={inputSm} /></div>
           <div><label style={lbl}>Description (پښتو)</label><input value={section.description_ps} onChange={e=>setSection(p=>({...p,description_ps:e.target.value}))} style={{...inputSm,direction:"rtl"}} /></div>
           <div><label style={lbl}>Description (دری)</label><input value={section.description_fa} onChange={e=>setSection(p=>({...p,description_fa:e.target.value}))} style={{...inputSm,direction:"rtl"}} /></div>
         </div>
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:"0.75rem", marginBottom:"0.75rem" }}>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,160px),1fr))", gap:"0.75rem", marginBottom:"0.75rem" }}>
           <div>
             <label style={lbl}>Layout</label>
             <select value={section.layout} onChange={e=>setSection(p=>({...p,layout:e.target.value as SectionConfig["layout"]}))} style={inputSm}>
@@ -314,12 +314,18 @@ export default function SkillsManager({ initialCategories, initialSectionConfig 
                   <button className="btn-ghost" style={{ fontSize:"0.72rem", padding:"0.35rem 0.65rem" }} onClick={()=>setEditingSkillId(null)}>Cancel</button>
                 </div>
               ) : (
-                <div key={skill.id} style={{ display:"flex", alignItems:"center", gap:"0.6rem", padding:"0.6rem 0.75rem", borderRadius:"8px", background:"var(--bg-secondary)" }}>
-                  <div style={{ display:"flex", flexDirection:"column", gap:"1px" }}>
+                /* Phase 37: this was a single non-wrapping flex row. At 360px the reorder buttons,
+                   the 90px bar and four action buttons consumed nearly the whole width, leaving
+                   ~40px for the name — which is why skill names and the Pashto/Dari line broke one
+                   character per line in the screenshots. `flexWrap` plus a flex-basis on the name
+                   block lets the name take its own line when there is no room; on desktop
+                   everything still fits on one line exactly as before. */
+                <div key={skill.id} style={{ display:"flex", flexWrap:"wrap", alignItems:"center", gap:"0.6rem", padding:"0.6rem 0.75rem", borderRadius:"8px", background:"var(--bg-secondary)" }}>
+                  <div style={{ display:"flex", flexDirection:"column", gap:"1px", flexShrink:0 }}>
                     <button onClick={()=>moveSkill(cat.id,skill.id,-1)} disabled={sIdx===0} className="btn-ghost" style={{ padding:"0.05rem 0.3rem", fontSize:"0.6rem", lineHeight:1 }}>▲</button>
                     <button onClick={()=>moveSkill(cat.id,skill.id,1)} disabled={sIdx===arr.length-1} className="btn-ghost" style={{ padding:"0.05rem 0.3rem", fontSize:"0.6rem", lineHeight:1 }}>▼</button>
                   </div>
-                  <div style={{ flex:1, minWidth:0 }}>
+                  <div style={{ flex:"1 1 170px", minWidth:0 }}>
                     <p style={{ fontSize:"0.82rem", fontWeight:600, display:"flex", alignItems:"center", gap:"0.35rem" }}>
                       {skill.icon && <span>{skill.icon}</span>} {skill.name_en}
                       {skill.featured && <span title="Featured" style={{ fontSize:"0.7rem" }}>⭐</span>}

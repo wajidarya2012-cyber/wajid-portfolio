@@ -71,7 +71,7 @@ export default function CertManager({ initialData }: { initialData: Certificatio
 
           {TABS.filter(t=>t.key===tab).map(({key,dir})=>(
             <div key={key} style={{ display:"flex", flexDirection:"column", gap:"0.75rem" }}>
-              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"0.75rem" }}>
+              <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,220px),1fr))", gap:"0.75rem" }}>
                 <div>
                   <label style={lbl}>Certification Name *</label>
                   <input value={(form as Record<string,unknown>)[`name_${key}`] as string}
@@ -94,16 +94,16 @@ export default function CertManager({ initialData }: { initialData: Certificatio
             </div>
           ))}
 
-          <div style={{ display:"grid", gridTemplateColumns:"80px 1fr 1fr", gap:"0.75rem" }}>
-            <div>
+          <div style={{ display:"flex", flexWrap:"wrap", gap:"0.75rem" }}>
+            <div style={{ flex:"0 0 80px" }}>
               <label style={lbl}>Icon</label>
               <input value={form.icon} onChange={e=>set("icon",e.target.value)} style={inp} />
             </div>
-            <div>
+            <div style={{ flex:"1 1 150px" }}>
               <label style={lbl}>Year</label>
               <input type="number" value={form.year} onChange={e=>set("year",e.target.value)} placeholder="2024" style={inp} />
             </div>
-            <div>
+            <div style={{ flex:"1 1 150px" }}>
               <label style={lbl}>Credential URL</label>
               <input type="url" value={form.credentialUrl} onChange={e=>set("credentialUrl",e.target.value)} placeholder="https://..." style={inp} />
             </div>

@@ -474,7 +474,7 @@ export default function SettingsForm({ settingsMap, profile }: { settingsMap: Re
         <p style={{ fontSize:"0.8rem", color:"var(--text-muted)" }}>
           Quick Links reuse the Navigation Menu above. Contact info, working hours, and social links reuse your Profile — edit those there.
         </p>
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"1rem" }}>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,220px),1fr))", gap:"1rem" }}>
           <div>
             <label style={lbl}>Privacy Policy URL (optional)</label>
             <input value={footer.legal_privacy_url} onChange={e=>setFooter(p=>({...p,legal_privacy_url:e.target.value}))} style={inp} placeholder="https://..." />
@@ -486,7 +486,7 @@ export default function SettingsForm({ settingsMap, profile }: { settingsMap: Re
         </div>
         <div>
           <p style={{ ...lbl, marginBottom:"0.6rem" }}>Show / Hide Footer Sections</p>
-          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"0.6rem" }}>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,220px),1fr))", gap:"0.6rem" }}>
             {[
               { key:"showQuickLinks",   label:"Quick Links" },
               { key:"showContact",      label:"Contact Information" },
@@ -521,7 +521,7 @@ export default function SettingsForm({ settingsMap, profile }: { settingsMap: Re
             <input type="checkbox" checked={translate.showSelector} onChange={e=>setTranslate(p=>({...p,showSelector:e.target.checked}))} /> Show selector widget
           </label>
         </div>
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"0.75rem" }}>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,220px),1fr))", gap:"0.75rem" }}>
           <div>
             <label style={lbl}>Widget Position</label>
             <select value={translate.position} onChange={e=>setTranslate(p=>({...p,position:e.target.value}))} style={inp}>
@@ -539,7 +539,7 @@ export default function SettingsForm({ settingsMap, profile }: { settingsMap: Re
             </select>
           </div>
         </div>
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:"0.75rem" }}>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,200px),1fr))", gap:"0.75rem" }}>
           <div>
             <label style={lbl}>&quot;Translate to…&quot; Label (EN)</label>
             <input value={translate.label_en} onChange={e=>setTranslate(p=>({...p,label_en:e.target.value}))} style={inp} />
@@ -601,7 +601,7 @@ export default function SettingsForm({ settingsMap, profile }: { settingsMap: Re
           <label style={lbl}>Current Password</label>
           <input type="password" value={pwd.currentPassword} onChange={e=>setPwd(p=>({...p,currentPassword:e.target.value}))} style={inp} autoComplete="current-password" />
         </div>
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"0.75rem" }}>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,220px),1fr))", gap:"0.75rem" }}>
           <div>
             <label style={lbl}>New Password</label>
             <input type="password" value={pwd.newPassword} onChange={e=>setPwd(p=>({...p,newPassword:e.target.value}))} style={inp} autoComplete="new-password" />

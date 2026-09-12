@@ -73,8 +73,16 @@ export default function ActivityLogTable({ logs, total }: { logs: LogRow[]; tota
 
       {msg && <div className="alert-error">⚠️ {msg}</div>}
 
-      <div className="glass-card rounded-2xl overflow-hidden">
-        <table className="w-full text-sm">
+      {/* Phase 37: was `overflow-hidden` on a `w-full` 7-column table, so at 360px each column got
+          ~50px and the headers wrapped one character per line ("A/C/T/I/O/N"), with no way to
+          scroll. Option A (horizontal scroll) — but the scroller has to be a CHILD of the card:
+          `.glass-card` sets `overflow: hidden` in globals.css and, being declared after
+          `@tailwind utilities`, it beats `.overflow-x-auto` at equal specificity, so putting the
+          utility on the card itself silently does nothing. The card keeps its rounded clipping;
+          the inner div scrolls. Desktop is unchanged — 52rem is below every desktop width. */}
+      <div className="glass-card rounded-2xl">
+        <div className="overflow-x-auto">
+        <table className="w-full min-w-[52rem] text-sm">
           <thead>
             <tr className="border-b" style={{ borderColor: "var(--border)" }}>
               {["Action", "Description", "Entity", "User", "IP", "Time", ""].map(h => (
@@ -123,6 +131,7 @@ export default function ActivityLogTable({ logs, total }: { logs: LogRow[]; tota
             )}
           </tbody>
         </table>
+        </div>
       </div>
 
       {/* Clear-all confirmation modal */}

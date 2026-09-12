@@ -188,7 +188,7 @@ export default function ProjectCategoriesFullManager({ initialCategories }: { in
             </div>
           ))}
 
-          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"0.75rem" }}>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,220px),1fr))", gap:"0.75rem" }}>
             <div>
               <label style={lbl}>Slug *</label>
               <input value={form.slug} onChange={e => { setSlugTouched(true); setForm(p=>({...p, slug: e.target.value})); }} style={inp} />

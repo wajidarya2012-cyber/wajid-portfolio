@@ -101,7 +101,7 @@ export default function BlogPostForm({ post }: { post?: BlogPost }) {
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:"1.25rem" }}>
       {/* Status & Slug row */}
-      <div className="admin-card" style={{ display:"grid", gridTemplateColumns:"1fr 160px auto", gap:"1rem", alignItems:"end" }}>
+      <div className="admin-card" style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,170px),1fr))", gap:"1rem", alignItems:"end" }}>
         <div>
           <label style={lbl}>URL Slug *</label>
           <input value={form.slug} onChange={e=>set("slug",toSlug(e.target.value))} placeholder="my-blog-post" style={{ ...inp, fontFamily:"var(--font-fira)" }} />
@@ -203,7 +203,7 @@ export default function BlogPostForm({ post }: { post?: BlogPost }) {
               onChange={e=>set(`excerpt_${key}`,e.target.value)}
               rows={2} style={{ ...inp, resize:"vertical", direction:dir as "ltr"|"rtl" }} />
           </div>
-          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"0.75rem", paddingTop:"0.5rem", borderTop:"1px solid var(--border)" }}>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,220px),1fr))", gap:"0.75rem", paddingTop:"0.5rem", borderTop:"1px solid var(--border)" }}>
             <div>
               <label style={lbl}>SEO Meta Title</label>
               <input value={form[localeKey("metaTitle",key)]} onChange={e=>set(`metaTitle_${key}`,e.target.value)} style={inp} />
