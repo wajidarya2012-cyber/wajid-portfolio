@@ -6,7 +6,7 @@ import { usePathname, useRouter }      from "next/navigation";
 import { useTranslations }             from "next-intl";
 import { useTheme }                    from "./ThemeProvider";
 import { locales }                     from "@/i18n";
-import { buildNavItems, type NavItemConfig } from "@/lib/navConfig";
+import { buildNavItems, NAV_LINKS, type NavItemConfig } from "@/lib/navConfig";
 
 const LOCALE_LABELS: Record<string,string> = { en:"EN", ps:"پښتو", fa:"دری" };
 
@@ -25,6 +25,8 @@ export default function Navbar({ locale, brandName = "W.Arya", brandTagline = "I
   const [activeHash, setActiveHash] = useState("");
   const clickLockRef = useRef<string | null>(null);
   const clickLockTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const navRef = useRef<HTMLElement>(null);
+  const updateActiveRef = useRef<() => void>(() => {});
 
   // Nav order/visibility already reflects the real homepage section order (see
   // buildNavItems's `sectionOrder` param) — deriving the highlighted-section id list from
@@ -32,44 +34,99 @@ export default function Navbar({ locale, brandName = "W.Arya", brandTagline = "I
   // active-section tracking from drifting out of sync when sections are reordered/hidden.
   const navItems = buildNavItems(navConfig, locale, t, sectionOrder);
   const anchorIds = navItems.filter(item => item.href.startsWith("#")).map(item => item.key);
+  const anchorKey = anchorIds.join(",");
+
+  const releaseClickLock = () => { clickLockRef.current = null; updateActiveRef.current(); };
 
   useEffect(() => {
     const onScrollBg = () => setScrolled(window.scrollY > 30);
     window.addEventListener("scroll", onScrollBg, { passive:true });
 
-    // Track which section is currently most visible using IntersectionObserver
-    // (avoids the manual-scroll-math race that could show two "active" links at once).
-    const visibleRatios = new Map<string, number>();
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => { visibleRatios.set(entry.target.id, entry.intersectionRatio); });
+    // Active section = the homepage section covering the most of the viewport below the
+    // navbar. A pure function of scroll position, so it is direction-independent and can't
+    // flicker or go stale. (The previous IntersectionObserver ranked by intersectionRatio —
+    // the share of the *section* visible, which favours short sections — only refreshed at
+    // threshold crossings, and never updated while no linked section was in its band, which
+    // left the last item stuck over the hero and over sections without a nav link.)
+    // Candidates are every homepage section, linked or not, so an unlinked section such as
+    // Certifications can be the primary one; it then maps to the nearest linked section above it.
+    const sectionIds = ["hero", ...NAV_LINKS.map(l => l.key)];
+    const linked = new Set(anchorKey ? anchorKey.split(",") : []);
 
-      // A click just fired — trust it over the observer for a short grace period
-      // so smooth-scroll doesn't briefly re-activate a section it's passing through.
+    const update = () => {
       if (clickLockRef.current) return;
+      const sections = sectionIds
+        .map(id => document.getElementById(id))
+        .filter((el): el is HTMLElement => !!el)
+        .sort((a, b) => (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1));
+      const top = navRef.current?.getBoundingClientRect().bottom ?? 0;
+      const vh  = window.innerHeight;
 
-      let bestId = "";
-      let bestRatio = 0;
-      visibleRatios.forEach((ratio, id) => {
-        if (ratio > bestRatio) { bestRatio = ratio; bestId = id; }
+      let primary = -1, bestPx = 0;
+      sections.forEach((el, i) => {
+        const r  = el.getBoundingClientRect();
+        const px = Math.min(r.bottom, vh) - Math.max(r.top, top);
+        if (px > bestPx) { bestPx = px; primary = i; }
       });
-      if (bestId) setActiveHash(`#${bestId}`);
-    }, { threshold: [0, 0.15, 0.3, 0.5, 0.75, 1], rootMargin: "-80px 0px -40% 0px" });
 
-    anchorIds.forEach(id => {
-      const el = document.getElementById(id);
-      if (el) observer.observe(el);
-    });
+      // At the very bottom a short final section may never be the largest — prefer the last
+      // linked section that is on screen so it can still become active.
+      const atBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2;
+      if (atBottom) {
+        for (let i = sections.length - 1; i >= 0; i--) {
+          const r = sections[i].getBoundingClientRect();
+          if (linked.has(sections[i].id) && r.top < vh && r.bottom > top) { primary = i; break; }
+        }
+      }
 
-    return () => { window.removeEventListener("scroll", onScrollBg); observer.disconnect(); };
+      let id = "";
+      for (let i = primary; i >= 0; i--) {
+        if (sections[i].id === "hero") break;
+        if (linked.has(sections[i].id)) { id = sections[i].id; break; }
+      }
+      setActiveHash(id ? `#${id}` : "");
+    };
+    updateActiveRef.current = update;
+
+    let raf = 0;
+    const schedule = () => { if (!raf) raf = requestAnimationFrame(() => { raf = 0; update(); }); };
+    const onScrollActive = () => {
+      // After a nav click, hold the clicked item until the smooth scroll settles rather than
+      // for a fixed time, so sections passed on the way never flash active.
+      if (clickLockRef.current) {
+        if (clickLockTimerRef.current) clearTimeout(clickLockTimerRef.current);
+        clickLockTimerRef.current = setTimeout(releaseClickLock, 150);
+        return;
+      }
+      schedule();
+    };
+    window.addEventListener("scroll", onScrollActive, { passive:true });
+    window.addEventListener("resize", schedule);
+    window.addEventListener("load", schedule);
+    schedule();
+
+    return () => {
+      window.removeEventListener("scroll", onScrollBg);
+      window.removeEventListener("scroll", onScrollActive);
+      window.removeEventListener("resize", schedule);
+      window.removeEventListener("load", schedule);
+      cancelAnimationFrame(raf);
+    };
+    // Re-bind when the page changes (this navbar persists across routes in the layout) or the
+    // linked sections change.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [pathname, anchorKey]);
+
+  useEffect(() => () => { if (clickLockTimerRef.current) clearTimeout(clickLockTimerRef.current); }, []);
 
   function handleNavClick(href: string) {
     if (!href.startsWith("#")) return;
     setActiveHash(href);
     clickLockRef.current = href;
     if (clickLockTimerRef.current) clearTimeout(clickLockTimerRef.current);
-    clickLockTimerRef.current = setTimeout(() => { clickLockRef.current = null; }, 900);
+    // Released 150ms after scrolling stops (see onScrollActive); this covers a click that
+    // causes no scroll at all, e.g. the section is already in place.
+    clickLockTimerRef.current = setTimeout(releaseClickLock, 900);
   }
 
   // Close mobile menu on route change
@@ -96,7 +153,7 @@ export default function Navbar({ locale, brandName = "W.Arya", brandTagline = "I
 
   return (
     <>
-      <nav style={navStyle} role="navigation" aria-label="Main navigation">
+      <nav ref={navRef} style={navStyle} role="navigation" aria-label="Main navigation">
         {/* Subtle brand-gradient hairline along the bottom edge — reinforces depth without being a distinct animated element */}
         <div aria-hidden style={{
           position:"absolute", left:0, right:0, bottom:0, height:"1px", pointerEvents:"none",
