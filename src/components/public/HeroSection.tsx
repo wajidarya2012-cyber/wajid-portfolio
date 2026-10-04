@@ -201,7 +201,7 @@ export default function HeroSection({ profile, locale, heroBgSlides = [] }: { pr
                   aria-hidden="true"
                   loading={i === 0 ? "eager" : "lazy"}
                   decoding="async"
-                  className="hero-bg-img"
+                  className={slide.mobileUrl ? "hero-bg-img" : "hero-bg-img hero-bg-img--desktop-only"}
                 />
               </picture>
             </div>
@@ -216,7 +216,7 @@ export default function HeroSection({ profile, locale, heroBgSlides = [] }: { pr
       {/* Bottom gradient fade */}
       <div style={{ position:"absolute", bottom:0, left:0, right:0, height:"180px", background:"linear-gradient(to top,var(--bg-primary),transparent)", pointerEvents:"none" }} />
 
-      <div className="section-container" style={{ position:"relative", zIndex:1, width:"100%", paddingTop:"3.5rem", paddingBottom:"4rem" }}>
+      <div className="section-container hero-content" style={{ position:"relative", zIndex:1, width:"100%", paddingTop:"3.5rem", paddingBottom:"4rem" }}>
         <div className="hero-grid" style={{ display:"grid", gridTemplateColumns:"minmax(0,1fr) minmax(0,340px)", gap:"clamp(2rem,5vw,4rem)", alignItems:"center" }}>
 
           {/* ── LEFT ── */}
@@ -239,7 +239,7 @@ export default function HeroSection({ profile, locale, heroBgSlides = [] }: { pr
             )}
 
             {/* Name */}
-            <h1 style={{ fontFamily:"var(--font-syne)", fontSize:"clamp(1.9rem,5vw,3.8rem)", fontWeight:800, lineHeight:1.08, letterSpacing:"-0.03em", marginBottom:"0.5rem", color:"var(--text-primary)", wordBreak:"break-word" }}>
+            <h1 className="hero-name" style={{ fontFamily:"var(--font-syne)", fontSize:"clamp(1.9rem,5vw,3.8rem)", fontWeight:800, lineHeight:1.08, letterSpacing:"-0.03em", marginBottom:"0.5rem", color:"var(--text-primary)", wordBreak:"break-word" }}>
               {fullName}
             </h1>
 
@@ -257,7 +257,7 @@ export default function HeroSection({ profile, locale, heroBgSlides = [] }: { pr
             </div>
 
             {/* Bio */}
-            <p style={{ fontSize:"clamp(0.875rem,1.5vw,1rem)", lineHeight:1.85, color:"var(--text-secondary)", maxWidth:"min(520px,100%)", marginBottom:"2rem" }}>
+            <p className="hero-bio" style={{ fontSize:"clamp(0.875rem,1.5vw,1rem)", lineHeight:1.85, color:"var(--text-secondary)", maxWidth:"min(520px,100%)", marginBottom:"2rem" }}>
               {bio ?? t("bio")}
             </p>
 
@@ -310,7 +310,7 @@ export default function HeroSection({ profile, locale, heroBgSlides = [] }: { pr
                 <p style={{ fontSize:"0.68rem", fontWeight:700, textTransform:"uppercase", letterSpacing:"0.14em", color:"var(--text-muted)", marginBottom:"0.75rem", fontFamily:"var(--font-fira)" }}>
                   Core Technologies
                 </p>
-                <div style={{ display:"flex", flexWrap:"wrap", gap:"0.45rem" }}>
+                <div className="hero-tech-tags" style={{ display:"flex", flexWrap:"wrap", gap:"0.45rem" }}>
                   {techTags.map(tech => (
                     <span key={tech} className="tag-badge">{tech}</span>
                   ))}
@@ -321,12 +321,12 @@ export default function HeroSection({ profile, locale, heroBgSlides = [] }: { pr
 
           {/* ── RIGHT — photo ── */}
           <div className="hero-photo-col" style={{ display:"flex", justifyContent:"center", alignItems:"center" }}>
-            <div style={{ position:"relative", width:"320px", height:"320px" }}>
+            <div className="hero-photo-frame" style={{ position:"relative", width:"320px", height:"320px" }}>
               {/* Decorative rotating rings + portrait glow removed in Phase 33 — they read as
                   AI/startup ornament. The portrait now carries a single quiet ring. */}
 
               {/* Photo */}
-              <div style={{ width:"320px", height:"320px", borderRadius:"50%", padding:"2px", background:"var(--border-hover)", boxShadow:"var(--shadow-card)" }}>
+              <div className="hero-photo" style={{ width:"320px", height:"320px", borderRadius:"50%", padding:"2px", background:"var(--border-hover)", boxShadow:"var(--shadow-card)" }}>
                 <div style={{ width:"100%", height:"100%", borderRadius:"50%", background:"var(--bg-secondary)", overflow:"hidden", display:"flex", alignItems:"center", justifyContent:"center" }}>
                   {profile?.photoUrl
                     ? <Image src={profile.photoUrl} alt={fullName ?? "Wajid Ali Arya"} width={320} height={320} style={{ objectFit:"cover", objectPosition:"center 30%", width:"100%", height:"100%" }} priority unoptimized />
@@ -340,9 +340,12 @@ export default function HeroSection({ profile, locale, heroBgSlides = [] }: { pr
                 </div>
               </div>
 
+              {/* Badges — `display:contents` keeps them positioned against the frame on desktop;
+                  on mobile this wrapper becomes a row beneath the portrait (see <style> below). */}
+              <div className="hero-photo-badges" style={{ display:"contents" }}>
               {/* CS badge */}
               {show("showProfileBadge") && (
-                <div className="glass-card" style={{ position:"absolute", top:"14px", left:"-14px", borderRadius:"10px", padding:"0.6rem 0.85rem", display:"flex", alignItems:"center", gap:"0.5rem" }}>
+                <div className="glass-card hero-photo-badge" style={{ position:"absolute", top:"14px", left:"-14px", borderRadius:"10px", padding:"0.6rem 0.85rem", display:"flex", alignItems:"center", gap:"0.5rem" }}>
                   <span style={{ fontSize:"1.3rem" }}>🏆</span>
                   <div>
                     <p style={{ fontSize:"0.68rem", fontWeight:700, lineHeight:1.2, margin:0 }}>{badgeTitle}</p>
@@ -353,7 +356,7 @@ export default function HeroSection({ profile, locale, heroBgSlides = [] }: { pr
 
               {/* Stats badge */}
               {show("showStats") && (
-                <div className="glass-card" style={{ position:"absolute", bottom:"14px", right:"-14px", borderRadius:"10px", padding:"0.6rem 1rem", display:"flex", gap:"0.875rem", alignItems:"center" }}>
+                <div className="glass-card hero-photo-badge" style={{ position:"absolute", bottom:"14px", right:"-14px", borderRadius:"10px", padding:"0.6rem 1rem", display:"flex", gap:"0.875rem", alignItems:"center" }}>
                   {[{n:`${yearsExp}+`,l:t("yearsShort")},{n:`${projectsCnt}+`,l:t("projectsShort")}].map(({n,l},i) => (
                     <div key={l} style={{ textAlign:"center" }}>
                       <p style={{ fontFamily:"var(--font-syne)", fontSize:"1.3rem", fontWeight:800, margin:0, color:"var(--text-primary)" }}>{n}</p>
@@ -363,6 +366,7 @@ export default function HeroSection({ profile, locale, heroBgSlides = [] }: { pr
                   ))}
                 </div>
               )}
+              </div>
             </div>
           </div>
         </div>
@@ -406,6 +410,10 @@ export default function HeroSection({ profile, locale, heroBgSlides = [] }: { pr
            and let the blurred backdrop fill the resulting letterbox gaps. */
         @media (max-width: 640px) {
           .hero-bg-img { object-fit: contain; object-position: center center; }
+          /* A landscape desktop image contained in the tall stacked mobile hero becomes a hard-edged
+             photo band running behind the name and bio. Without a dedicated mobile image, keep only
+             the soft blurred backdrop so the text sits on a calm surface. */
+          .hero-bg-img--desktop-only { display: none; }
         }
         @media (max-width: 900px) {
           .hero-grid { grid-template-columns: 1fr !important; text-align: center; gap: 2rem !important; }
@@ -413,14 +421,24 @@ export default function HeroSection({ profile, locale, heroBgSlides = [] }: { pr
           .hero-grid > div:first-child > div { justify-content: center; }
           .hero-grid > div:first-child > div[style*="flex-wrap"] { justify-content: center; }
           .hero-grid > div:first-child { padding: 0 0.5rem; }
+          .hero-tech-tags { justify-content: center; }
+          .hero-bio { margin-inline: auto; }
         }
+        /* Small screens: the portrait shrinks and the two floating cards drop out of the overlay
+           into a centred row beneath it, so nothing covers the face or spills into the text.
+           Classes (not :nth-child) so removing/adding a decorative layer can't retarget these. */
         @media (max-width: 600px) {
-          .hero-photo-col > div { width: 220px !important; height: 220px !important; }
-          .hero-photo-col > div > div:nth-child(3) { width: 220px !important; height: 220px !important; }
+          .hero-content { padding-top: 2rem !important; padding-bottom: 5.5rem !important; }
+          .hero-grid { gap: 1.75rem !important; }
+          .hero-photo-frame { width: auto !important; height: auto !important; display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+          .hero-photo { width: 220px !important; height: 220px !important; }
+          .hero-photo-badges { display: flex !important; flex-wrap: wrap; justify-content: center; gap: 0.625rem; }
+          .hero-photo-badges:empty { display: none !important; }
+          .hero-photo-badge { position: relative !important; inset: auto !important; }
         }
         @media (max-width: 380px) {
-          .hero-photo-col > div { width: 180px !important; height: 180px !important; }
-          .hero-photo-col > div > div:nth-child(3) { width: 180px !important; height: 180px !important; }
+          .hero-photo { width: 200px !important; height: 200px !important; }
+          .hero-name { font-size: 1.7rem !important; }
         }
       `,
         }}

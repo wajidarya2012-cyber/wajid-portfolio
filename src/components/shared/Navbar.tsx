@@ -104,19 +104,19 @@ export default function Navbar({ locale, brandName = "W.Arya", brandTagline = "I
           opacity: scrolled ? 0.9 : 0.35,
           transition:"opacity 0.35s ease",
         }} />
-        <div className="section-container" style={{ display:"flex", alignItems:"center", justifyContent:"space-between", width:"100%", height:"100%" }}>
+        <div className="section-container nav-row" style={{ display:"flex", alignItems:"center", justifyContent:"space-between", width:"100%", height:"100%" }}>
 
           {/* Logo */}
-          <Link href={`/${locale}`} style={{ textDecoration:"none", display:"flex", alignItems:"center", gap:"0.6rem" }}>
+          <Link href={`/${locale}`} className="nav-brand" style={{ textDecoration:"none", display:"flex", alignItems:"center", gap:"0.6rem" }}>
             {logoUrl && (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={logoUrl} alt={brandName} style={{ height:"32px", width:"auto", maxWidth:"120px", objectFit:"contain" }} />
+              <img src={logoUrl} alt={brandName} className="nav-brand-logo" style={{ height:"32px", width:"auto", maxWidth:"120px", objectFit:"contain" }} />
             )}
-            <span style={{ display:"flex", flexDirection:"column", lineHeight:1.1 }}>
-              <span style={{ fontFamily:"var(--font-syne)", fontWeight:800, fontSize:"1.2rem", background:"linear-gradient(135deg,#4f46e5,#06b6d4)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>
+            <span className="nav-brand-text" style={{ display:"flex", flexDirection:"column", lineHeight:1.1 }}>
+              <span className="nav-brand-name" style={{ fontFamily:"var(--font-syne)", fontWeight:800, fontSize:"1.2rem", background:"linear-gradient(135deg,#4f46e5,#06b6d4)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>
                 {brandName}
               </span>
-              <span style={{ fontSize:"0.58rem", color:"var(--text-muted)", fontFamily:"var(--font-fira)", letterSpacing:"0.05em" }}>
+              <span className="nav-brand-tagline" style={{ fontSize:"0.58rem", color:"var(--text-muted)", fontFamily:"var(--font-fira)", letterSpacing:"0.05em" }}>
                 {brandTagline}
               </span>
             </span>
@@ -147,9 +147,9 @@ export default function Navbar({ locale, brandName = "W.Arya", brandTagline = "I
           </ul>
 
           {/* Controls */}
-          <div style={{ display:"flex", alignItems:"center", gap:"0.625rem" }}>
+          <div className="nav-controls" style={{ display:"flex", alignItems:"center", gap:"0.625rem" }}>
             {/* Locale */}
-            <select value={locale} onChange={e=>switchLocale(e.target.value)} aria-label="Language"
+            <select value={locale} onChange={e=>switchLocale(e.target.value)} aria-label="Language" className="nav-locale"
               style={{ fontSize:"0.75rem", fontWeight:600, padding:"0.32rem 1.6rem 0.32rem 0.65rem", borderRadius:"9999px", border:"1px solid var(--border)", background:"var(--bg-card)", color:"var(--text-secondary)", cursor:"pointer", outline:"none", appearance:"none", backgroundImage:`url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2364748b'/%3E%3C/svg%3E")`, backgroundRepeat:"no-repeat", backgroundPosition:"right 0.5rem center" }}>
               {locales.map(l => (
                 <option key={l} value={l} style={{ background:"var(--bg-secondary)", color:"var(--text-primary)" }}>{LOCALE_LABELS[l]}</option>
@@ -157,7 +157,7 @@ export default function Navbar({ locale, brandName = "W.Arya", brandTagline = "I
             </select>
 
             {/* Theme */}
-            <button onClick={toggleTheme} aria-label={`Switch to ${theme==="dark"?"light":"dark"} mode`}
+            <button onClick={toggleTheme} aria-label={`Switch to ${theme==="dark"?"light":"dark"} mode`} className="nav-theme"
               style={{ width:"36px", height:"36px", borderRadius:"50%", border:"1px solid var(--border)", background:"var(--bg-card)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"0.9rem", transition:"all 0.2s" }}
               onMouseEnter={e=>{ (e.currentTarget as HTMLElement).style.borderColor="rgba(79,70,229,0.5)"; }}
               onMouseLeave={e=>{ (e.currentTarget as HTMLElement).style.borderColor="var(--border)"; }}>
@@ -202,6 +202,26 @@ export default function Navbar({ locale, brandName = "W.Arya", brandTagline = "I
           __html: `
         @media (min-width: 768px) { .desktop-nav { display: flex !important; } }
         @media (max-width: 767px) { .hamburger-btn { display: flex !important; } }
+        /* Mobile brand: never let flexbox squeeze the brand into wrapping lines. The controls keep
+           their size; the brand text stays on one line, and an over-long admin tagline ends in an
+           ellipsis instead of wrapping into the controls. (overflow-x: clip keeps descenders.) */
+        @media (max-width: 767px) {
+          .nav-brand, .nav-brand-text { min-width: 0; }
+          .nav-brand-logo, .nav-controls { flex-shrink: 0; }
+          .nav-brand-name, .nav-brand-tagline { white-space: nowrap; }
+          .nav-brand-tagline { overflow-x: clip; text-overflow: ellipsis; }
+        }
+        /* Narrow phones: logo + "W. Arya" + tagline + 3 controls need ~369px but only ~328px exist
+           at 360px — reclaim the difference with small, even trims rather than hiding anything. */
+        @media (max-width: 420px) {
+          .section-container.nav-row { padding-left: 0.75rem; padding-right: 0.75rem; }
+          .nav-brand { gap: 0.45rem !important; }
+          .nav-brand-logo { height: 26px !important; }
+          .nav-brand-tagline { font-size: 0.55rem !important; letter-spacing: 0.02em !important; }
+          .nav-controls { gap: 0.4rem !important; }
+          .nav-locale { padding: 0.3rem 1.4rem 0.3rem 0.55rem !important; }
+          .nav-theme, .hamburger-btn { width: 34px !important; height: 34px !important; }
+        }
       `,
         }}
       />

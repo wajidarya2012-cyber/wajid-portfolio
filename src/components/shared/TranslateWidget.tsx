@@ -135,7 +135,8 @@ export default function TranslateWidget({ locale, config }: { locale: string; co
   };
 
   return (
-    <div ref={rootRef} style={posStyle} translate="no" className="notranslate translate-widget-root">
+    <div ref={rootRef} style={posStyle} translate="no" className="notranslate translate-widget-root"
+      data-pos={position} data-side={position.endsWith("right") ? "right" : "left"}>
       {/* Required hidden mount point for the Google Translate widget — not display:none,
           which would prevent it from initialising correctly. */}
       <div id="google_translate_element_root" style={{ position:"absolute", width:0, height:0, overflow:"hidden" }} />
@@ -166,7 +167,7 @@ export default function TranslateWidget({ locale, config }: { locale: string; co
           }}
         >
           <span style={{ fontSize:"0.95rem", lineHeight:1 }}>🌐</span>
-          {activeLabel && <span style={{ maxWidth:"90px", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{activeLabel}</span>}
+          {activeLabel && <span className="translate-active-label" style={{ maxWidth:"90px", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{activeLabel}</span>}
         </button>
 
         {open && (
@@ -251,9 +252,22 @@ export default function TranslateWidget({ locale, config }: { locale: string; co
         .goog-text-highlight { background:none !important; box-shadow:none !important; }
         .translate-trigger-btn:hover:not(:disabled) { border-color: rgba(79,70,229,0.5) !important; }
         @keyframes translateMenuIn { from { opacity:0; transform:translateY(4px) scale(0.98); } to { opacity:1; transform:translateY(0) scale(1); } }
+        /* Phones: page content runs to within 16–24px of the screen edge, so a 36px circle inset
+           1rem always sits on top of text. Dock the trigger flush to its edge as a 24px half-pill
+           that fits inside that gutter; the menu opens inward from the edge. */
         @media (max-width: 480px) {
-          .translate-widget-root { bottom: 0.75rem !important; }
+          .translate-widget-root[data-pos^="bottom"] { bottom: 0.75rem !important; }
+          .translate-widget-root[data-side="left"]  { left: 0 !important; }
+          .translate-widget-root[data-side="right"] { right: 0 !important; }
+          /* Right side: stack above ScrollUI's back-to-top button (42px, same corner inset). */
+          .translate-widget-root[data-side="right"][data-pos^="bottom"] { bottom: calc(clamp(1rem,3vw,2rem) + 42px + 0.75rem) !important; }
+          .translate-trigger-btn { width: 24px !important; height: 40px !important; padding: 0 !important; gap: 0 !important; }
+          [data-side="left"]  > div > .translate-trigger-btn { border-radius: 0 20px 20px 0 !important; border-left: none !important; }
+          [data-side="right"] > div > .translate-trigger-btn { border-radius: 20px 0 0 20px !important; border-right: none !important; }
+          .translate-active-label { display: none; }
           .translate-menu { width: 170px !important; }
+          [data-side="left"]  .translate-menu { left: 0.75rem !important; right: auto !important; }
+          [data-side="right"] .translate-menu { right: 0.75rem !important; left: auto !important; }
         }
       `}} />
     </div>
