@@ -102,7 +102,9 @@ export default function BlogPostForm({ post }: { post?: BlogPost }) {
     <div style={{ display:"flex", flexDirection:"column", gap:"1.25rem" }}>
       {/* Status & Slug row */}
       <div className="admin-card" style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,170px),1fr))", gap:"1rem", alignItems:"end" }}>
-        <div>
+        {/* Phone widths: slugs are long, so the slug takes the full row instead of being squeezed beside Status. */}
+        <style>{`@media (max-width: 640px) { .blog-form-slug { grid-column: 1 / -1; } }`}</style>
+        <div className="blog-form-slug">
           <label style={lbl}>URL Slug *</label>
           <input value={form.slug} onChange={e=>set("slug",toSlug(e.target.value))} placeholder="my-blog-post" style={{ ...inp, fontFamily:"var(--font-fira)" }} />
           <p style={{ fontSize:"0.7rem", color:"var(--text-muted)", marginTop:"0.25rem" }}>/blog/{form.slug || "slug"}</p>
