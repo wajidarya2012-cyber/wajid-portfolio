@@ -101,9 +101,17 @@ export default function BlogPostForm({ post }: { post?: BlogPost }) {
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:"1.25rem" }}>
       {/* Status & Slug row */}
-      <div className="admin-card" style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,170px),1fr))", gap:"1rem", alignItems:"end" }}>
-        {/* Phone widths: slugs are long, so the slug takes the full row instead of being squeezed beside Status. */}
-        <style>{`@media (max-width: 640px) { .blog-form-slug { grid-column: 1 / -1; } }`}</style>
+      <div className="admin-card blog-form-meta" style={{ display:"grid", gap:"1rem", alignItems:"start" }}>
+        {/* Slug gets the flexible width (slugs are long), Status a comfortable fixed range, Featured
+            only what it needs. Top-aligned so the slug's helper text can't push Status down.
+            Phone widths: slug takes the full row; Status + Featured share the row beneath. */}
+        <style>{`
+          .blog-form-meta { grid-template-columns: minmax(0, 1fr) 12rem auto; }
+          @media (max-width: 640px) {
+            .blog-form-meta { grid-template-columns: minmax(0, 1fr) auto; }
+            .blog-form-slug { grid-column: 1 / -1; }
+          }
+        `}</style>
         <div className="blog-form-slug">
           <label style={lbl}>URL Slug *</label>
           <input value={form.slug} onChange={e=>set("slug",toSlug(e.target.value))} placeholder="my-blog-post" style={{ ...inp, fontFamily:"var(--font-fira)" }} />
@@ -117,10 +125,14 @@ export default function BlogPostForm({ post }: { post?: BlogPost }) {
             <option value="ARCHIVED">Archived</option>
           </select>
         </div>
-        <label style={{ display:"flex", alignItems:"center", gap:"0.5rem", cursor:"pointer", paddingBottom:"0.65rem", whiteSpace:"nowrap" }}>
-          <input type="checkbox" checked={form.featured} onChange={e=>setForm(p=>({...p,featured:e.target.checked}))} />
-          <span style={{ fontSize:"0.85rem" }}>Featured</span>
-        </label>
+        <div>
+          {/* Invisible label-height spacer + input-height row, so the checkbox lines up with the Status select. */}
+          <span aria-hidden="true" style={{ ...lbl, visibility:"hidden" }}>Featured</span>
+          <label style={{ display:"flex", alignItems:"center", gap:"0.5rem", cursor:"pointer", whiteSpace:"nowrap", padding:"0.65rem 0", border:"1px solid transparent", fontSize:"0.875rem" }}>
+            <input type="checkbox" checked={form.featured} onChange={e=>setForm(p=>({...p,featured:e.target.checked}))} />
+            <span style={{ fontSize:"0.85rem" }}>Featured</span>
+          </label>
+        </div>
       </div>
 
       {/* Tags */}
