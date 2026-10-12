@@ -83,9 +83,10 @@ export default function GalleryGridClient({
           value={search}
           onChange={e => { setSearch(e.target.value); setPage(1); }}
           placeholder={tg("searchPlaceholder")}
+          aria-label={tg("searchPlaceholder")}
           style={{ flex: "1 1 200px", maxWidth: "300px", padding: "0.55rem 1rem", borderRadius: "9999px", border: "1px solid var(--border)", background: "var(--bg-card)", color: "var(--text-primary)", fontSize: "0.85rem", outline: "none" }}
         />
-        <select value={sort} onChange={e => setSort(e.target.value)}
+        <select value={sort} onChange={e => setSort(e.target.value)} aria-label={tg("sort.label")}
           style={{ padding: "0.5rem 0.9rem", borderRadius: "9999px", fontSize: "0.78rem", fontWeight: 600, border: "1px solid var(--border)", background: "var(--bg-card)", color: "var(--text-secondary)", cursor: "pointer" }}>
           <option value="newest">{tg("sort.newest")}</option>
           <option value="oldest">{tg("sort.oldest")}</option>

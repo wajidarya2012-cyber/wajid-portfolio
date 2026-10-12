@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { splitTitle, cloudinaryImage } from "@/lib/utils";
+import { splitTitle, cloudinaryImage, cloudinaryDensitySrcSet } from "@/lib/utils";
 
 const G = "linear-gradient(135deg,#4f46e5,#06b6d4)";
 
@@ -80,9 +80,10 @@ export default function GallerySection({ items, locale, config }: { items: any[]
               // An image-only link is named by its alt text; when the CMS item has none, name it
               // after where it goes so screen readers don't announce an empty link.
               <Link key={item.id} href={`/${locale}/gallery`} aria-label={alt ? undefined : tl("viewFullGallery")} style={{ position:"relative", borderRadius:"10px", overflow:"hidden", aspectRatio:"1/1", display:"block", border:"1px solid var(--border)", ...(sparse ? { width:"clamp(120px,28vw,168px)", flexShrink:0 } : {}) }}>
-                {/* Tiles top out near 290px (single-column phones); an 800 box keeps the short side ≥2× for cover. */}
+                {/* Tiles are ≤220px in the grid (≤290px on single-column phones). 1× screens get a 400 box,
+                    2×+ the 800 box — each keeps the short side covering the tile for cover. */}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={cloudinaryImage(item.url, { width:800, height:800 })} alt={alt} loading="lazy" decoding="async" style={{ width:"100%", height:"100%", objectFit:"cover", display:"block" }} />
+                <img src={cloudinaryImage(item.url, { width:800, height:800 })} srcSet={cloudinaryDensitySrcSet(item.url, [400, 800])} alt={alt} loading="lazy" decoding="async" style={{ width:"100%", height:"100%", objectFit:"cover", display:"block" }} />
               </Link>
             );
           })}

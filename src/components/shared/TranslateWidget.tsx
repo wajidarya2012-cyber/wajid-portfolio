@@ -27,6 +27,38 @@ function getGoogTransCookie(): string | null {
   return match ? decodeURIComponent(match[1]) : null;
 }
 
+// googtrans holds "/<from>/<to>", e.g. "/en/de". Returns the target language, or "" when the page
+// is not being translated.
+export function activeTranslation(cookieValue: string | null): string {
+  return cookieValue ? (cookieValue.split("/")[2] ?? "") : "";
+}
+
+const SCRIPT_ID = "google-translate-element-script";
+
+// Injects Google's translate script at most once per page. It is only needed to translate the page,
+// which happens after a language has been picked (handleSelect stores the choice and reloads), so it
+// is loaded only while a translation is active — it is ~100 KB and kept the main thread busy for
+// visitors who never use the widget. If it fails to load, the menu still works, so "Original" can
+// always turn translation off again.
+function loadGoogleTranslate() {
+  if (document.getElementById(SCRIPT_ID)) return;
+  window.googleTranslateElementInit = () => {
+    try {
+      if (window.google?.translate?.TranslateElement) {
+        new window.google.translate.TranslateElement(
+          { pageLanguage: "en", autoDisplay: false },
+          "google_translate_element_root"
+        );
+      }
+    } catch { /* leave the page untranslated; the menu stays usable */ }
+  };
+  const script = document.createElement("script");
+  script.id    = SCRIPT_ID;
+  script.src   = "https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
+  script.async = true;
+  document.body.appendChild(script);
+}
+
 function setGoogTransCookie(code: string | null) {
   const host = window.location.hostname;
   if (!code) {
@@ -41,8 +73,6 @@ function setGoogTransCookie(code: string | null) {
 }
 
 export default function TranslateWidget({ locale, config }: { locale: string; config?: TranslateWidgetConfig }) {
-  const [ready, setReady]       = useState(false);
-  const [failed, setFailed]     = useState(false);
   const [selected, setSelected] = useState("");
   const [open, setOpen]         = useState(false);
   const [query, setQuery]       = useState("");
@@ -64,40 +94,14 @@ export default function TranslateWidget({ locale, config }: { locale: string; co
     || "Translate to...";
   const activeLabel = selected ? (options.find(l => l.code === selected)?.name ?? selected) : null;
 
-  // Load the Google Translate script once, only when the widget is enabled.
+  // Restore the current choice from the cookie, and load Google's script only if a translation is
+  // active (see loadGoogleTranslate).
   useEffect(() => {
     if (!enabled || initialised.current) return;
     initialised.current = true;
-
-    const current = getGoogTransCookie();
-    if (current) {
-      const parts = current.split("/");
-      setSelected(parts[2] ?? "");
-    }
-
-    window.googleTranslateElementInit = () => {
-      try {
-        if (window.google?.translate?.TranslateElement) {
-          new window.google.translate.TranslateElement(
-            { pageLanguage: "en", autoDisplay: false },
-            "google_translate_element_root"
-          );
-          setReady(true);
-        }
-      } catch {
-        setFailed(true);
-      }
-    };
-
-    const script = document.createElement("script");
-    script.src = "https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
-    script.async = true;
-    script.onerror = () => setFailed(true);
-    document.body.appendChild(script);
-
-    return () => {
-      script.remove();
-    };
+    const active = activeTranslation(getGoogTransCookie());
+    setSelected(active);
+    if (active) loadGoogleTranslate();
   }, [enabled]);
 
   // Close on outside click / Escape
@@ -115,7 +119,7 @@ export default function TranslateWidget({ locale, config }: { locale: string; co
     };
   }, [open]);
 
-  if (!enabled || !showSelector || failed || options.length === 0) return null;
+  if (!enabled || !showSelector || options.length === 0) return null;
 
   function handleSelect(code: string) {
     setSelected(code);
@@ -147,7 +151,6 @@ export default function TranslateWidget({ locale, config }: { locale: string; co
           onClick={() => setOpen(o => !o)}
           aria-label={label}
           aria-expanded={open}
-          disabled={!ready && !selected}
           className="translate-trigger-btn"
           style={{
             display:"flex", alignItems:"center", gap:"0.4rem",
@@ -159,11 +162,10 @@ export default function TranslateWidget({ locale, config }: { locale: string; co
             backdropFilter:"blur(10px)",
             boxShadow:"0 4px 16px rgba(0,0,0,0.16)",
             color:"var(--text-primary)",
-            cursor: (!ready && !selected) ? "default" : "pointer",
+            cursor:"pointer",
             fontFamily:"inherit", fontSize:"0.72rem", fontWeight:600,
             justifyContent:"center",
             transition:"all 0.2s",
-            opacity: (!ready && !selected) ? 0.6 : 1,
           }}
         >
           <span style={{ fontSize:"0.95rem", lineHeight:1 }}>🌐</span>
@@ -191,6 +193,7 @@ export default function TranslateWidget({ locale, config }: { locale: string; co
                 value={query}
                 onChange={e => setQuery(e.target.value)}
                 placeholder={label}
+                aria-label={label}
                 style={{
                   width:"100%", fontSize:"0.75rem", fontFamily:"inherit",
                   padding:"0.4rem 0.6rem", borderRadius:"8px",

@@ -7,7 +7,8 @@ import { splitTitle, cloudinaryImage, cloudinarySrcSet } from "@/lib/utils";
 
 // Frame is at most ~1056px wide (16:8). On phones it switches to 4:3, where object-fit:cover
 // scales a landscape photo by height — up to ~1.33× the frame width for 16:9 — hence 125vw.
-const SLIDE_WIDTHS = [640, 960, 1280, 1920, 2560];
+// 1080 lets a 1× desktop take a near-exact copy instead of the 1280 one.
+const SLIDE_WIDTHS = [640, 800, 1080, 1280, 1600, 1920, 2560];
 const SLIDE_SIZES  = "(max-width: 640px) 125vw, (max-width: 1152px) 92vw, 1060px";
 
 const G = "linear-gradient(135deg,#4f46e5,#06b6d4)";
@@ -160,7 +161,7 @@ export default function JourneySection({ slides, locale }: { slides: JourneySlid
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
-                        src={cloudinaryImage(slide.imageUrl, { width:240, height:240 })}
+                        src={cloudinaryImage(slide.imageUrl, { width:180, height:180 })}
                         alt=""
                         loading="lazy"
                         decoding="async"

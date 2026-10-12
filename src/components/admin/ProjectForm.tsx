@@ -7,7 +7,7 @@ import { zodResolver }           from "@hookform/resolvers/zod";
 import { useDropzone }           from "react-dropzone";
 import { projectSchema, ProjectInput } from "@/lib/validations";
 import type { ProjectWithRelations, ProjectCategory } from "@/types";
-import { createSlug }            from "@/lib/utils";
+import { createSlug }            from "@/lib/slug";
 
 const LOCALES = [
   { key: "en", label: "English" },

@@ -46,6 +46,7 @@ export default function BlogListClient({ posts, locale }: { posts: any[]; locale
           value={search}
           onChange={e => { setSearch(e.target.value); setPage(1); }}
           placeholder={tb("searchPlaceholder")}
+          aria-label={tb("searchPlaceholder")}
           style={{ flex: "1 1 220px", maxWidth: "320px", padding: "0.6rem 1rem", borderRadius: "9999px", border: "1px solid var(--border)", background: "var(--bg-card)", color: "var(--text-primary)", fontSize: "0.85rem", outline: "none" }}
         />
         {tags.length > 0 && (

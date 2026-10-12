@@ -1,16 +1,12 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
-import slugify from "slugify";
 
 // ── Tailwind class merger ──────────────────────────────────────────────────
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-// ── Slug generator ─────────────────────────────────────────────────────────
-export function createSlug(text: string): string {
-  return slugify(text, { lower: true, strict: true, trim: true });
-}
+// createSlug lives in @/lib/slug — see the note there on why it is not in this module.
 
 // ── Standard API response helpers ─────────────────────────────────────────
 export function apiSuccess<T>(data: T, status = 200): Response {
@@ -128,6 +124,14 @@ export function cloudinaryImage(
 export function cloudinarySrcSet(url: string | null | undefined, widths: number[]): string | undefined {
   if (!url || !widths.length || cloudinaryImage(url, { width: widths[0] }) === url) return undefined;
   return widths.map(w => `${cloudinaryImage(url, { width: w })} ${w}w`).join(", ");
+}
+
+// Density srcSet ("… 1x, … 2x") of square cloudinaryImage() boxes, for fixed object-fit:cover
+// slots: width descriptors under-serve non-square photos there, because the short side is what has
+// to cover the slot. Undefined when the URL can't be resized.
+export function cloudinaryDensitySrcSet(url: string | null | undefined, boxes: number[]): string | undefined {
+  if (!url || !boxes.length || cloudinaryImage(url, { width: boxes[0] }) === url) return undefined;
+  return boxes.map((b, i) => `${cloudinaryImage(url, { width: b, height: b })} ${i + 1}x`).join(", ");
 }
 
 // ── Truncate text ──────────────────────────────────────────────────────────

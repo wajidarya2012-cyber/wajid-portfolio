@@ -128,8 +128,9 @@ export default function ProjectsSection({ projects, locale }: { projects: Projec
                   <div style={{ height:"160px", background:THUMB_BG[slug]??"linear-gradient(135deg,rgba(79,70,229,0.2),rgba(6,182,212,0.12))", display:"flex", alignItems:"center", justifyContent:"center", position:"relative", overflow:"hidden", flexShrink:0 }}>
                     {thumb
                       // Grid of minmax(280px,1fr) columns: 1 column below ~640px, 2 up to ~1024px,
-                      // then ~370px cards inside the 72rem container. Without `sizes`, fill defaults to 100vw.
-                      ? <Image src={thumb.url} alt={pick(project as Record<string,unknown>,"title",locale)} fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 400px" style={{ objectFit:"cover" }} />
+                      // then 3 cards of at most ~350px inside the 72rem container (360px lets a 1×
+                      // screen take the 384px variant). Without `sizes`, fill defaults to 100vw.
+                      ? <Image src={thumb.url} alt={pick(project as Record<string,unknown>,"title",locale)} fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 360px" style={{ objectFit:"cover" }} />
                       : <span style={{ fontSize:"3rem" }}>{THUMB_EMOJI[slug]??"💻"}</span>
                     }
                     {project.featured && (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { t as pickTrilingual, cloudinaryImage } from "@/lib/utils";
 import Image                  from "next/image";
 import { useTranslations }    from "next-intl";
@@ -14,6 +14,7 @@ const DEFAULT_TECHS = ["Python","Java","C++","Oracle DB","MS SQL Server","Node.j
 const BG_ROTATE_MS = 6500;
 
 type RoleItem = { en?: string; ps?: string; fa?: string };
+type Particle = { x:number; y:number; sx:number; sy:number; size:number; op:number; char:boolean; font:string };
 
 // Prepared for the future Admin CMS — desktop image is required, mobile image is optional
 // (falls back to the desktop image). Caption/CTA fields are stored now so the admin UI can
@@ -38,8 +39,15 @@ function pickLocale<T extends Record<string, unknown>>(obj: T | null | undefined
 export default function HeroSection({ profile, locale, heroBgSlides = [] }: { profile: Profile | null; locale: string; heroBgSlides?: HeroBgSlide[] }) {
   const t         = useTranslations("hero");
   const tc        = useTranslations("common");
+  const sectionRef = useRef<HTMLElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const typeRef   = useRef<HTMLSpanElement>(null);
+  const particlesRef = useRef<Particle[] | null>(null);
+  const typeState    = useRef<{ phrases: string[] | null; pi: number; ci: number; del: boolean; started: boolean }>({ phrases: null, pi: 0, ci: 0, del: false, started: false });
+  // The particle canvas and typewriter never stop on their own, so they only run while the hero is
+  // on screen and the tab is visible — otherwise they kept the main thread busy for the whole visit.
+  const [animate, setAnimate] = useState(true);
+  const [reducedMotion, setReducedMotion] = useState(false);
   const [bgIndex, setBgIndex] = useState(0);
   const [showNoCv, setShowNoCv] = useState(false);
 
@@ -62,62 +70,120 @@ export default function HeroSection({ profile, locale, heroBgSlides = [] }: { pr
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slides.length]);
 
+  /* ── Reduced-motion preference ── */
+  useEffect(() => {
+    const mq = window.matchMedia?.("(prefers-reduced-motion: reduce)");
+    if (!mq) return;
+    const sync = () => setReducedMotion(mq.matches);
+    sync();
+    mq.addEventListener?.("change", sync);
+    return () => mq.removeEventListener?.("change", sync);
+  }, []);
+
+  /* ── Run animations only while the hero is visible ── */
+  useEffect(() => {
+    const el = sectionRef.current; if (!el) return;
+    let inView = true;
+    const sync = () => setAnimate(inView && !document.hidden);
+    // One callback can carry several entries for the hero when it crosses the edge more than once
+    // between notifications (a fast fling away and back); they arrive oldest first, so the last one
+    // is the current state.
+    const io = typeof IntersectionObserver === "undefined" ? null
+      : new IntersectionObserver(entries => {
+          const latest = entries[entries.length - 1];
+          if (!latest) return;
+          inView = latest.isIntersecting;
+          sync();
+        });
+    io?.observe(el);
+    document.addEventListener("visibilitychange", sync);
+    sync();
+    return () => { io?.disconnect(); document.removeEventListener("visibilitychange", sync); };
+  }, []);
+
   /* ── Particle canvas ── */
   useEffect(() => {
+    // Paused (off screen / hidden tab): run nothing and keep the last frame. Reduced motion draws
+    // one still frame instead of animating.
+    if (!animate && !reducedMotion) return;
     const canvas = canvasRef.current; if (!canvas) return;
-    const ctx    = canvas.getContext("2d")!;
-    const resize = () => { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight; };
-    resize(); window.addEventListener("resize", resize);
+    const ctx    = canvas.getContext("2d"); if (!ctx) return;
+    let font = "";   // last font assigned; resizing the canvas resets the context, so it resets too
+    const resize = () => { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight; font = ""; };
+    resize();
 
-    type P = { x:number;y:number;sx:number;sy:number;size:number;op:number;char:boolean };
-    const pts: P[] = Array.from({ length:60 }, () => ({
-      x: Math.random()*canvas.width, y: Math.random()*canvas.height,
-      sx:(Math.random()-.5)*.35, sy:(Math.random()-.5)*.35,
-      size:Math.random()*1.4+.4, op:Math.random()*.35+.08,
-      char:Math.random()>.65,
-    }));
+    // Created once and kept across pauses, so resuming continues where the animation left off.
+    const pts = particlesRef.current ??= Array.from({ length:60 }, () => {
+      const size = Math.random()*1.4+.4;
+      return {
+        x: Math.random()*canvas.width, y: Math.random()*canvas.height,
+        sx:(Math.random()-.5)*.35, sy:(Math.random()-.5)*.35,
+        size, op:Math.random()*.35+.08,
+        char:Math.random()>.65,
+        font:`${size*7}px monospace`,
+      };
+    });
 
-    let raf: number;
-    const draw = () => {
+    const paint = (move: boolean) => {
       ctx.clearRect(0,0,canvas.width,canvas.height);
       pts.forEach(p => {
-        p.x+=p.sx; p.y+=p.sy;
-        if(p.x<0||p.x>canvas.width)  p.x=Math.random()*canvas.width;
-        if(p.y<0||p.y>canvas.height) p.y=Math.random()*canvas.height;
+        if (move) {
+          p.x+=p.sx; p.y+=p.sy;
+          if(p.x<0||p.x>canvas.width)  p.x=Math.random()*canvas.width;
+          if(p.y<0||p.y>canvas.height) p.y=Math.random()*canvas.height;
+        }
         ctx.globalAlpha=p.op;
-        if(p.char){ ctx.fillStyle="#4f46e5"; ctx.font=`${p.size*7}px monospace`; ctx.fillText(Math.random()>.5?"0":"1",p.x,p.y); }
+        if(p.char){ ctx.fillStyle="#4f46e5"; if (font !== p.font) { ctx.font = font = p.font; } ctx.fillText(Math.random()>.5?"0":"1",p.x,p.y); }
         else { ctx.beginPath(); ctx.arc(p.x,p.y,p.size,0,Math.PI*2); ctx.fillStyle=Math.random()>.5?"#4f46e5":"#06b6d4"; ctx.fill(); }
       });
       ctx.globalAlpha=1;
-      raf=requestAnimationFrame(draw);
     };
+
+    if (reducedMotion) {
+      const onResize = () => { resize(); paint(false); };
+      paint(false);
+      window.addEventListener("resize", onResize);
+      return () => window.removeEventListener("resize", onResize);
+    }
+
+    let raf = 0;
+    const draw = () => { paint(true); raf = requestAnimationFrame(draw); };
+    window.addEventListener("resize", resize);
     draw();
-    return () => { cancelAnimationFrame(raf); window.removeEventListener("resize",resize); };
-  }, []);
+    return () => { cancelAnimationFrame(raf); window.removeEventListener("resize", resize); };
+  }, [animate, reducedMotion]);
 
   /* ── Typewriter (rotating roles) ── */
-  useEffect(() => {
-    let phrases = ["IT & Network Manager","Software Developer","Database Administrator","Network & Systems Specialist","Technology Consultant"];
+  const phrases = useMemo(() => {
     const customRoles = p.heroRoles as RoleItem[] | null;
     if (Array.isArray(customRoles) && customRoles.length > 0) {
       const localised = customRoles.map(r => (locale==="ps" ? r.ps : locale==="fa" ? r.fa : r.en) || r.en).filter(Boolean) as string[];
-      if (localised.length > 0) phrases = localised;
+      if (localised.length > 0) return localised;
     } else {
-      try { const r = t.raw("roles"); if (Array.isArray(r)) phrases = r as string[]; } catch {}
+      try { const r = t.raw("roles"); if (Array.isArray(r) && r.length > 0) return r as string[]; } catch {}
     }
-    let pi=0, ci=0, del=false;
+    return ["IT & Network Manager","Software Developer","Database Administrator","Network & Systems Specialist","Technology Consultant"];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile, t, locale]);
+
+  useEffect(() => {
+    const el = typeRef.current; if (!el) return;
+    if (reducedMotion) { el.textContent = phrases[0] ?? ""; return; }   // static role, no typing
+    if (!animate) return;                                                // paused: keep the current text
+    // Position is kept in a ref so a pause resumes mid-phrase; a new role list starts over.
+    const s = typeState.current;
+    if (s.phrases !== phrases) { s.phrases = phrases; s.pi = 0; s.ci = 0; s.del = false; }
     let timer: ReturnType<typeof setTimeout>;
     const tick = () => {
-      const el=typeRef.current; if(!el) return;
-      const ph=phrases[pi];
-      if(!del){ el.textContent=ph.slice(0,ci+1); ci++; if(ci===ph.length){del=true;timer=setTimeout(tick,2000);return;} }
-      else    { el.textContent=ph.slice(0,ci-1); ci--; if(ci===0){del=false;pi=(pi+1)%phrases.length;} }
-      timer=setTimeout(tick,del?50:80);
+      const ph=phrases[s.pi];
+      if(!s.del){ el.textContent=ph.slice(0,s.ci+1); s.ci++; if(s.ci===ph.length){s.del=true;timer=setTimeout(tick,2000);return;} }
+      else      { el.textContent=ph.slice(0,s.ci-1); s.ci--; if(s.ci===0){s.del=false;s.pi=(s.pi+1)%phrases.length;} }
+      timer=setTimeout(tick,s.del?50:80);
     };
-    timer=setTimeout(tick,800);
+    timer=setTimeout(tick, s.started ? 80 : 800);
+    s.started = true;
     return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [t, locale]);
+  }, [animate, reducedMotion, phrases]);
 
   const fullName = locale==="ps" ? profile?.fullName_ps
                  : locale==="fa" ? profile?.fullName_fa
@@ -171,7 +237,7 @@ export default function HeroSection({ profile, locale, heroBgSlides = [] }: { pr
   const showBg = show("showBackground") && slides.length > 0;
 
   return (
-    <section id="hero" style={{ minHeight:"100vh", position:"relative", overflow:"hidden", display:"flex", alignItems:"center", paddingTop:"64px", background:"var(--bg-primary)" }}>
+    <section id="hero" ref={sectionRef} style={{ minHeight:"100vh", position:"relative", overflow:"hidden", display:"flex", alignItems:"center", paddingTop:"64px", background:"var(--bg-primary)" }}>
       {/* Optional background image / slideshow */}
       {showBg && (
         <>
@@ -258,7 +324,7 @@ export default function HeroSection({ profile, locale, heroBgSlides = [] }: { pr
             {/* Typewriter */}
             <div style={{ fontFamily:"var(--font-fira)", fontSize:"clamp(0.875rem,2vw,1rem)", color:"#06b6d4", marginBottom:"1.25rem", minHeight:"1.6rem", display:"flex", alignItems:"center", gap:"2px" }}>
               <span ref={typeRef} />
-              <span style={{ display:"inline-block", width:"2px", height:"1.1em", background:"#06b6d4", animation:"blink 1s step-end infinite", verticalAlign:"middle", flexShrink:0 }} />
+              {!reducedMotion && <span style={{ display:"inline-block", width:"2px", height:"1.1em", background:"#06b6d4", animation:"blink 1s step-end infinite", verticalAlign:"middle", flexShrink:0 }} />}
             </div>
 
             {/* Bio */}

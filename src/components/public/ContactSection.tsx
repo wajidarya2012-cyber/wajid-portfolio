@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useId } from "react";
 import { useTranslations }              from "next-intl";
 import { useForm }                      from "react-hook-form";
 import { zodResolver }                  from "@hookform/resolvers/zod";
@@ -11,6 +11,9 @@ export default function ContactSection({ profile, locale, workingHours }: { prof
   const tl                          = useTranslations("contact");
   const [status, setStatus]         = useState<"idle"|"sending"|"success"|"error">("idle");
   const ref                         = useRef<HTMLDivElement>(null);
+  // Ties each visible <label> to its field (htmlFor/id) so screen readers announce the label,
+  // not just the placeholder. useId keeps ids unique and identical between server and client.
+  const fieldId                     = useId();
 
   useEffect(() => {
     const observer = new IntersectionObserver((entries) => {
@@ -98,15 +101,15 @@ export default function ContactSection({ profile, locale, workingHours }: { prof
 
             <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,200px),1fr))", gap:"1rem" }}>
               <div>
-                <label style={lbl}>{tl("form.name")} *</label>
-                <input {...register("name")} placeholder={tl("form.namePlaceholder")} style={inp}
+                <label htmlFor={`${fieldId}-name`} style={lbl}>{tl("form.name")} *</label>
+                <input {...register("name")} id={`${fieldId}-name`} placeholder={tl("form.namePlaceholder")} style={inp}
                   onFocus={e=>{ (e.target as HTMLInputElement).style.borderColor="#4f46e5"; (e.target as HTMLInputElement).style.boxShadow="0 0 0 3px rgba(79,70,229,0.15)"; }}
                   onBlur={e=>{  (e.target as HTMLInputElement).style.borderColor="var(--border)"; (e.target as HTMLInputElement).style.boxShadow="none"; }} />
                 {errors.name && <p style={{ fontSize:"0.72rem", color:"#f87171", marginTop:"0.25rem" }}>{errors.name.message}</p>}
               </div>
               <div>
-                <label style={lbl}>{tl("form.email")} *</label>
-                <input {...register("email")} type="email" placeholder={tl("form.emailPlaceholder")} style={inp}
+                <label htmlFor={`${fieldId}-email`} style={lbl}>{tl("form.email")} *</label>
+                <input {...register("email")} id={`${fieldId}-email`} type="email" placeholder={tl("form.emailPlaceholder")} style={inp}
                   onFocus={e=>{ (e.target as HTMLInputElement).style.borderColor="#4f46e5"; (e.target as HTMLInputElement).style.boxShadow="0 0 0 3px rgba(79,70,229,0.15)"; }}
                   onBlur={e=>{  (e.target as HTMLInputElement).style.borderColor="var(--border)"; (e.target as HTMLInputElement).style.boxShadow="none"; }} />
                 {errors.email && <p style={{ fontSize:"0.72rem", color:"#f87171", marginTop:"0.25rem" }}>{errors.email.message}</p>}
@@ -114,21 +117,21 @@ export default function ContactSection({ profile, locale, workingHours }: { prof
             </div>
 
             <div>
-              <label style={lbl}>{tl("form.phone")}</label>
-              <input {...register("phone")} placeholder={tl("form.phonePlaceholder")} style={inp} />
+              <label htmlFor={`${fieldId}-phone`} style={lbl}>{tl("form.phone")}</label>
+              <input {...register("phone")} id={`${fieldId}-phone`} placeholder={tl("form.phonePlaceholder")} style={inp} />
             </div>
 
             <div>
-              <label style={lbl}>{tl("form.subject")} *</label>
-              <input {...register("subject")} placeholder={tl("form.subjectPlaceholder")} style={inp}
+              <label htmlFor={`${fieldId}-subject`} style={lbl}>{tl("form.subject")} *</label>
+              <input {...register("subject")} id={`${fieldId}-subject`} placeholder={tl("form.subjectPlaceholder")} style={inp}
                 onFocus={e=>{ (e.target as HTMLInputElement).style.borderColor="#4f46e5"; (e.target as HTMLInputElement).style.boxShadow="0 0 0 3px rgba(79,70,229,0.15)"; }}
                 onBlur={e=>{  (e.target as HTMLInputElement).style.borderColor="var(--border)"; (e.target as HTMLInputElement).style.boxShadow="none"; }} />
               {errors.subject && <p style={{ fontSize:"0.72rem", color:"#f87171", marginTop:"0.25rem" }}>{errors.subject.message}</p>}
             </div>
 
             <div>
-              <label style={lbl}>{tl("form.message")} *</label>
-              <textarea {...register("message")} rows={5} placeholder={tl("form.messagePlaceholder")} style={{ ...inp, resize:"vertical" }}
+              <label htmlFor={`${fieldId}-message`} style={lbl}>{tl("form.message")} *</label>
+              <textarea {...register("message")} id={`${fieldId}-message`} rows={5} placeholder={tl("form.messagePlaceholder")} style={{ ...inp, resize:"vertical" }}
                 onFocus={e=>{ (e.target as HTMLTextAreaElement).style.borderColor="#4f46e5"; (e.target as HTMLTextAreaElement).style.boxShadow="0 0 0 3px rgba(79,70,229,0.15)"; }}
                 onBlur={e=>{  (e.target as HTMLTextAreaElement).style.borderColor="var(--border)"; (e.target as HTMLTextAreaElement).style.boxShadow="none"; }} />
               {errors.message && <p style={{ fontSize:"0.72rem", color:"#f87171", marginTop:"0.25rem" }}>{errors.message.message}</p>}
