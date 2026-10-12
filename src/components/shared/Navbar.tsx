@@ -7,6 +7,7 @@ import { useTranslations }             from "next-intl";
 import { useTheme }                    from "./ThemeProvider";
 import { locales }                     from "@/i18n";
 import { buildNavItems, NAV_LINKS, type NavItemConfig } from "@/lib/navConfig";
+import { cloudinaryImage }          from "@/lib/utils";
 
 const LOCALE_LABELS: Record<string,string> = { en:"EN", ps:"پښتو", fa:"دری" };
 
@@ -166,8 +167,10 @@ export default function Navbar({ locale, brandName = "W.Arya", brandTagline = "I
           {/* Logo */}
           <Link href={`/${locale}`} className="nav-brand" style={{ textDecoration:"none", display:"flex", alignItems:"center", gap:"0.6rem" }}>
             {logoUrl && (
+              // Fetched at 3× its largest box (120×32). width/height only reserve space until it
+              // loads — CSS height + width:auto still size it from the real aspect ratio.
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={logoUrl} alt={brandName} className="nav-brand-logo" style={{ height:"32px", width:"auto", maxWidth:"120px", objectFit:"contain" }} />
+              <img src={cloudinaryImage(logoUrl, { width:360, height:96 })} alt={brandName} width={32} height={32} decoding="async" className="nav-brand-logo" style={{ height:"32px", width:"auto", maxWidth:"120px", objectFit:"contain" }} />
             )}
             <span className="nav-brand-text" style={{ display:"flex", flexDirection:"column", lineHeight:1.1 }}>
               <span className="nav-brand-name" style={{ fontFamily:"var(--font-syne)", fontWeight:800, fontSize:"1.2rem", background:"linear-gradient(135deg,#4f46e5,#06b6d4)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>

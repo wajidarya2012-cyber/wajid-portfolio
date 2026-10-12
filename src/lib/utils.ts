@@ -92,6 +92,44 @@ export function formatDate(
   }
 }
 
+// ── Cloudinary delivery size ───────────────────────────────────────────────
+// Admin uploads are served at their original size (a 1346px logo for a 28px slot,
+// 5184px Journey photos). This asks Cloudinary for a copy that fits inside
+// `width`×`height`, in the best format the browser accepts (AVIF/WebP via f_auto).
+// c_limit only ever shrinks — never upscales or crops — so CSS still does all the
+// cropping and fitting it did before. For object-fit:cover, pass a box larger than
+// the slot so the image's short side still covers it.
+// Returned unchanged: non-Cloudinary URLs, non-image resources, PDFs (the CV is
+// stored as an image-type PDF and must stay a PDF), URLs that already carry a
+// transformation, and signed URLs (an s--…-- segment; adding a transformation in
+// front of it would invalidate the signature).
+const CLOUDINARY_IMAGE = /^(https:\/\/res\.cloudinary\.com\/[^/]+\/image\/upload\/)(.+)$/;
+const CLOUDINARY_TRANSFORM_SEGMENT = /^[a-z]{1,4}_[^/]*$/;
+
+export function cloudinaryImage(
+  url:  string | null | undefined,
+  size: { width?: number; height?: number }
+): string {
+  if (!url) return "";
+  const m = url.match(CLOUDINARY_IMAGE);
+  if (!m) return url;
+  const [, base, rest] = m;
+  if (/\.pdf$/i.test(rest.split(/[?#]/)[0])) return url;
+  const first = rest.split("/")[0];
+  if (first.startsWith("s--") || CLOUDINARY_TRANSFORM_SEGMENT.test(first)) return url;
+  const params = ["c_limit", "f_auto", "q_auto"];
+  if (size.width)  params.push(`w_${Math.round(size.width)}`);
+  if (size.height) params.push(`h_${Math.round(size.height)}`);
+  return `${base}${params.join(",")}/${rest}`;
+}
+
+// srcSet of cloudinaryImage() widths, or undefined when the URL can't be resized
+// (so the browser just uses `src`, exactly as before).
+export function cloudinarySrcSet(url: string | null | undefined, widths: number[]): string | undefined {
+  if (!url || !widths.length || cloudinaryImage(url, { width: widths[0] }) === url) return undefined;
+  return widths.map(w => `${cloudinaryImage(url, { width: w })} ${w}w`).join(", ");
+}
+
 // ── Truncate text ──────────────────────────────────────────────────────────
 export function truncate(str: string, max = 160): string {
   return str.length > max ? str.slice(0, max - 3) + "..." : str;

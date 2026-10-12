@@ -3,7 +3,12 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import type { JourneySlide } from "@/types";
-import { splitTitle }        from "@/lib/utils";
+import { splitTitle, cloudinaryImage, cloudinarySrcSet } from "@/lib/utils";
+
+// Frame is at most ~1056px wide (16:8). On phones it switches to 4:3, where object-fit:cover
+// scales a landscape photo by height — up to ~1.33× the frame width for 16:9 — hence 125vw.
+const SLIDE_WIDTHS = [640, 960, 1280, 1920, 2560];
+const SLIDE_SIZES  = "(max-width: 640px) 125vw, (max-width: 1152px) 92vw, 1060px";
 
 const G = "linear-gradient(135deg,#4f46e5,#06b6d4)";
 const AUTOPLAY_MS = 5500;
@@ -82,7 +87,9 @@ export default function JourneySection({ slides, locale }: { slides: JourneySlid
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src={slide.imageUrl}
+                      src={cloudinaryImage(slide.imageUrl, { width:1280 })}
+                      srcSet={cloudinarySrcSet(slide.imageUrl, SLIDE_WIDTHS)}
+                      sizes={SLIDE_SIZES}
                       alt={title || tl("milestoneAlt")}
                       loading="lazy"
                       decoding="async"
@@ -153,7 +160,7 @@ export default function JourneySection({ slides, locale }: { slides: JourneySlid
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
-                        src={slide.imageUrl}
+                        src={cloudinaryImage(slide.imageUrl, { width:240, height:240 })}
                         alt=""
                         loading="lazy"
                         decoding="async"

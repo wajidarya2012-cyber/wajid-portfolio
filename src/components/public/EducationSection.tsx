@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import { useTranslations }   from "next-intl";
 import type { Education }    from "@/types";
-import { splitTitle }        from "@/lib/utils";
+import { splitTitle, cloudinaryImage } from "@/lib/utils";
 
 const G = "linear-gradient(135deg,#4f46e5,#06b6d4)";
 
@@ -93,7 +93,7 @@ export default function EducationSection({ education, locale, config }: { educat
                 <div style={{ display:"flex", alignItems:"center", gap:"0.6rem", minWidth:0, marginBottom:"0.15rem" }}>
                   {e.logoUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={e.logoUrl as string} alt="" style={{ width:"28px", height:"28px", borderRadius:"6px", objectFit:"cover", flexShrink:0, background:"#fff" }} />
+                    <img src={cloudinaryImage(e.logoUrl as string, { width:112, height:112 })} alt="" width={28} height={28} loading="lazy" decoding="async" style={{ width:"28px", height:"28px", borderRadius:"6px", objectFit:"cover", flexShrink:0, background:"#fff" }} />
                   ) : (
                     <span aria-hidden style={{ fontSize:"1.2rem", flexShrink:0 }}>{edu.icon}</span>
                   )}

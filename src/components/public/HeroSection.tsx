@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { t as pickTrilingual } from "@/lib/utils";
+import { t as pickTrilingual, cloudinaryImage } from "@/lib/utils";
 import Image                  from "next/image";
 import { useTranslations }    from "next-intl";
 import type { Profile }       from "@/types";
@@ -178,12 +178,13 @@ export default function HeroSection({ profile, locale, heroBgSlides = [] }: { pr
           {slides.map((slide, i) => (
             <div key={slide.desktopUrl + i} className="hero-bg-slide" style={{ position:"absolute", inset:0, opacity: i === bgIndex ? 0.32 : 0, transition:"opacity 1.4s ease" }}>
               {/* Blurred full-bleed backdrop — fills any letterbox gap left by the contained image on mobile.
-                  Fully hidden behind the sharp image on desktop (cover fit leaves no gap), so desktop is unaffected. */}
+                  Fully hidden behind the sharp image on desktop (cover fit leaves no gap), so desktop is unaffected.
+                  Under a 32px blur a 640px copy is indistinguishable from the original. */}
               <picture>
-                {slide.mobileUrl && <source media="(max-width: 640px)" srcSet={slide.mobileUrl} />}
+                {slide.mobileUrl && <source media="(max-width: 640px)" srcSet={cloudinaryImage(slide.mobileUrl, { width:640 })} />}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={slide.desktopUrl}
+                  src={cloudinaryImage(slide.desktopUrl, { width:640 })}
                   alt=""
                   aria-hidden="true"
                   loading="lazy"
@@ -191,12 +192,16 @@ export default function HeroSection({ profile, locale, heroBgSlides = [] }: { pr
                   className="hero-bg-backdrop"
                 />
               </picture>
-              {/* Sharp foreground — full-bleed cover on desktop (unchanged), fully visible/uncropped on mobile. */}
+              {/* Sharp foreground — full-bleed cover on desktop (unchanged), fully visible/uncropped on mobile.
+                  Without a mobile image it is display:none at ≤640px, but an eager <img> downloads even when
+                  hidden — so there it points at the backdrop's small copy (same URL, one cached request). */}
               <picture>
-                {slide.mobileUrl && <source media="(max-width: 640px)" srcSet={slide.mobileUrl} />}
+                {slide.mobileUrl
+                  ? <source media="(max-width: 640px)" srcSet={cloudinaryImage(slide.mobileUrl, { width:1280 })} />
+                  : <source media="(max-width: 640px)" srcSet={cloudinaryImage(slide.desktopUrl, { width:640 })} />}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={slide.desktopUrl}
+                  src={cloudinaryImage(slide.desktopUrl, { width:2560 })}
                   alt=""
                   aria-hidden="true"
                   loading={i === 0 ? "eager" : "lazy"}
@@ -329,7 +334,9 @@ export default function HeroSection({ profile, locale, heroBgSlides = [] }: { pr
               <div className="hero-photo" style={{ width:"320px", height:"320px", borderRadius:"50%", padding:"2px", background:"var(--border-hover)", boxShadow:"var(--shadow-card)" }}>
                 <div style={{ width:"100%", height:"100%", borderRadius:"50%", background:"var(--bg-secondary)", overflow:"hidden", display:"flex", alignItems:"center", justifyContent:"center" }}>
                   {profile?.photoUrl
-                    ? <Image src={profile.photoUrl} alt={fullName ?? "Wajid Ali Arya"} width={320} height={320} style={{ objectFit:"cover", objectPosition:"center 30%", width:"100%", height:"100%" }} priority unoptimized />
+                    // 960 box: the short side still covers the 320px circle at 2–3× DPR for any
+                    // orientation. AboutSection requests the identical URL so both share one download.
+                    ? <Image src={cloudinaryImage(profile.photoUrl, { width:960, height:960 })} alt={fullName ?? "Wajid Ali Arya"} width={320} height={320} style={{ objectFit:"cover", objectPosition:"center 30%", width:"100%", height:"100%" }} priority unoptimized />
                     : (
                       <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:"0.5rem" }}>
                         <span style={{ fontSize:"5rem", opacity:0.3 }}>👤</span>

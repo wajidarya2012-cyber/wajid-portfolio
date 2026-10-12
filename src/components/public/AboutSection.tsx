@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslations }   from "next-intl";
 import type { Profile }       from "@/types";
-import { splitTitle }         from "@/lib/utils";
+import { splitTitle, cloudinaryImage } from "@/lib/utils";
 
 const G = "linear-gradient(135deg,#4f46e5,#06b6d4)";
 
@@ -99,8 +99,9 @@ export default function AboutSection({ profile, locale }: { profile: Profile|nul
           <div className="reveal">
             {show("showProfileImage") && profile?.photoUrl && (
               <div style={{ display:"flex", alignItems:"center", gap:"1rem", marginBottom:"1.5rem" }}>
+                {/* Same URL as the HeroSection portrait (960 box), so this reuses that download. */}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={profile.photoUrl} alt={pick(p,"fullName",locale)} style={{ width:"64px", height:"64px", borderRadius:"50%", objectFit:"cover", objectPosition:"center 30%", border:"2px solid rgba(79,70,229,0.3)" }} />
+                <img src={cloudinaryImage(profile.photoUrl, { width:960, height:960 })} alt={pick(p,"fullName",locale)} width={64} height={64} decoding="async" style={{ width:"64px", height:"64px", borderRadius:"50%", objectFit:"cover", objectPosition:"center 30%", border:"2px solid rgba(79,70,229,0.3)" }} />
                 <div>
                   <p style={{ fontWeight:700, fontSize:"0.95rem", margin:0 }}>{pick(p,"fullName",locale) || "Wajid Ali Arya"}</p>
                   <p style={{ fontSize:"0.78rem", color:"var(--text-muted)", margin:0 }}>{pick(p,"title",locale)}</p>
@@ -168,7 +169,7 @@ export default function AboutSection({ profile, locale }: { profile: Profile|nul
                     <div style={{ width:"44px", height:"44px", borderRadius:"12px", background:"var(--bg-secondary)", border:"1px solid var(--border)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"1.3rem", marginBottom:"0.75rem" }}>
                       {v.icon}
                     </div>
-                    <h4 style={{ fontFamily:"var(--font-syne)", fontWeight:700, fontSize:"0.9rem", marginBottom:"0.35rem", wordBreak:"break-word" }}>{pick(v as unknown as Record<string,unknown>, "title", locale)}</h4>
+                    <h3 style={{ fontFamily:"var(--font-syne)", fontWeight:700, fontSize:"0.9rem", marginBottom:"0.35rem", wordBreak:"break-word" }}>{pick(v as unknown as Record<string,unknown>, "title", locale)}</h3>
                     <p style={{ fontSize:"0.78rem", color:"var(--text-muted)", lineHeight:1.65, margin:0 }}>{pick(v as unknown as Record<string,unknown>, "desc", locale)}</p>
                   </div>
                 ))}

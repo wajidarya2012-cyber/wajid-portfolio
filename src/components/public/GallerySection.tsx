@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { splitTitle }      from "@/lib/utils";
+import { splitTitle, cloudinaryImage } from "@/lib/utils";
 
 const G = "linear-gradient(135deg,#4f46e5,#06b6d4)";
 
@@ -74,12 +74,18 @@ export default function GallerySection({ items, locale, config }: { items: any[]
         <div className="reveal reveal-delay-3" style={ sparse
           ? { display:"flex", flexWrap:"wrap", gap:"0.75rem", marginBottom:"1.5rem" }
           : { display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(140px,1fr))", gap:"0.75rem", marginBottom:"1.75rem" } }>
-          {homepageItems.map(item => (
-            <Link key={item.id} href={`/${locale}/gallery`} style={{ position:"relative", borderRadius:"10px", overflow:"hidden", aspectRatio:"1/1", display:"block", border:"1px solid var(--border)", ...(sparse ? { width:"clamp(120px,28vw,168px)", flexShrink:0 } : {}) }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={item.url} alt={pick(item,"altText",locale) || pick(item,"title",locale) || ""} loading="lazy" style={{ width:"100%", height:"100%", objectFit:"cover", display:"block" }} />
-            </Link>
-          ))}
+          {homepageItems.map(item => {
+            const alt = pick(item,"altText",locale) || pick(item,"title",locale) || "";
+            return (
+              // An image-only link is named by its alt text; when the CMS item has none, name it
+              // after where it goes so screen readers don't announce an empty link.
+              <Link key={item.id} href={`/${locale}/gallery`} aria-label={alt ? undefined : tl("viewFullGallery")} style={{ position:"relative", borderRadius:"10px", overflow:"hidden", aspectRatio:"1/1", display:"block", border:"1px solid var(--border)", ...(sparse ? { width:"clamp(120px,28vw,168px)", flexShrink:0 } : {}) }}>
+                {/* Tiles top out near 290px (single-column phones); an 800 box keeps the short side ≥2× for cover. */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={cloudinaryImage(item.url, { width:800, height:800 })} alt={alt} loading="lazy" decoding="async" style={{ width:"100%", height:"100%", objectFit:"cover", display:"block" }} />
+              </Link>
+            );
+          })}
         </div>
 
         <Link href={`/${locale}/gallery`} className="btn-secondary reveal reveal-delay-3" style={{ display:"inline-flex", fontSize:"0.85rem" }}>

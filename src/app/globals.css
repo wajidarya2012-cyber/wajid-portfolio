@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -8,10 +6,9 @@
    DESIGN TOKENS
 ═══════════════════════════════════════════════ */
 :root {
-  --font-syne:        'Syne', sans-serif;
-  --font-inter:       'Inter', sans-serif;
-  --font-fira:        'Fira Code', monospace;
-  --font-noto-arabic: 'Noto Naskh Arabic', sans-serif;
+  /* --font-syne / --font-inter / --font-fira / --font-noto-arabic are defined by next/font
+     on <body> (src/app/layout.tsx). Reference fonts only through these variables — next/font
+     serves them under generated family names, so a literal 'Syne' or 'Inter' matches nothing. */
 
   /* Light palette */
   --bg-primary:     #F0F4FF;

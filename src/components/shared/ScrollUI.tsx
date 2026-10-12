@@ -21,14 +21,12 @@ export default function ScrollUI() {
 
   return (
     <>
-      {/* Scroll progress bar */}
+      {/* Scroll progress bar — decorative: it mirrors the scroll position the browser already
+          exposes, so it is hidden from assistive tech rather than announced as an unnamed progressbar. */}
       <div
         className="scroll-progress"
         style={{ width: `${progress}%` }}
-        role="progressbar"
-        aria-valuenow={Math.round(progress)}
-        aria-valuemin={0}
-        aria-valuemax={100}
+        aria-hidden="true"
       />
 
       {/* Back to top */}

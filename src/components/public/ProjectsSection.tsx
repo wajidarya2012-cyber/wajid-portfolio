@@ -99,7 +99,7 @@ export default function ProjectsSection({ projects, locale }: { projects: Projec
                 </button>
               ))}
             </div>
-            <select value={sort} onChange={e => setSort(e.target.value)}
+            <select value={sort} onChange={e => setSort(e.target.value)} aria-label={tl("sort.label")}
               style={{ padding:"0.45rem 0.9rem", borderRadius:"9999px", fontSize:"0.78rem", fontWeight:600, border:"1px solid var(--border)", background:"var(--bg-card)", color:"var(--text-secondary)", cursor:"pointer" }}>
               <option value="newest">{tl("sort.newest")}</option>
               <option value="oldest">{tl("sort.oldest")}</option>
@@ -127,7 +127,9 @@ export default function ProjectsSection({ projects, locale }: { projects: Projec
                   {/* Thumbnail */}
                   <div style={{ height:"160px", background:THUMB_BG[slug]??"linear-gradient(135deg,rgba(79,70,229,0.2),rgba(6,182,212,0.12))", display:"flex", alignItems:"center", justifyContent:"center", position:"relative", overflow:"hidden", flexShrink:0 }}>
                     {thumb
-                      ? <Image src={thumb.url} alt={pick(project as Record<string,unknown>,"title",locale)} fill style={{ objectFit:"cover" }} />
+                      // Grid of minmax(280px,1fr) columns: 1 column below ~640px, 2 up to ~1024px,
+                      // then ~370px cards inside the 72rem container. Without `sizes`, fill defaults to 100vw.
+                      ? <Image src={thumb.url} alt={pick(project as Record<string,unknown>,"title",locale)} fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 400px" style={{ objectFit:"cover" }} />
                       : <span style={{ fontSize:"3rem" }}>{THUMB_EMOJI[slug]??"💻"}</span>
                     }
                     {project.featured && (
@@ -254,7 +256,8 @@ export default function ProjectsSection({ projects, locale }: { projects: Projec
                         aria-label={tl("openImage")}
                         style={{ position:"relative", aspectRatio:"16/9", borderRadius:"10px", overflow:"hidden", border:"none", padding:0, cursor:"zoom-in" }}
                       >
-                        <Image src={img.url} alt={img.caption??""} fill style={{ objectFit:"cover" }} />
+                        {/* 720px modal, minmax(180px,1fr) grid: ~3 columns, but a single column on phones. */}
+                        <Image src={img.url} alt={img.caption??""} fill sizes="(max-width: 640px) 90vw, 240px" style={{ objectFit:"cover" }} />
                       </button>
                     ))}
                   </div>

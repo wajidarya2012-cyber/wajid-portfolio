@@ -123,7 +123,8 @@
       "oldest": "Oldest First",
       "mostViewed": "Most Viewed",
       "featured": "Featured First",
-      "az": "A–Z"
+      "az": "A–Z",
+      "label": "Sort projects"
     },
     "viewDetails": "View Details",
     "viewFullPage": "View Full Page",

@@ -63,16 +63,16 @@ export default function AdminLoginForm({ brandName, subtitle, footerNote }: Prop
 
       <div style={{ width:"100%", maxWidth:"400px", position:"relative", zIndex:1 }}>
         <div style={{ textAlign:"center", marginBottom:"2.5rem" }}>
-          <div style={{ fontFamily:"'Syne',sans-serif", fontWeight:800, fontSize:"2rem", background:G, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", marginBottom:"0.3rem" }}>
+          <div style={{ fontFamily:"var(--font-syne)", fontWeight:800, fontSize:"2rem", background:G, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", marginBottom:"0.3rem" }}>
             {brandName}
           </div>
-          <p style={{ fontSize:"0.78rem", color:"#475569", fontFamily:"'Fira Code',monospace", letterSpacing:"0.06em" }}>
+          <p style={{ fontSize:"0.78rem", color:"#475569", fontFamily:"var(--font-fira)", letterSpacing:"0.06em" }}>
             {subtitle}
           </p>
         </div>
 
         <div style={{ background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:"20px", padding:"2rem", backdropFilter:"blur(20px)" }}>
-          <h1 style={{ fontFamily:"'Syne',sans-serif", fontSize:"1.25rem", fontWeight:700, marginBottom:"0.375rem", color:"#f1f5f9" }}>Sign in</h1>
+          <h1 style={{ fontFamily:"var(--font-syne)", fontSize:"1.25rem", fontWeight:700, marginBottom:"0.375rem", color:"#f1f5f9" }}>Sign in</h1>
           <p style={{ fontSize:"0.8rem", color:"#475569", marginBottom:"1.75rem" }}>Enter your credentials to access the dashboard.</p>
 
           <form
